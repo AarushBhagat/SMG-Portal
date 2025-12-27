@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AdminsAnalysisPage } from './AdminsAnalysisPage';
 import { DepartmentsPage } from './DepartmentsPage';
 import { DepartmentWorkingPage } from './DepartmentWorkingPage';
+import { UserManagementPage } from './UserManagementPage';
 import { CanteenManagement } from './departments/CanteenManagement';
 import { MarketingManagement } from './departments/MarketingManagement';
 import { ReceptionManagement } from './departments/ReceptionManagement';
@@ -70,6 +71,7 @@ export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
       case 'admins-analysis': return <AdminsAnalysisPage />;
       case 'departments': return <DepartmentsPage onNavigate={setActivePage} />;
       case 'department-working': return <DepartmentWorkingPage />;
+      case 'user-management': return <UserManagementPage />;
       case 'dept-canteen': return <CanteenManagement />;
       case 'dept-marketing': return <MarketingManagement />;
       case 'dept-reception': return <ReceptionManagement />;
@@ -211,6 +213,19 @@ export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
                     Working
                   </span>
                 </button>
+                <button
+                  onClick={() => setActivePage('user-management')}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${
+                    activePage === 'user-management'
+                      ? 'bg-white/10 text-white shadow-md'
+                      : 'text-[#87CEEB] hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  <Users size={22} className="shrink-0" />
+                  <span className="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    Users
+                  </span>
+                </button>
               </div>
             </div>
           </nav>
@@ -299,6 +314,22 @@ export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
                       <Activity size={22} className="shrink-0" />
                       <span className="text-sm font-medium whitespace-nowrap">
                         Working
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActivePage('user-management');
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${
+                        activePage === 'user-management'
+                          ? 'bg-white/10 text-white shadow-md'
+                          : 'text-[#87CEEB] hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <Users size={22} className="shrink-0" />
+                      <span className="text-sm font-medium whitespace-nowrap">
+                        Users
                       </span>
                     </button>
                   </div>

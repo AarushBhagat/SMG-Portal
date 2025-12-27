@@ -591,7 +591,7 @@ export const DepartmentWorkingPage = () => {
                       : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50'
                   }`}
                 >
-                  <DeptIcon size={24} />
+                  <DeptIcon size={24} className={selectedDept === dept.id ? 'text-[#0B4DA2]' : 'text-blue-600'} />
                   <span className="text-xs text-center">{dept.name}</span>
                 </button>
               );
