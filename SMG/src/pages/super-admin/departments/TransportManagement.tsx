@@ -140,28 +140,28 @@ export const TransportManagement = () => {
           <p className="text-xs text-gray-600 mt-1">All time</p>
         </div>
 
-        <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-5 border border-orange-200">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border border-blue-200">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-semibold text-orange-700">PENDING</p>
-            <Clock size={20} className="text-orange-600" />
+            <p className="text-xs font-semibold text-blue-700">PENDING</p>
+            <Clock size={20} className="text-blue-600" />
           </div>
           <p className="text-3xl font-bold text-[#1B254B]">{stats.pending}</p>
           <p className="text-xs text-gray-600 mt-1">Awaiting action</p>
         </div>
 
-        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5 border border-green-200">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border border-blue-200">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-semibold text-green-700">APPROVED</p>
-            <CheckCircle size={20} className="text-green-600" />
+            <p className="text-xs font-semibold text-blue-700">APPROVED</p>
+            <CheckCircle size={20} className="text-blue-600" />
           </div>
           <p className="text-3xl font-bold text-[#1B254B]">{stats.approved}</p>
           <p className="text-xs text-gray-600 mt-1">Completed</p>
         </div>
 
-        <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-5 border border-red-200">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border border-blue-200">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-semibold text-red-700">REJECTED</p>
-            <XCircle size={20} className="text-red-600" />
+            <p className="text-xs font-semibold text-blue-700">REJECTED</p>
+            <XCircle size={20} className="text-blue-600" />
           </div>
           <p className="text-3xl font-bold text-[#1B254B]">{stats.rejected}</p>
           <p className="text-xs text-gray-600 mt-1">Declined</p>
@@ -236,7 +236,7 @@ export const TransportManagement = () => {
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      request.priority === 'high' ? 'bg-red-100 text-red-700' :
+                      request.priority === 'high' ? 'bg-blue-100 text-blue-700' :
                       request.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
                       'bg-blue-100 text-blue-700'
                     }`}>
@@ -245,9 +245,9 @@ export const TransportManagement = () => {
                   </td>
                   <td className="px-6 py-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                      request.status === 'approved' ? 'bg-green-100 text-green-700' :
-                      request.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                      'bg-orange-100 text-orange-700'
+                      request.status === 'approved' ? 'bg-blue-100 text-blue-700' :
+                      request.status === 'rejected' ? 'bg-blue-100 text-blue-700' :
+                      'bg-blue-100 text-blue-700'
                     }`}>
                       {request.status.toUpperCase()}
                     </span>
@@ -269,26 +269,26 @@ export const TransportManagement = () => {
                           setSelectedRequest(request);
                           setShowEditModal(true);
                         }}
-                        className="p-2 hover:bg-purple-50 rounded-lg transition-colors group"
+                        className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
                         title="Edit"
                       >
-                        <Edit3 size={18} className="text-purple-600 group-hover:scale-110 transition-transform" />
+                        <Edit3 size={18} className="text-blue-600 group-hover:scale-110 transition-transform" />
                       </button>
                       {request.status === 'pending' && (
                         <>
                           <button
                             onClick={() => handleApprove(request.id)}
-                            className="p-2 hover:bg-green-50 rounded-lg transition-colors group"
+                            className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
                             title="Approve"
                           >
-                            <CheckCircle size={18} className="text-green-600 group-hover:scale-110 transition-transform" />
+                            <CheckCircle size={18} className="text-blue-600 group-hover:scale-110 transition-transform" />
                           </button>
                           <button
                             onClick={() => handleReject(request.id)}
-                            className="p-2 hover:bg-red-50 rounded-lg transition-colors group"
+                            className="p-2 hover:bg-blue-50 rounded-lg transition-colors group"
                             title="Reject"
                           >
-                            <XCircle size={18} className="text-red-600 group-hover:scale-110 transition-transform" />
+                            <XCircle size={18} className="text-blue-600 group-hover:scale-110 transition-transform" />
                           </button>
                         </>
                       )}
@@ -331,7 +331,7 @@ export const TransportManagement = () => {
                 <div>
                   <p className="text-xs font-semibold text-gray-500 mb-2">PRIORITY</p>
                   <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    selectedRequest.priority === 'high' ? 'bg-red-100 text-red-700' :
+                    selectedRequest.priority === 'high' ? 'bg-blue-100 text-blue-700' :
                     selectedRequest.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
                     'bg-blue-100 text-blue-700'
                   }`}>
@@ -341,9 +341,9 @@ export const TransportManagement = () => {
                 <div>
                   <p className="text-xs font-semibold text-gray-500 mb-2">STATUS</p>
                   <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    selectedRequest.status === 'approved' ? 'bg-green-100 text-green-700' :
-                    selectedRequest.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                    'bg-orange-100 text-orange-700'
+                    selectedRequest.status === 'approved' ? 'bg-blue-100 text-blue-700' :
+                    selectedRequest.status === 'rejected' ? 'bg-blue-100 text-blue-700' :
+                    'bg-blue-100 text-blue-700'
                   }`}>
                     {selectedRequest.status.toUpperCase()}
                   </span>

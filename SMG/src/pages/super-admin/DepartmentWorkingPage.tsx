@@ -542,10 +542,10 @@ export const DepartmentWorkingPage = () => {
 
   const getActivityColor = (type: string) => {
     switch (type) {
-      case 'approval': return 'bg-green-50 text-green-600 border-green-200';
-      case 'disapproval': return 'bg-red-50 text-red-600 border-red-200';
+      case 'approval': return 'bg-blue-50 text-blue-600 border-blue-200';
+      case 'disapproval': return 'bg-blue-50 text-blue-600 border-blue-200';
       case 'asset': return 'bg-blue-50 text-blue-600 border-blue-200';
-      case 'uniform': return 'bg-purple-50 text-purple-600 border-purple-200';
+      case 'uniform': return 'bg-blue-50 text-blue-600 border-blue-200';
       default: return 'bg-gray-50 text-gray-600 border-gray-200';
     }
   };
@@ -612,19 +612,19 @@ export const DepartmentWorkingPage = () => {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
               <div className="flex items-center gap-3 mb-2">
-                <CheckCircle2 size={20} className="text-green-600" />
-                <p className="text-xs font-semibold text-green-700">APPROVALS</p>
+                <CheckCircle2 size={20} className="text-blue-600" />
+                <p className="text-xs font-semibold text-blue-700">APPROVALS</p>
               </div>
               <p className="text-3xl font-bold text-[#1B254B]">{approvals}</p>
               <p className="text-xs text-gray-600 mt-1">Recent approvals</p>
             </div>
 
-            <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-4 border border-red-200">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
               <div className="flex items-center gap-3 mb-2">
-                <XCircle size={20} className="text-red-600" />
-                <p className="text-xs font-semibold text-red-700">REJECTIONS</p>
+                <XCircle size={20} className="text-blue-600" />
+                <p className="text-xs font-semibold text-blue-700">REJECTIONS</p>
               </div>
               <p className="text-3xl font-bold text-[#1B254B]">{disapprovals}</p>
               <p className="text-xs text-gray-600 mt-1">Disapprovals</p>
@@ -639,10 +639,10 @@ export const DepartmentWorkingPage = () => {
               <p className="text-xs text-gray-600 mt-1">Items issued</p>
             </div>
 
-            <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
               <div className="flex items-center gap-3 mb-2">
-                <ShirtIcon size={20} className="text-purple-600" />
-                <p className="text-xs font-semibold text-purple-700">UNIFORMS</p>
+                <ShirtIcon size={20} className="text-blue-600" />
+                <p className="text-xs font-semibold text-blue-700">UNIFORMS</p>
               </div>
               <p className="text-3xl font-bold text-[#1B254B]">{uniformIssues}</p>
               <p className="text-xs text-gray-600 mt-1">Distributed</p>
@@ -677,10 +677,10 @@ export const DepartmentWorkingPage = () => {
                           <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
                         </div>
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${
-                          activity.type === 'approval' ? 'bg-green-100 text-green-700' :
-                          activity.type === 'disapproval' ? 'bg-red-100 text-red-700' :
+                          activity.type === 'approval' ? 'bg-blue-100 text-blue-700' :
+                          activity.type === 'disapproval' ? 'bg-blue-100 text-blue-700' :
                           activity.type === 'asset' ? 'bg-blue-100 text-blue-700' :
-                          'bg-purple-100 text-purple-700'
+                          'bg-blue-100 text-blue-700'
                         }`}>
                           {badge}
                         </span>

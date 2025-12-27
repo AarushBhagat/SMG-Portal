@@ -62,16 +62,16 @@ export const ReceptionManagement = () => {
           <div className="flex items-center justify-between mb-2"><p className="text-xs font-semibold text-blue-700">TOTAL REQUESTS</p><Building2 size={20} className="text-blue-600" /></div>
           <p className="text-3xl font-bold text-[#1B254B]">{stats.total}</p><p className="text-xs text-gray-600 mt-1">All time</p>
         </div>
-        <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-5 border border-orange-200">
-          <div className="flex items-center justify-between mb-2"><p className="text-xs font-semibold text-orange-700">PENDING</p><Clock size={20} className="text-orange-600" /></div>
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border border-blue-200">
+          <div className="flex items-center justify-between mb-2"><p className="text-xs font-semibold text-blue-700">PENDING</p><Clock size={20} className="text-blue-600" /></div>
           <p className="text-3xl font-bold text-[#1B254B]">{stats.pending}</p><p className="text-xs text-gray-600 mt-1">Awaiting action</p>
         </div>
-        <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-5 border border-green-200">
-          <div className="flex items-center justify-between mb-2"><p className="text-xs font-semibold text-green-700">APPROVED</p><CheckCircle size={20} className="text-green-600" /></div>
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border border-blue-200">
+          <div className="flex items-center justify-between mb-2"><p className="text-xs font-semibold text-blue-700">APPROVED</p><CheckCircle size={20} className="text-blue-600" /></div>
           <p className="text-3xl font-bold text-[#1B254B]">{stats.approved}</p><p className="text-xs text-gray-600 mt-1">Completed</p>
         </div>
-        <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-5 border border-red-200">
-          <div className="flex items-center justify-between mb-2"><p className="text-xs font-semibold text-red-700">REJECTED</p><XCircle size={20} className="text-red-600" /></div>
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-5 border border-blue-200">
+          <div className="flex items-center justify-between mb-2"><p className="text-xs font-semibold text-blue-700">REJECTED</p><XCircle size={20} className="text-blue-600" /></div>
           <p className="text-3xl font-bold text-[#1B254B]">{stats.rejected}</p><p className="text-xs text-gray-600 mt-1">Declined</p>
         </div>
       </div>
@@ -108,15 +108,15 @@ export const ReceptionManagement = () => {
                   <td className="px-6 py-4"><div><p className="font-semibold text-[#1B254B]">{request.employeeName}</p><p className="text-xs text-gray-500">{request.employeeId}</p></div></td>
                   <td className="px-6 py-4"><p className="font-medium text-gray-700">{request.type}</p></td>
                   <td className="px-6 py-4 whitespace-nowrap"><div className="flex items-center gap-2 text-gray-600"><Calendar size={16} /><span className="text-sm">{request.date}</span></div></td>
-                  <td className="px-6 py-4"><span className={`px-3 py-1 rounded-full text-xs font-bold ${request.priority === 'high' ? 'bg-red-100 text-red-700' : request.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'}`}>{request.priority.toUpperCase()}</span></td>
-                  <td className="px-6 py-4"><span className={`px-3 py-1 rounded-full text-xs font-bold ${request.status === 'approved' ? 'bg-green-100 text-green-700' : request.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>{request.status.toUpperCase()}</span></td>
+                  <td className="px-6 py-4"><span className={`px-3 py-1 rounded-full text-xs font-bold ${request.priority === 'high' ? 'bg-blue-100 text-blue-700' : request.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'}`}>{request.priority.toUpperCase()}</span></td>
+                  <td className="px-6 py-4"><span className={`px-3 py-1 rounded-full text-xs font-bold ${request.status === 'approved' ? 'bg-blue-100 text-blue-700' : request.status === 'rejected' ? 'bg-blue-100 text-blue-700' : 'bg-blue-100 text-blue-700'}`}>{request.status.toUpperCase()}</span></td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <button onClick={() => { setSelectedRequest(request); setShowDetailModal(true); }} className="p-2 hover:bg-blue-50 rounded-lg transition-colors group" title="View Details"><Eye size={18} className="text-blue-600 group-hover:scale-110 transition-transform" /></button>
-                      <button className="p-2 hover:bg-purple-50 rounded-lg transition-colors group" title="Edit"><Edit3 size={18} className="text-purple-600 group-hover:scale-110 transition-transform" /></button>
+                      <button className="p-2 hover:bg-blue-50 rounded-lg transition-colors group" title="Edit"><Edit3 size={18} className="text-blue-600 group-hover:scale-110 transition-transform" /></button>
                       {request.status === 'pending' && (<>
-                        <button onClick={() => handleApprove(request.id)} className="p-2 hover:bg-green-50 rounded-lg transition-colors group" title="Approve"><CheckCircle size={18} className="text-green-600 group-hover:scale-110 transition-transform" /></button>
-                        <button onClick={() => handleReject(request.id)} className="p-2 hover:bg-red-50 rounded-lg transition-colors group" title="Reject"><XCircle size={18} className="text-red-600 group-hover:scale-110 transition-transform" /></button>
+                        <button onClick={() => handleApprove(request.id)} className="p-2 hover:bg-blue-50 rounded-lg transition-colors group" title="Approve"><CheckCircle size={18} className="text-blue-600 group-hover:scale-110 transition-transform" /></button>
+                        <button onClick={() => handleReject(request.id)} className="p-2 hover:bg-blue-50 rounded-lg transition-colors group" title="Reject"><XCircle size={18} className="text-blue-600 group-hover:scale-110 transition-transform" /></button>
                       </>)}
                     </div>
                   </td>
@@ -138,8 +138,8 @@ export const ReceptionManagement = () => {
                 <div><p className="text-xs font-semibold text-gray-500 mb-2">EMPLOYEE ID</p><p className="font-bold text-[#1B254B] text-lg">{selectedRequest.employeeId}</p></div>
                 <div><p className="text-xs font-semibold text-gray-500 mb-2">REQUEST TYPE</p><p className="font-bold text-[#1B254B] text-lg">{selectedRequest.type}</p></div>
                 <div><p className="text-xs font-semibold text-gray-500 mb-2">DATE</p><p className="font-bold text-[#1B254B] text-lg">{selectedRequest.date}</p></div>
-                <div><p className="text-xs font-semibold text-gray-500 mb-2">PRIORITY</p><span className={`px-3 py-1 rounded-full text-xs font-bold ${selectedRequest.priority === 'high' ? 'bg-red-100 text-red-700' : selectedRequest.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'}`}>{selectedRequest.priority.toUpperCase()}</span></div>
-                <div><p className="text-xs font-semibold text-gray-500 mb-2">STATUS</p><span className={`px-3 py-1 rounded-full text-xs font-bold ${selectedRequest.status === 'approved' ? 'bg-green-100 text-green-700' : selectedRequest.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>{selectedRequest.status.toUpperCase()}</span></div>
+                <div><p className="text-xs font-semibold text-gray-500 mb-2">PRIORITY</p><span className={`px-3 py-1 rounded-full text-xs font-bold ${selectedRequest.priority === 'high' ? 'bg-blue-100 text-blue-700' : selectedRequest.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-blue-100 text-blue-700'}`}>{selectedRequest.priority.toUpperCase()}</span></div>
+                <div><p className="text-xs font-semibold text-gray-500 mb-2">STATUS</p><span className={`px-3 py-1 rounded-full text-xs font-bold ${selectedRequest.status === 'approved' ? 'bg-blue-100 text-blue-700' : selectedRequest.status === 'rejected' ? 'bg-blue-100 text-blue-700' : 'bg-blue-100 text-blue-700'}`}>{selectedRequest.status.toUpperCase()}</span></div>
               </div>
               <div><p className="text-xs font-semibold text-gray-500 mb-2">DESCRIPTION</p><p className="text-gray-700 bg-gray-50 p-4 rounded-xl border border-gray-200">{selectedRequest.description}</p></div>
               {selectedRequest.status === 'pending' && (
