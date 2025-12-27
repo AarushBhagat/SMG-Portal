@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AdminsAnalysisPage } from './AdminsAnalysisPage';
 import { DepartmentsPage } from './DepartmentsPage';
+import { DepartmentWorkingPage } from './DepartmentWorkingPage';
 import { CanteenManagement } from './departments/CanteenManagement';
 import { MarketingManagement } from './departments/MarketingManagement';
 import { ReceptionManagement } from './departments/ReceptionManagement';
@@ -29,7 +30,8 @@ import {
   Calendar,
   Briefcase,
   Award,
-  Building2
+  Building2,
+  Activity
 } from 'lucide-react';
 
 interface SuperAdminPortalProps {
@@ -67,6 +69,7 @@ export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
     switch (activePage) {
       case 'admins-analysis': return <AdminsAnalysisPage />;
       case 'departments': return <DepartmentsPage onNavigate={setActivePage} />;
+      case 'department-working': return <DepartmentWorkingPage />;
       case 'dept-canteen': return <CanteenManagement />;
       case 'dept-marketing': return <MarketingManagement />;
       case 'dept-reception': return <ReceptionManagement />;
@@ -195,6 +198,19 @@ export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
                     Departments
                   </span>
                 </button>
+                <button
+                  onClick={() => setActivePage('department-working')}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${
+                    activePage === 'department-working'
+                      ? 'bg-white/10 text-white shadow-md'
+                      : 'text-[#87CEEB] hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  <Activity size={22} className="shrink-0" />
+                  <span className="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    Working
+                  </span>
+                </button>
               </div>
             </div>
           </nav>
@@ -267,6 +283,22 @@ export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
                       <Building2 size={22} className="shrink-0" />
                       <span className="text-sm font-medium whitespace-nowrap">
                         Departments
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActivePage('department-working');
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${
+                        activePage === 'department-working'
+                          ? 'bg-white/10 text-white shadow-md'
+                          : 'text-[#87CEEB] hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <Activity size={22} className="shrink-0" />
+                      <span className="text-sm font-medium whitespace-nowrap">
+                        Working
                       </span>
                     </button>
                   </div>
