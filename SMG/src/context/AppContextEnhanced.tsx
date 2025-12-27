@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 
 // Enhanced Demo Data with ALL features
 const DEMO_EMPLOYEE = {
@@ -181,16 +182,54 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }) => {
+  const { user: authUser } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentUser, setCurrentUser] = useState(DEMO_EMPLOYEE);
 
-  // Listen for login with admin@smg.com and set admin user/role
+  // Sync with Firebase Auth user
   useEffect(() => {
-    if (currentUser && currentUser.email === 'admin@smg.com') {
-      setCurrentUser(DEMO_ADMIN);
-      setIsAdmin(true);
+    if (authUser) {
+      setCurrentUser({
+        id: authUser.id,
+        empId: authUser.empId || authUser.id,
+        name: authUser.name,
+        email: authUser.email,
+        phone: authUser.phone || '',
+        emergencyContact: authUser.emergencyContact || '',
+        department: authUser.department,
+        position: authUser.designation,
+        role: authUser.designation,
+        joiningDate: authUser.joinDate || '',
+        dateOfBirth: authUser.dateOfBirth || '',
+        reportingTo: authUser.reportingManager || '',
+        shift: authUser.shift || 'General (9:00 - 18:00)',
+        employeeType: authUser.employeeType || 'Full-time',
+        location: authUser.location,
+        avatar: authUser.avatar,
+        salary: authUser.salary || '',
+        bankAccount: authUser.bankAccount || '',
+        panCard: authUser.panCard || '',
+        aadharCard: authUser.aadharCard || '',
+        bloodGroup: authUser.bloodGroup || '',
+        address: authUser.address || '',
+        education: authUser.education || [],
+        certifications: authUser.certifications || [],
+        skills: authUser.skills || [],
+        languages: authUser.languages || []
+      });
+      
+      // Check if user is admin
+      if (authUser.role === 'admin' || authUser.role === 'super_admin') {
+        setIsAdmin(true);
+      } else {
+        setIsAdmin(false);
+      }
+    } else {
+      // Fallback to demo employee if no auth user
+      setCurrentUser(DEMO_EMPLOYEE);
+      setIsAdmin(false);
     }
-  }, [currentUser?.email]);
+  }, [authUser]);
   
   // Attendance State
   const [isClockedIn, setIsClockedIn] = useState(false);

@@ -1,8 +1,11 @@
-import { useState } from 'react';
-import { Bus, Search, CheckCircle, XCircle, Eye } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Bus, Search, CheckCircle, XCircle, Eye, Loader2 } from 'lucide-react';
+import { collection, query, where, onSnapshot, doc, updateDoc, getDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../../../../config/firebase';
+import { useAuth } from '../../../../context/AuthContext';
 
 interface BusRequest {
-  id: number;
+  id: string;
   empName: string;
   empId: string;
   dept: string;
@@ -10,56 +13,107 @@ interface BusRequest {
   pickupPoint: string;
   requestDate: string;
   status: 'Pending' | 'Approved' | 'Rejected';
+  userId: string;
+  address?: any;
 }
 
 export const BusFacilityApproval = () => {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
-  const [requests, setRequests] = useState<BusRequest[]>([
-    {
-      id: 1,
-      empName: 'Amit Kumar',
-      empId: 'SMG-2024-042',
-      dept: 'Assembly',
-      route: 'Route A - Sector 62',
-      pickupPoint: 'Metro Station Gate 1',
-      requestDate: '2024-12-26 09:30 AM',
-      status: 'Pending'
-    },
-    {
-      id: 2,
-      empName: 'Priya Sharma',
-      empId: 'SMG-2024-089',
-      dept: 'HR',
-      route: 'Route B - Noida City Center',
-      pickupPoint: 'Botanical Garden Metro',
-      requestDate: '2024-12-26 10:15 AM',
-      status: 'Pending'
-    },
-    {
-      id: 3,
-      empName: 'Rajesh Patel',
-      empId: 'SMG-2024-123',
-      dept: 'Finance',
-      route: 'Route C - Greater Noida',
-      pickupPoint: 'Pari Chowk',
-      requestDate: '2024-12-25 02:00 PM',
-      status: 'Approved'
-    }
-  ]);
-
+  const [requests, setRequests] = useState<BusRequest[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<BusRequest | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
-  const handleAction = (action: 'approve' | 'reject') => {
-    if (selectedRequest) {
-      const updated = requests.map(req =>
-        req.id === selectedRequest.id
-          ? { ...req, status: action === 'approve' ? 'Approved' as const : 'Rejected' as const }
-          : req
-      );
-      setRequests(updated);
+  useEffect(() => {
+    if (!user) return;
+
+    // Query for transport requests of type 'bus' or 'transport'
+    const requestsRef = collection(db, 'requests');
+    const q = query(
+      requestsRef,
+      where('requestType', 'in', ['bus', 'transport'])
+    );
+
+    const unsubscribe = onSnapshot(q, async (snapshot) => {
+      const fetchedRequests: BusRequest[] = [];
+      
+      for (const docSnap of snapshot.docs) {
+        const data = docSnap.data();
+        
+        // Fetch user details
+        let userName = data.userName || 'Unknown';
+        let userDept = data.department || 'Unknown';
+        let userEmpId = data.empId || 'N/A';
+        
+        if (data.userId) {
+          try {
+            const userDoc = await getDoc(doc(db, 'users', data.userId));
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              userName = userData.name || userName;
+              userDept = userData.department || userDept;
+              userEmpId = userData.empId || userData.employeeId || userEmpId;
+            }
+          } catch (error) {
+            console.error('Error fetching user:', error);
+          }
+        }
+
+        fetchedRequests.push({
+          id: docSnap.id,
+          empName: userName,
+          empId: userEmpId,
+          dept: userDept,
+          route: data.requestData?.route || data.requestData?.area || 'Not Specified',
+          pickupPoint: data.requestData?.pickupPoint || data.requestData?.landmark || 'Not Specified',
+          requestDate: data.createdAt?.toDate?.()?.toLocaleString() || new Date().toLocaleString(),
+          status: data.status === 'approved' ? 'Approved' : data.status === 'rejected' ? 'Rejected' : 'Pending',
+          userId: data.userId,
+          address: data.requestData
+        });
+      }
+      
+      setRequests(fetchedRequests);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
+
+  const handleAction = async (action: 'approve' | 'reject') => {
+    if (!selectedRequest || !user) return;
+
+    setActionLoading(true);
+    try {
+      const requestRef = doc(db, 'requests', selectedRequest.id);
+      const newStatus = action === 'approve' ? 'approved' : 'rejected';
+      
+      await updateDoc(requestRef, {
+        status: newStatus,
+        approvedBy: user.id,
+        approvedAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+
+      // Create notification for the employee
+      await addDoc(collection(db, 'notifications'), {
+        userId: selectedRequest.userId,
+        title: `Bus Facility Request ${action === 'approve' ? 'Approved' : 'Rejected'}`,
+        message: `Your bus facility request has been ${action === 'approve' ? 'approved' : 'rejected'} by ${user.name}.`,
+        type: 'request_update',
+        read: false,
+        createdAt: serverTimestamp()
+      });
+
       setShowModal(false);
       setSelectedRequest(null);
+    } catch (error) {
+      console.error('Error updating request:', error);
+      alert('Failed to update request. Please try again.');
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -70,6 +124,14 @@ export const BusFacilityApproval = () => {
 
   const pendingRequests = filteredRequests.filter(r => r.status === 'Pending');
   const processedRequests = filteredRequests.filter(r => r.status !== 'Pending');
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#0B4DA2]" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -231,16 +293,18 @@ export const BusFacilityApproval = () => {
               <div className="flex gap-4">
                 <button
                   onClick={() => handleAction('approve')}
-                  className="flex-1 bg-gradient-to-br from-[#042A5B] to-[#0B4DA2] text-white py-4 rounded-xl font-bold hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                  disabled={actionLoading}
+                  className="flex-1 bg-gradient-to-br from-[#042A5B] to-[#0B4DA2] text-white py-4 rounded-xl font-bold hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <CheckCircle size={20} />
+                  {actionLoading ? <Loader2 size={20} className="animate-spin" /> : <CheckCircle size={20} />}
                   Approve Request
                 </button>
                 <button
                   onClick={() => handleAction('reject')}
-                  className="flex-1 bg-red-500 text-white py-4 rounded-xl font-bold hover:bg-red-600 hover:shadow-2xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
+                  disabled={actionLoading}
+                  className="flex-1 bg-red-500 text-white py-4 rounded-xl font-bold hover:bg-red-600 hover:shadow-2xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <XCircle size={20} />
+                  {actionLoading ? <Loader2 size={20} className="animate-spin" /> : <XCircle size={20} />}
                   Reject Request
                 </button>
               </div>

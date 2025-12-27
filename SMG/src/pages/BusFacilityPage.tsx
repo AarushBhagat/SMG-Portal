@@ -75,7 +75,7 @@ export const BusFacilityPage = () => {
     },
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!form.houseNumber || !form.street || !form.area || !form.city || !form.pincode || !form.mobileNumber) {
@@ -90,24 +90,31 @@ export const BusFacilityPage = () => {
 
     setError('');
     setSubmitting(true);
-    requestBusFacility(form);
-    setShowSuccess(true);
-    setShowRequestForm(false);
-    setForm({
-      houseNumber: '',
-      street: '',
-      landmark: '',
-      area: '',
-      city: '',
-      state: '',
-      pincode: '',
-      mobileNumber: '',
-      alternateNumber: '',
-      preferredPickupTime: '',
-      remarks: ''
-    });
-    setTimeout(() => setShowSuccess(false), 3000);
-    setSubmitting(false);
+    
+    try {
+      await requestBusFacility(form);
+      setShowSuccess(true);
+      setShowRequestForm(false);
+      setForm({
+        houseNumber: '',
+        street: '',
+        landmark: '',
+        area: '',
+        city: '',
+        state: '',
+        pincode: '',
+        mobileNumber: '',
+        alternateNumber: '',
+        preferredPickupTime: '',
+        remarks: ''
+      });
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (err) {
+      console.error('Error submitting bus request:', err);
+      setError('Failed to submit request. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const getStepIndex = (status: string | undefined) => {
