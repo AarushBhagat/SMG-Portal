@@ -116,7 +116,7 @@ export const MarketingDashboard = ({ onNavigate }: MarketingDashboardProps) => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#042A5B] to-[#0B4DA2] rounded-3xl p-8 text-white shadow-xl">
+      <div className="bg-gradient-to-br from-[#042A5B] to-[#0B4DA2] rounded-2xl p-8 text-white shadow-xl">
         <h1 className="text-3xl font-bold mb-2">Marketing Dashboard</h1>
         <p className="text-white/80">Track and manage all your marketing campaigns</p>
       </div>
@@ -124,9 +124,9 @@ export const MarketingDashboard = ({ onNavigate }: MarketingDashboardProps) => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {statCards.map((stat, idx) => (
-          <div key={idx} className="bg-white rounded-3xl p-6 shadow-sm hover:shadow-lg transition-all border border-gray-100">
+          <div key={idx} className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all border border-gray-200">
             <div className="flex items-center justify-between mb-4">
-              <div className={`${stat.color} w-12 h-12 rounded-xl flex items-center justify-center`}>
+              <div className={`${stat.color} w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg`}>
                 <stat.icon size={24} />
               </div>
               <span className="text-sm text-green-600 font-semibold">{stat.change}</span>
@@ -138,12 +138,12 @@ export const MarketingDashboard = ({ onNavigate }: MarketingDashboardProps) => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+      <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
         <h2 className="text-xl font-bold text-[#1B254B] mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <button
             onClick={() => onNavigate('create-campaign')}
-            className="bg-gradient-to-br from-[#042A5B] to-[#0B4DA2] rounded-3xl p-6 text-white text-left hover:shadow-xl transition-all transform hover:-translate-y-1"
+            className="bg-gradient-to-br from-[#042A5B] to-[#0B4DA2] rounded-2xl p-6 text-white text-left hover:shadow-xl transition-all transform hover:-translate-y-1"
           >
             <div className="flex items-center gap-3 mb-2">
               <TrendingUp size={24} />
@@ -154,7 +154,7 @@ export const MarketingDashboard = ({ onNavigate }: MarketingDashboardProps) => {
 
           <button
             onClick={() => onNavigate('campaigns')}
-            className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-3xl p-6 text-white text-left hover:shadow-xl transition-all transform hover:-translate-y-1"
+            className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-6 text-white text-left hover:shadow-xl transition-all transform hover:-translate-y-1"
           >
             <div className="flex items-center gap-3 mb-2">
               <BarChart3 size={24} />
@@ -166,7 +166,7 @@ export const MarketingDashboard = ({ onNavigate }: MarketingDashboardProps) => {
       </div>
 
       {/* Recent Campaigns */}
-      <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100">
+      <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-[#1B254B]">Recent Campaigns</h2>
           <button

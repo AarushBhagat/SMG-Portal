@@ -55,9 +55,9 @@ export const ReceptionDashboard = ({ onNavigate }: ReceptionDashboardProps) => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, idx) => (
-          <div key={idx} className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div key={idx} className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all border border-gray-200">
             <div className="flex items-start justify-between mb-4">
-              <div className={`w-12 h-12 ${stat.color} rounded-xl flex items-center justify-center`}>
+              <div className={`w-12 h-12 ${stat.color} rounded-2xl flex items-center justify-center shadow-lg`}>
                 <stat.icon className="text-white" size={24} />
               </div>
               <span className="text-xs font-semibold text-green-600 bg-green-50 px-2 py-1 rounded-full">
@@ -71,7 +71,7 @@ export const ReceptionDashboard = ({ onNavigate }: ReceptionDashboardProps) => {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm">
+      <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
         <h2 className="text-xl font-bold text-[#1B254B] mb-4">Quick Access</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {quickActions.map((action) => (
@@ -96,7 +96,7 @@ export const ReceptionDashboard = ({ onNavigate }: ReceptionDashboardProps) => {
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Visitors */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
+        <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-[#1B254B] flex items-center gap-2">
               <Users className="text-blue-500" size={24} />
@@ -141,7 +141,7 @@ export const ReceptionDashboard = ({ onNavigate }: ReceptionDashboardProps) => {
         </div>
 
         {/* Pending Approvals */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
+        <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-[#1B254B] flex items-center gap-2">
               <AlertCircle className="text-orange-500" size={24} />

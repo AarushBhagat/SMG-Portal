@@ -1,11 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, MapPin, Calendar, Briefcase, Award, Edit, Save, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const ProfilePage = ({ userData }) => {
   const { updateUser, user } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ ...userData });
+  const [formData, setFormData] = useState({ ...userData, ...user });
+
+  // Update formData when user data changes from Firebase
+  useEffect(() => {
+    if (user) {
+      console.log('🔄 ProfilePage: User data updated from Firebase:', {
+        name: user.name,
+        designation: user.designation,
+        department: user.department
+      });
+      setFormData(prev => ({ ...prev, ...user }));
+    }
+  }, [user]);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -37,8 +49,8 @@ export const ProfilePage = ({ userData }) => {
             <img src={user?.avatar || userData.avatar} alt={user?.name || userData.name} className="w-24 h-24 rounded-2xl border-4 border-white/20" />
             <div>
               <h1 className="text-white mb-2">{user?.name || userData.name}</h1>
-              <p className="text-[#87CEEB] opacity-90">{userData.role} • {userData.dept}</p>
-              <p className="text-sm text-white/70 mt-1">Employee ID: {userData.empId}</p>
+              <p className="text-[#87CEEB] opacity-90">{user?.designation || userData.role} • {user?.department || userData.dept}</p>
+              <p className="text-sm text-white/70 mt-1">Employee ID: {user?.id || userData.empId}</p>
             </div>
           </div>
           <button 
@@ -182,28 +194,28 @@ export const ProfilePage = ({ userData }) => {
                 <Briefcase className="text-[#0B4DA2] mt-1" size={20} />
                 <div>
                   <p className="text-sm text-[#A3AED0]">Department</p>
-                  <p className="font-bold text-[#1B254B]">{userData.dept}</p>
+                  <p className="font-bold text-[#1B254B]">{user?.department || userData.dept}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Calendar className="text-[#0B4DA2] mt-1" size={20} />
                 <div>
                   <p className="text-sm text-[#A3AED0]">Date of Joining</p>
-                  <p className="font-bold text-[#1B254B]">{userData.dateOfJoining}</p>
+                  <p className="font-bold text-[#1B254B]">{user?.joinDate || userData.dateOfJoining}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <User className="text-[#0B4DA2] mt-1" size={20} />
                 <div>
                   <p className="text-sm text-[#A3AED0]">Reporting To</p>
-                  <p className="font-bold text-[#1B254B]">{userData.reportingTo}</p>
+                  <p className="font-bold text-[#1B254B]">{user?.reportingManager || userData.reportingTo}</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
                 <Award className="text-[#0B4DA2] mt-1" size={20} />
                 <div>
-                  <p className="text-sm text-[#A3AED0]">Shift Timing</p>
-                  <p className="font-bold text-[#1B254B]">{userData.shift}</p>
+                  <p className="text-sm text-[#A3AED0]">Designation</p>
+                  <p className="font-bold text-[#1B254B]">{user?.designation || userData.shift}</p>
                 </div>
               </div>
             </div>

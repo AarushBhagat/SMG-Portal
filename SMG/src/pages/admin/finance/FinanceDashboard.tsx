@@ -10,9 +10,9 @@ export const FinanceDashboard = () => {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all">
+        <div className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all border border-gray-200">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center shadow-lg">
               <DollarSign className="text-blue-500" size={24} />
             </div>
             <div>
@@ -22,9 +22,9 @@ export const FinanceDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all">
+        <div className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all border border-gray-200">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-green-100 rounded-2xl flex items-center justify-center shadow-lg">
               <Shield className="text-green-500" size={24} />
             </div>
             <div>
@@ -34,9 +34,9 @@ export const FinanceDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all">
+        <div className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all border border-gray-200">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-orange-100 rounded-2xl flex items-center justify-center shadow-lg">
               <TrendingUp className="text-orange-500" size={24} />
             </div>
             <div>
@@ -46,9 +46,9 @@ export const FinanceDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all">
+        <div className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all border border-gray-200">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-purple-100 rounded-2xl flex items-center justify-center shadow-lg">
               <Package className="text-purple-500" size={24} />
             </div>
             <div>
@@ -61,7 +61,7 @@ export const FinanceDashboard = () => {
 
       {/* Quick Access */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
+        <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
           <div className="flex items-center gap-3 mb-4">
             <DollarSign className="text-blue-500" size={24} />
             <h2 className="text-xl font-bold text-[#1B254B]">Recent Salary Updates</h2>
@@ -88,7 +88,7 @@ export const FinanceDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
+        <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
           <div className="flex items-center gap-3 mb-4">
             <FileText className="text-orange-500" size={24} />
             <h2 className="text-xl font-bold text-[#1B254B]">Pending Approvals</h2>
@@ -117,7 +117,7 @@ export const FinanceDashboard = () => {
       </div>
 
       {/* Monthly Summary */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm">
+      <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
         <h2 className="text-xl font-bold text-[#1B254B] mb-4 flex items-center gap-2">
           <Users className="text-green-500" size={24} />
           Monthly Financial Summary

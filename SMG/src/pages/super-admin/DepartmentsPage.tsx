@@ -247,17 +247,17 @@ export const DepartmentsPage = ({ onNavigate }: { onNavigate: (page: string) => 
       {/* Tabs */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="overflow-x-auto">
-          <div className="flex border-b border-gray-200 min-w-max">
+          <div className="flex gap-2 p-4 bg-gray-50 border-b border-gray-200 min-w-max">
             {departments.map((dept) => {
               const DeptIcon = dept.icon;
               return (
                 <button
                   key={dept.id}
                   onClick={() => setActiveTab(dept.id)}
-                  className={`flex items-center gap-2 px-6 py-4 font-semibold text-sm transition-all border-b-2 ${
+                  className={`flex items-center gap-2 px-6 py-3 font-semibold text-sm transition-all rounded-xl ${
                     activeTab === dept.id
-                      ? 'border-[#0B4DA2] text-[#0B4DA2] bg-blue-50/50'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                      ? 'bg-gradient-to-r from-[#0B4DA2] to-[#042A5B] text-white shadow-md'
+                      : 'bg-white text-gray-600 hover:text-gray-900 hover:bg-gray-100 border border-gray-200'
                   }`}
                 >
                   <DeptIcon size={18} />

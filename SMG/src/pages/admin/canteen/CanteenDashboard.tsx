@@ -47,7 +47,7 @@ export const CanteenDashboard = ({ onNavigate }: CanteenDashboardProps) => {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
-          <div key={index} className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all">
+          <div key={index} className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all border border-gray-200">
             <div className="flex items-center justify-between mb-4">
               <div className={`${stat.color} w-12 h-12 rounded-xl flex items-center justify-center`}>
                 <stat.icon className="text-white" size={24} />
@@ -81,7 +81,7 @@ export const CanteenDashboard = ({ onNavigate }: CanteenDashboardProps) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Sales */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
+        <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-[#1B254B]">Recent Sales</h2>
             <button onClick={() => onNavigate('sale-coupons')} className="text-sm text-[#0B4DA2] hover:underline font-semibold">View All</button>
@@ -103,7 +103,7 @@ export const CanteenDashboard = ({ onNavigate }: CanteenDashboardProps) => {
         </div>
 
         {/* Pending Guest Requests */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
+        <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-[#1B254B]">Pending Guest Requests</h2>
             <button onClick={() => onNavigate('approve-guest')} className="text-sm text-[#0B4DA2] hover:underline font-semibold">View All</button>

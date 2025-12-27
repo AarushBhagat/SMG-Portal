@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { HODDashboard } from './hod/HODDashboard';
 import { SMGImagineApproval } from './hod/SMGImagineApproval';
 import { LeaveGatePassResignationApproval } from './hod/LeaveGatePassResignationApproval';
@@ -44,6 +45,7 @@ const HOD_USER = {
 };
 
 export const HODAdminPortal = ({ onBack }: HODAdminPortalProps) => {
+  const { user } = useAuth();
   const [activePage, setActivePage] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showNotificationPopup, setShowNotificationPopup] = useState(false);
@@ -129,10 +131,10 @@ export const HODAdminPortal = ({ onBack }: HODAdminPortalProps) => {
             onClick={() => setShowProfileModal(true)}
             className="flex items-center gap-3 bg-gray-50 p-1.5 pr-4 rounded-full cursor-pointer hover:bg-gray-100 transition-all"
           >
-            <img src={HOD_USER.avatar} alt="Profile" className="w-9 h-9 rounded-full border-2 border-gray-200" />
+            <img src={user?.avatar || HOD_USER.avatar} alt="Profile" className="w-9 h-9 rounded-full border-2 border-gray-200" />
             <div className="hidden lg:block text-left">
-              <p className="text-sm font-bold text-[#1B254B] leading-tight">{HOD_USER.name}</p>
-              <p className="text-[10px] text-gray-400 font-medium">{HOD_USER.role}</p>
+              <p className="text-sm font-bold text-[#1B254B] leading-tight">{user?.name || HOD_USER.name}</p>
+              <p className="text-[10px] text-gray-400 font-medium">{user?.designation || HOD_USER.role}</p>
             </div>
             <ChevronRight size={16} className="text-gray-400" />
           </div>
@@ -260,11 +262,11 @@ export const HODAdminPortal = ({ onBack }: HODAdminPortalProps) => {
             <div className="sticky top-0 bg-gradient-to-br from-[#042A5B] to-[#0B4DA2] p-6 rounded-t-3xl">
               <div className="flex items-center justify-between text-white">
                 <div className="flex items-center gap-4">
-                  <img src={HOD_USER.avatar} alt="Profile" className="w-20 h-20 rounded-full border-4 border-white/20" />
+                  <img src={user?.avatar || HOD_USER.avatar} alt="Profile" className="w-20 h-20 rounded-full border-4 border-white/20" />
                   <div>
-                    <h2 className="text-2xl font-bold">{HOD_USER.name}</h2>
-                    <p className="text-white/80">{HOD_USER.role}</p>
-                    <p className="text-sm text-white/60">{HOD_USER.empId}</p>
+                    <h2 className="text-2xl font-bold">{user?.name || HOD_USER.name}</h2>
+                    <p className="text-white/80">{user?.designation || HOD_USER.role}</p>
+                    <p className="text-sm text-white/60">{user?.id || HOD_USER.empId}</p>
                   </div>
                 </div>
                 <button onClick={() => setShowProfileModal(false)} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
@@ -283,28 +285,28 @@ export const HODAdminPortal = ({ onBack }: HODAdminPortalProps) => {
                       <User className="text-blue-500 mt-1" size={18} />
                       <div>
                         <p className="text-xs text-gray-500">Full Name</p>
-                        <p className="font-semibold text-[#1B254B]">{HOD_USER.name}</p>
+                        <p className="font-semibold text-[#1B254B]">{user?.name || HOD_USER.name}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
                       <Mail className="text-blue-500 mt-1" size={18} />
                       <div>
                         <p className="text-xs text-gray-500">Email</p>
-                        <p className="font-semibold text-[#1B254B]">{HOD_USER.email}</p>
+                        <p className="font-semibold text-[#1B254B]">{user?.email || HOD_USER.email}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
                       <Phone className="text-blue-500 mt-1" size={18} />
                       <div>
                         <p className="text-xs text-gray-500">Phone</p>
-                        <p className="font-semibold text-[#1B254B]">{HOD_USER.phone}</p>
+                        <p className="font-semibold text-[#1B254B]">{user?.phone || HOD_USER.phone}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
                       <MapPin className="text-blue-500 mt-1" size={18} />
                       <div>
                         <p className="text-xs text-gray-500">Address</p>
-                        <p className="font-semibold text-[#1B254B]">{HOD_USER.address}</p>
+                        <p className="font-semibold text-[#1B254B]">{user?.location || HOD_USER.address}</p>
                       </div>
                     </div>
                   </div>
@@ -318,28 +320,28 @@ export const HODAdminPortal = ({ onBack }: HODAdminPortalProps) => {
                       <Briefcase className="text-blue-500 mt-1" size={18} />
                       <div>
                         <p className="text-xs text-gray-500">Department</p>
-                        <p className="font-semibold text-[#1B254B]">{HOD_USER.dept}</p>
+                        <p className="font-semibold text-[#1B254B]">{user?.department || HOD_USER.dept}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
                       <Award className="text-blue-500 mt-1" size={18} />
                       <div>
                         <p className="text-xs text-gray-500">Position</p>
-                        <p className="font-semibold text-[#1B254B]">{HOD_USER.role}</p>
+                        <p className="font-semibold text-[#1B254B]">{user?.designation || HOD_USER.role}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
                       <User className="text-blue-500 mt-1" size={18} />
                       <div>
                         <p className="text-xs text-gray-500">Reporting To</p>
-                        <p className="font-semibold text-[#1B254B]">{HOD_USER.reportingTo}</p>
+                        <p className="font-semibold text-[#1B254B]">{user?.reportingManager || HOD_USER.reportingTo}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
                       <Award className="text-blue-500 mt-1" size={18} />
                       <div>
                         <p className="text-xs text-gray-500">Date of Joining</p>
-                        <p className="font-semibold text-[#1B254B]">{HOD_USER.dateOfJoining}</p>
+                        <p className="font-semibold text-[#1B254B]">{user?.joinDate || HOD_USER.dateOfJoining}</p>
                       </div>
                     </div>
                   </div>

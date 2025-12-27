@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { EventsDashboard } from './events/EventsDashboard';
 import { EventsManagement } from './events/EventsManagement';
 import {
@@ -39,6 +40,7 @@ const EVENTS_USER = {
 };
 
 export const EventsAdminPortal = ({ onBack }: EventsAdminPortalProps) => {
+  const { user } = useAuth();
   const [activePage, setActivePage] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showNotificationPopup, setShowNotificationPopup] = useState(false);
@@ -121,10 +123,10 @@ export const EventsAdminPortal = ({ onBack }: EventsAdminPortalProps) => {
             onClick={() => setShowProfileModal(true)}
             className="flex items-center gap-3 bg-gray-50 p-1.5 pr-4 rounded-full cursor-pointer hover:bg-gray-100 transition-all"
           >
-            <img src={EVENTS_USER.avatar} alt="Profile" className="w-9 h-9 rounded-full border-2 border-gray-200" />
+            <img src={user?.avatar || EVENTS_USER.avatar} alt="Profile" className="w-9 h-9 rounded-full border-2 border-gray-200" />
             <div className="hidden lg:block text-left">
-              <p className="text-sm font-bold text-[#1B254B] leading-tight">{EVENTS_USER.name}</p>
-              <p className="text-[10px] text-gray-400 font-medium">{EVENTS_USER.role}</p>
+              <p className="text-sm font-bold text-[#1B254B] leading-tight">{user?.name || EVENTS_USER.name}</p>
+              <p className="text-[10px] text-gray-400 font-medium">{user?.designation || EVENTS_USER.role}</p>
             </div>
             <ChevronRight size={16} className="text-gray-400" />
           </div>
@@ -223,11 +225,11 @@ export const EventsAdminPortal = ({ onBack }: EventsAdminPortalProps) => {
             <div className="sticky top-0 bg-gradient-to-br from-[#042A5B] to-[#0B4DA2] p-6 rounded-t-2xl">
               <div className="flex items-center justify-between text-white">
                 <div className="flex items-center gap-4">
-                  <img src={EVENTS_USER.avatar} alt={EVENTS_USER.name} className="w-16 h-16 rounded-full border-4 border-white/20" />
+                  <img src={user?.avatar || EVENTS_USER.avatar} alt={user?.name || EVENTS_USER.name} className="w-16 h-16 rounded-full border-4 border-white/20" />
                   <div>
-                    <h2 className="text-2xl font-bold">{EVENTS_USER.name}</h2>
-                    <p className="text-white/80 text-sm">{EVENTS_USER.role} • {EVENTS_USER.dept}</p>
-                    <p className="text-white/60 text-xs mt-1">Employee ID: {EVENTS_USER.empId}</p>
+                    <h2 className="text-2xl font-bold">{user?.name || EVENTS_USER.name}</h2>
+                    <p className="text-white/80 text-sm">{user?.designation || EVENTS_USER.role} • {user?.department || EVENTS_USER.dept}</p>
+                    <p className="text-white/60 text-xs mt-1">Employee ID: {user?.id || EVENTS_USER.empId}</p>
                   </div>
                 </div>
                 <button 
@@ -248,11 +250,11 @@ export const EventsAdminPortal = ({ onBack }: EventsAdminPortalProps) => {
                   </h3>
                   <div className="space-y-4">
                     {[
-                      { icon: User, label: 'Full Name', value: EVENTS_USER.name },
-                      { icon: Mail, label: 'Email Address', value: EVENTS_USER.email },
-                      { icon: Phone, label: 'Phone Number', value: EVENTS_USER.phone },
+                      { icon: User, label: 'Full Name', value: user?.name || EVENTS_USER.name },
+                      { icon: Mail, label: 'Email Address', value: user?.email || EVENTS_USER.email },
+                      { icon: Phone, label: 'Phone Number', value: user?.phone || EVENTS_USER.phone },
                       { icon: Calendar, label: 'Date of Birth', value: EVENTS_USER.dateOfBirth },
-                      { icon: MapPin, label: 'Address', value: EVENTS_USER.address }
+                      { icon: MapPin, label: 'Address', value: user?.location || EVENTS_USER.address }
                     ].map((item, idx) => (
                       <div key={idx} className="flex items-start gap-3">
                         <item.icon className="text-[#0B4DA2] mt-1 shrink-0" size={18} />
@@ -272,11 +274,11 @@ export const EventsAdminPortal = ({ onBack }: EventsAdminPortalProps) => {
                   </h3>
                   <div className="space-y-4">
                     {[
-                      { icon: Briefcase, label: 'Department', value: EVENTS_USER.dept },
-                      { icon: Award, label: 'Role / Designation', value: EVENTS_USER.role },
-                      { icon: User, label: 'Employee ID', value: EVENTS_USER.empId },
-                      { icon: Calendar, label: 'Date of Joining', value: EVENTS_USER.dateOfJoining },
-                      { icon: User, label: 'Reporting To', value: EVENTS_USER.reportingTo },
+                      { icon: Briefcase, label: 'Department', value: user?.department || EVENTS_USER.dept },
+                      { icon: Award, label: 'Role / Designation', value: user?.designation || EVENTS_USER.role },
+                      { icon: User, label: 'Employee ID', value: user?.id || EVENTS_USER.empId },
+                      { icon: Calendar, label: 'Date of Joining', value: user?.joinDate || EVENTS_USER.dateOfJoining },
+                      { icon: User, label: 'Reporting To', value: user?.reportingManager || EVENTS_USER.reportingTo },
                       { icon: Award, label: 'Shift Timing', value: EVENTS_USER.shift }
                     ].map((item, idx) => (
                       <div key={idx} className="flex items-start gap-3">

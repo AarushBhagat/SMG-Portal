@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { TimeOfficeDashboard } from './timeoffice/TimeOfficeDashboard';
 import { LeaveGatePassApproval } from './timeoffice/LeaveGatePassApproval';
 import { AttendanceDetails } from './timeoffice/AttendanceDetails';
@@ -42,6 +43,7 @@ const TIMEOFFICE_USER = {
 };
 
 export const TimeOfficeAdminPortal = ({ onBack }: TimeOfficeAdminPortalProps) => {
+  const { user } = useAuth();
   const [activePage, setActivePage] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showNotificationPopup, setShowNotificationPopup] = useState(false);
@@ -126,10 +128,10 @@ export const TimeOfficeAdminPortal = ({ onBack }: TimeOfficeAdminPortalProps) =>
             onClick={() => setShowProfileModal(true)}
             className="flex items-center gap-3 bg-gray-50 p-1.5 pr-4 rounded-full cursor-pointer hover:bg-gray-100 transition-all"
           >
-            <img src={TIMEOFFICE_USER.avatar} alt="Profile" className="w-9 h-9 rounded-full border-2 border-gray-200" />
+            <img src={user?.avatar || TIMEOFFICE_USER.avatar} alt="Profile" className="w-9 h-9 rounded-full border-2 border-gray-200" />
             <div className="hidden lg:block text-left">
-              <p className="text-sm font-bold text-[#1B254B] leading-tight">{TIMEOFFICE_USER.name}</p>
-              <p className="text-[10px] text-gray-400 font-medium">{TIMEOFFICE_USER.role}</p>
+              <p className="text-sm font-bold text-[#1B254B] leading-tight">{user?.name || TIMEOFFICE_USER.name}</p>
+              <p className="text-[10px] text-gray-400 font-medium">{user?.designation || TIMEOFFICE_USER.role}</p>
             </div>
             <ChevronRight size={16} className="text-gray-400" />
           </div>
@@ -254,11 +256,11 @@ export const TimeOfficeAdminPortal = ({ onBack }: TimeOfficeAdminPortalProps) =>
             <div className="sticky top-0 bg-gradient-to-br from-[#042A5B] to-[#0B4DA2] p-6 rounded-t-2xl">
               <div className="flex items-center justify-between text-white">
                 <div className="flex items-center gap-4">
-                  <img src={TIMEOFFICE_USER.avatar} alt={TIMEOFFICE_USER.name} className="w-16 h-16 rounded-full border-4 border-white/20" />
+                  <img src={user?.avatar || TIMEOFFICE_USER.avatar} alt={user?.name || TIMEOFFICE_USER.name} className="w-16 h-16 rounded-full border-4 border-white/20" />
                   <div>
-                    <h2 className="text-2xl font-bold">{TIMEOFFICE_USER.name}</h2>
-                    <p className="text-white/80 text-sm">{TIMEOFFICE_USER.role} • {TIMEOFFICE_USER.dept}</p>
-                    <p className="text-white/60 text-xs mt-1">Employee ID: {TIMEOFFICE_USER.empId}</p>
+                    <h2 className="text-2xl font-bold">{user?.name || TIMEOFFICE_USER.name}</h2>
+                    <p className="text-white/80 text-sm">{user?.designation || TIMEOFFICE_USER.role} • {user?.department || TIMEOFFICE_USER.dept}</p>
+                    <p className="text-white/60 text-xs mt-1">Employee ID: {user?.id || TIMEOFFICE_USER.empId}</p>
                   </div>
                 </div>
                 <button 
@@ -279,11 +281,11 @@ export const TimeOfficeAdminPortal = ({ onBack }: TimeOfficeAdminPortalProps) =>
                   </h3>
                   <div className="space-y-4">
                     {[
-                      { icon: User, label: 'Full Name', value: TIMEOFFICE_USER.name },
-                      { icon: Mail, label: 'Email Address', value: TIMEOFFICE_USER.email },
-                      { icon: Phone, label: 'Phone Number', value: TIMEOFFICE_USER.phone },
+                      { icon: User, label: 'Full Name', value: user?.name || TIMEOFFICE_USER.name },
+                      { icon: Mail, label: 'Email Address', value: user?.email || TIMEOFFICE_USER.email },
+                      { icon: Phone, label: 'Phone Number', value: user?.phone || TIMEOFFICE_USER.phone },
                       { icon: Calendar, label: 'Date of Birth', value: TIMEOFFICE_USER.dateOfBirth },
-                      { icon: MapPin, label: 'Address', value: TIMEOFFICE_USER.address }
+                      { icon: MapPin, label: 'Address', value: user?.location || TIMEOFFICE_USER.address }
                     ].map((item, idx) => (
                       <div key={idx} className="flex items-start gap-3">
                         <item.icon className="text-[#0B4DA2] mt-1 shrink-0" size={18} />
@@ -303,11 +305,11 @@ export const TimeOfficeAdminPortal = ({ onBack }: TimeOfficeAdminPortalProps) =>
                   </h3>
                   <div className="space-y-4">
                     {[
-                      { icon: Briefcase, label: 'Department', value: TIMEOFFICE_USER.dept },
-                      { icon: Award, label: 'Role / Designation', value: TIMEOFFICE_USER.role },
-                      { icon: User, label: 'Employee ID', value: TIMEOFFICE_USER.empId },
-                      { icon: Calendar, label: 'Date of Joining', value: TIMEOFFICE_USER.dateOfJoining },
-                      { icon: User, label: 'Reporting To', value: TIMEOFFICE_USER.reportingTo },
+                      { icon: Briefcase, label: 'Department', value: user?.department || TIMEOFFICE_USER.dept },
+                      { icon: Award, label: 'Role / Designation', value: user?.designation || TIMEOFFICE_USER.role },
+                      { icon: User, label: 'Employee ID', value: user?.id || TIMEOFFICE_USER.empId },
+                      { icon: Calendar, label: 'Date of Joining', value: user?.joinDate || TIMEOFFICE_USER.dateOfJoining },
+                      { icon: User, label: 'Reporting To', value: user?.reportingManager || TIMEOFFICE_USER.reportingTo },
                       { icon: Award, label: 'Shift Timing', value: TIMEOFFICE_USER.shift }
                     ].map((item, idx) => (
                       <div key={idx} className="flex items-start gap-3">

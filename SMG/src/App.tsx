@@ -200,14 +200,22 @@ const INITIAL_DATA = {
 };
 
 interface TopbarProps {
-  user: typeof INITIAL_DATA.user;
   onMobileMenu: () => void;
   onNavigate: (page: string) => void;
 }
 
-const Topbar = ({ user, onMobileMenu, onNavigate }: TopbarProps) => {
+const Topbar = ({ onMobileMenu, onNavigate }: TopbarProps) => {
+  const { user: firebaseUser } = useAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showNotificationPopup, setShowNotificationPopup] = useState(false);
+  
+  // Use Firebase user data, fallback to INITIAL_DATA for fields not in Firebase
+  const user = {
+    name: firebaseUser?.name || INITIAL_DATA.user.name,
+    role: firebaseUser?.designation || INITIAL_DATA.user.role,
+    avatar: firebaseUser?.avatar || INITIAL_DATA.user.avatar,
+    empId: INITIAL_DATA.user.empId,
+  };
 
   // Update clock every second
   useEffect(() => {
@@ -529,7 +537,7 @@ function AppContent({ userRole, activePage, setActivePage, mobileMenuOpen, setMo
     <div className="bg-[#F4F7FE] min-h-screen font-sans text-[#1B254B] selection:bg-[#0B4DA2] selection:text-white">
       {/* Only show Topbar for employee pages (hide for admin and super admin) */}
       {!activePage.startsWith('admin-') && activePage !== 'super-admin-portal' && (
-        <Topbar user={INITIAL_DATA.user} onMobileMenu={() => setMobileMenuOpen(true)} onNavigate={setActivePage} />
+        <Topbar onMobileMenu={() => setMobileMenuOpen(true)} onNavigate={setActivePage} />
       )}
       <div className="flex min-h-screen">
         {/* Only show sidebar for employee pages */}

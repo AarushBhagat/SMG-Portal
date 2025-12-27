@@ -5,7 +5,7 @@ import {
   onAuthStateChanged,
   User as FirebaseUser
 } from 'firebase/auth';
-import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, serverTimestamp, onSnapshot } from 'firebase/firestore';
 import { auth, db } from '../config/firebase';
 
 interface User {
@@ -50,58 +50,91 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }, 5000);
 
+    let userDataUnsubscribe: (() => void) | null = null;
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       console.log('🔐 Auth state changed:', firebaseUser?.email);
       setLoading(true);
       setError(null);
 
+      // Cleanup previous user data listener
+      if (userDataUnsubscribe) {
+        userDataUnsubscribe();
+        userDataUnsubscribe = null;
+      }
+
       if (firebaseUser) {
         try {
-          console.log('📄 Fetching Firestore document for UID:', firebaseUser.uid);
-          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+          console.log('📄 Setting up real-time listener for UID:', firebaseUser.uid);
           
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            console.log('✅ User data loaded:', userData);
-            const user: User = {
-              id: firebaseUser.uid,
-              name: userData.name || firebaseUser.displayName || '',
-              email: firebaseUser.email || '',
-              phone: userData.phone || '',
-              designation: userData.designation || '',
-              department: userData.department || '',
-              location: userData.location || '',
-              joinDate: userData.joinDate || '',
-              avatar: userData.avatar || firebaseUser.photoURL || '',
-              reportingManager: userData.reportingManager || '',
-              role: userData.role || 'employee',
-              adminDepartments: userData.adminDepartments || []
-            };
-            setUser(user);
-            setFirebaseUser(firebaseUser);
-            console.log('✅ User state set, role:', user.role);
-          } else {
-            console.error('❌ User document does not exist in Firestore');
-            setError('User data not found in Firestore. Please contact administrator.');
-            await signOut(auth);
-          }
+          // Set up real-time listener for user document
+          const userDocRef = doc(db, 'users', firebaseUser.uid);
+          userDataUnsubscribe = onSnapshot(
+            userDocRef,
+            (userDoc) => {
+              if (userDoc.exists()) {
+                const userData = userDoc.data();
+                console.log('🔄 Real-time update detected! User data from Firestore:', {
+                  name: userData.name,
+                  designation: userData.designation,
+                  role: userData.role,
+                  updatedAt: userData.updatedAt
+                });
+                const user: User = {
+                  id: firebaseUser.uid,
+                  name: userData.name || firebaseUser.displayName || '',
+                  email: firebaseUser.email || '',
+                  phone: userData.phone || '',
+                  designation: userData.designation || '',
+                  department: userData.department || '',
+                  location: userData.location || '',
+                  joinDate: userData.joinDate || '',
+                  avatar: userData.avatar || firebaseUser.photoURL || '',
+                  reportingManager: userData.reportingManager || '',
+                  role: userData.role || 'employee',
+                  adminDepartments: userData.adminDepartments || []
+                };
+                setUser(user);
+                setFirebaseUser(firebaseUser);
+                console.log('✅ User state updated in AuthContext:', {
+                  name: user.name,
+                  designation: user.designation,
+                  role: user.role
+                });
+              } else {
+                console.error('❌ User document does not exist in Firestore');
+                setError('User data not found in Firestore. Please contact administrator.');
+                signOut(auth);
+              }
+              setLoading(false);
+            },
+            (err) => {
+              console.error('❌ Error in real-time listener:', err);
+              setError('Failed to sync user data');
+              setLoading(false);
+            }
+          );
         } catch (err) {
-          console.error('❌ Error fetching user data:', err);
+          console.error('❌ Error setting up listener:', err);
           setError('Failed to load user data');
           await signOut(auth);
+          setLoading(false);
         }
       } else {
         console.log('🚪 User logged out');
         setUser(null);
         setFirebaseUser(null);
+        setLoading(false);
       }
       
-      setLoading(false);
       clearTimeout(loadingTimeout);
     });
 
     return () => {
       unsubscribe();
+      if (userDataUnsubscribe) {
+        userDataUnsubscribe();
+      }
       clearTimeout(loadingTimeout);
     };
   }, []);

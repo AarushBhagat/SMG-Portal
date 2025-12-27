@@ -1,8 +1,12 @@
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { AdminsAnalysisPage } from './AdminsAnalysisPage';
 import { DepartmentsPage } from './DepartmentsPage';
 import { DepartmentWorkingPage } from './DepartmentWorkingPage';
 import { UserManagementPage } from './UserManagementPage';
+import { AllRequestsPage } from './AllRequestsPage';
+import { AnnouncementPage } from './AnnouncementPage';
+import { BroadcastPage } from './BroadcastPage';
 import { CanteenManagement } from './departments/CanteenManagement';
 import { MarketingManagement } from './departments/MarketingManagement';
 import { ReceptionManagement } from './departments/ReceptionManagement';
@@ -32,7 +36,10 @@ import {
   Briefcase,
   Award,
   Building2,
-  Activity
+  Activity,
+  FileText,
+  Megaphone,
+  Radio
 } from 'lucide-react';
 
 interface SuperAdminPortalProps {
@@ -55,10 +62,21 @@ const SUPER_ADMIN_USER = {
 };
 
 export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
+  const { user } = useAuth();
   const [activePage, setActivePage] = useState('admins-analysis');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showNotificationPopup, setShowNotificationPopup] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+
+  const handleProfileModalOpen = () => {
+    console.log('🔍 Opening profile modal with user data:', {
+      name: user?.name,
+      designation: user?.designation,
+      department: user?.department,
+      id: user?.id
+    });
+    setShowProfileModal(true);
+  };
 
   const notifications = [
     { id: 1, text: 'New admin access request from Marketing Dept', time: '5 mins ago', type: 'info' },
@@ -72,6 +90,9 @@ export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
       case 'departments': return <DepartmentsPage onNavigate={setActivePage} />;
       case 'department-working': return <DepartmentWorkingPage />;
       case 'user-management': return <UserManagementPage />;
+      case 'all-requests': return <AllRequestsPage />;
+      case 'announcements': return <AnnouncementPage />;
+      case 'broadcast': return <BroadcastPage />;
       case 'dept-canteen': return <CanteenManagement />;
       case 'dept-marketing': return <MarketingManagement />;
       case 'dept-reception': return <ReceptionManagement />;
@@ -148,13 +169,13 @@ export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
           </div>
 
           <div 
-            onClick={() => setShowProfileModal(true)}
+            onClick={handleProfileModalOpen}
             className="flex items-center gap-3 bg-gray-50 p-1.5 pr-4 rounded-full cursor-pointer hover:bg-gray-100 transition-all"
           >
-            <img src={SUPER_ADMIN_USER.avatar} alt="Profile" className="w-9 h-9 rounded-full border-2 border-gray-200" />
+            <img src={user?.avatar || SUPER_ADMIN_USER.avatar} alt="Profile" className="w-9 h-9 rounded-full border-2 border-gray-200" />
             <div className="hidden lg:block text-left">
-              <p className="text-sm font-bold text-[#1B254B] leading-tight">{SUPER_ADMIN_USER.name}</p>
-              <p className="text-[10px] text-gray-400 font-medium">{SUPER_ADMIN_USER.role}</p>
+              <p className="text-sm font-bold text-[#1B254B] leading-tight">{user?.name || SUPER_ADMIN_USER.name}</p>
+              <p className="text-[10px] text-gray-400 font-medium">{user?.designation || SUPER_ADMIN_USER.role}</p>
             </div>
             <ChevronRight size={16} className="text-gray-400" />
           </div>
@@ -224,6 +245,51 @@ export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
                   <Users size={22} className="shrink-0" />
                   <span className="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     Users
+                  </span>
+                </button>
+                <button
+                  onClick={() => setActivePage('all-requests')}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${
+                    activePage === 'all-requests'
+                      ? 'bg-white/10 text-white shadow-md'
+                      : 'text-[#87CEEB] hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  <FileText size={22} className="shrink-0" />
+                  <span className="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    All Requests
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">System</p>
+              <div className="space-y-1">
+                <button
+                  onClick={() => setActivePage('announcements')}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${
+                    activePage === 'announcements'
+                      ? 'bg-white/10 text-white shadow-md'
+                      : 'text-[#87CEEB] hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  <Megaphone size={22} className="shrink-0" />
+                  <span className="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    Announcements
+                  </span>
+                </button>
+                <button
+                  onClick={() => setActivePage('broadcast')}
+                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${
+                    activePage === 'broadcast'
+                      ? 'bg-white/10 text-white shadow-md'
+                      : 'text-[#87CEEB] hover:bg-white/5 hover:text-white'
+                  }`}
+                >
+                  <Radio size={22} className="shrink-0" />
+                  <span className="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    Broadcast
                   </span>
                 </button>
               </div>
@@ -332,6 +398,60 @@ export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
                         Users
                       </span>
                     </button>
+                    <button
+                      onClick={() => {
+                        setActivePage('all-requests');
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${
+                        activePage === 'all-requests'
+                          ? 'bg-white/10 text-white shadow-md'
+                          : 'text-[#87CEEB] hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <FileText size={22} className="shrink-0" />
+                      <span className="text-sm font-medium whitespace-nowrap">
+                        All Requests
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2">System</p>
+                  <div className="space-y-1">
+                    <button
+                      onClick={() => {
+                        setActivePage('announcements');
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${
+                        activePage === 'announcements'
+                          ? 'bg-white/10 text-white shadow-md'
+                          : 'text-[#87CEEB] hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <Megaphone size={22} className="shrink-0" />
+                      <span className="text-sm font-medium whitespace-nowrap">
+                        Announcements
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActivePage('broadcast');
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${
+                        activePage === 'broadcast'
+                          ? 'bg-white/10 text-white shadow-md'
+                          : 'text-[#87CEEB] hover:bg-white/5 hover:text-white'
+                      }`}
+                    >
+                      <Radio size={22} className="shrink-0" />
+                      <span className="text-sm font-medium whitespace-nowrap">
+                        Broadcast
+                      </span>
+                    </button>
                   </div>
                 </div>
               </nav>
@@ -367,18 +487,18 @@ export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
                 <X size={24} />
               </button>
               <div className="flex items-center gap-6">
-                <img src={SUPER_ADMIN_USER.avatar} alt="Profile" className="w-24 h-24 rounded-2xl border-4 border-white/20 shadow-xl" />
+                <img src={user?.avatar || SUPER_ADMIN_USER.avatar} alt="Profile" className="w-24 h-24 rounded-2xl border-4 border-white/20 shadow-xl" />
                 <div>
-                  <h2 className="text-3xl font-bold mb-1">{SUPER_ADMIN_USER.name}</h2>
-                  <p className="text-[#87CEEB] text-lg font-medium">{SUPER_ADMIN_USER.role}</p>
+                  <h2 className="text-3xl font-bold mb-1">{user?.name || SUPER_ADMIN_USER.name}</h2>
+                  <p className="text-[#87CEEB] text-lg font-medium">{user?.designation || SUPER_ADMIN_USER.role}</p>
                   <div className="flex items-center gap-4 mt-3">
                     <div className="bg-white/10 px-3 py-1 rounded-lg backdrop-blur-sm">
                       <p className="text-xs text-[#87CEEB]">Employee ID</p>
-                      <p className="font-bold text-sm">{SUPER_ADMIN_USER.empId}</p>
+                      <p className="font-bold text-sm">{user?.id || SUPER_ADMIN_USER.empId}</p>
                     </div>
                     <div className="bg-white/10 px-3 py-1 rounded-lg backdrop-blur-sm">
                       <p className="text-xs text-[#87CEEB]">Department</p>
-                      <p className="font-bold text-sm">{SUPER_ADMIN_USER.dept}</p>
+                      <p className="font-bold text-sm">{user?.department || SUPER_ADMIN_USER.dept}</p>
                     </div>
                   </div>
                 </div>
@@ -394,7 +514,7 @@ export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
                   </div>
                   <div>
                     <p className="text-xs text-gray-400 font-medium">Email Address</p>
-                    <p className="text-sm font-bold text-[#1B254B] mt-0.5">{SUPER_ADMIN_USER.email}</p>
+                    <p className="text-sm font-bold text-[#1B254B] mt-0.5">{user?.email || SUPER_ADMIN_USER.email}</p>
                   </div>
                 </div>
 
@@ -404,7 +524,7 @@ export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
                   </div>
                   <div>
                     <p className="text-xs text-gray-400 font-medium">Phone Number</p>
-                    <p className="text-sm font-bold text-[#1B254B] mt-0.5">{SUPER_ADMIN_USER.phone}</p>
+                    <p className="text-sm font-bold text-[#1B254B] mt-0.5">{user?.phone || SUPER_ADMIN_USER.phone}</p>
                   </div>
                 </div>
 
@@ -414,7 +534,7 @@ export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
                   </div>
                   <div>
                     <p className="text-xs text-gray-400 font-medium">Date of Joining</p>
-                    <p className="text-sm font-bold text-[#1B254B] mt-0.5">{SUPER_ADMIN_USER.dateOfJoining}</p>
+                    <p className="text-sm font-bold text-[#1B254B] mt-0.5">{user?.joinDate || SUPER_ADMIN_USER.dateOfJoining}</p>
                   </div>
                 </div>
 
@@ -434,7 +554,7 @@ export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
                   </div>
                   <div>
                     <p className="text-xs text-gray-400 font-medium">Reporting To</p>
-                    <p className="text-sm font-bold text-[#1B254B] mt-0.5">{SUPER_ADMIN_USER.reportingTo}</p>
+                    <p className="text-sm font-bold text-[#1B254B] mt-0.5">{user?.reportingManager || SUPER_ADMIN_USER.reportingTo}</p>
                   </div>
                 </div>
 
@@ -454,7 +574,7 @@ export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
                   </div>
                   <div>
                     <p className="text-xs text-gray-400 font-medium">Address</p>
-                    <p className="text-sm font-bold text-[#1B254B] mt-0.5">{SUPER_ADMIN_USER.address}</p>
+                    <p className="text-sm font-bold text-[#1B254B] mt-0.5">{user?.location || SUPER_ADMIN_USER.address}</p>
                   </div>
                 </div>
               </div>

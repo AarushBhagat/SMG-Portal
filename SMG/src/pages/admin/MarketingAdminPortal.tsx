@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { MarketingDashboard } from './marketing/MarketingDashboard';
 import { CampaignStatus } from './marketing/CampaignStatus';
 import { MarketingAgencies } from './marketing/MarketingAgencies';
@@ -45,6 +46,7 @@ const MARKETING_USER = {
 };
 
 export const MarketingAdminPortal = ({ onBack }: MarketingAdminPortalProps) => {
+  const { user } = useAuth();
   const [activePage, setActivePage] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showNotificationPopup, setShowNotificationPopup] = useState(false);
@@ -119,7 +121,7 @@ export const MarketingAdminPortal = ({ onBack }: MarketingAdminPortalProps) => {
             onClick={() => setShowProfileModal(true)}
             className="flex items-center gap-2 p-2 bg-gray-50 rounded-full hover:bg-gray-100 transition-colors"
           >
-            <img src={MARKETING_USER.avatar} alt="Profile" className="w-8 h-8 rounded-full" />
+            <img src={user?.avatar || MARKETING_USER.avatar} alt="Profile" className="w-8 h-8 rounded-full" />
             <ChevronRight size={16} className="text-gray-400 hidden sm:block" />
           </button>
         </div>
@@ -247,11 +249,11 @@ export const MarketingAdminPortal = ({ onBack }: MarketingAdminPortalProps) => {
             <div className="sticky top-0 bg-gradient-to-br from-[#042A5B] to-[#0B4DA2] p-6 rounded-t-3xl">
               <div className="flex items-center justify-between text-white">
                 <div className="flex items-center gap-4">
-                  <img src={MARKETING_USER.avatar} alt="Profile" className="w-20 h-20 rounded-full border-4 border-white/30" />
+                  <img src={user?.avatar || MARKETING_USER.avatar} alt="Profile" className="w-20 h-20 rounded-full border-4 border-white/30" />
                   <div>
-                    <h2 className="text-2xl font-bold">{MARKETING_USER.name}</h2>
-                    <p className="text-white/80">{MARKETING_USER.role}</p>
-                    <p className="text-white/60 text-sm">{MARKETING_USER.empId}</p>
+                    <h2 className="text-2xl font-bold">{user?.name || MARKETING_USER.name}</h2>
+                    <p className="text-white/80">{user?.designation || MARKETING_USER.role}</p>
+                    <p className="text-white/60 text-sm">{user?.id || MARKETING_USER.empId}</p>
                   </div>
                 </div>
                 <button
@@ -273,7 +275,7 @@ export const MarketingAdminPortal = ({ onBack }: MarketingAdminPortalProps) => {
                     <Mail className="text-blue-500" size={20} />
                     <div>
                       <p className="text-xs text-gray-500 font-semibold">Email</p>
-                      <p className="font-bold text-[#1B254B]">{MARKETING_USER.email}</p>
+                      <p className="font-bold text-[#1B254B]">{user?.email || MARKETING_USER.email}</p>
                     </div>
                   </div>
                 </div>
@@ -283,7 +285,7 @@ export const MarketingAdminPortal = ({ onBack }: MarketingAdminPortalProps) => {
                     <Phone className="text-green-500" size={20} />
                     <div>
                       <p className="text-xs text-gray-500 font-semibold">Phone</p>
-                      <p className="font-bold text-[#1B254B]">{MARKETING_USER.phone}</p>
+                      <p className="font-bold text-[#1B254B]">{user?.phone || MARKETING_USER.phone}</p>
                     </div>
                   </div>
                 </div>
@@ -303,7 +305,7 @@ export const MarketingAdminPortal = ({ onBack }: MarketingAdminPortalProps) => {
                     <MapPin className="text-red-500" size={20} />
                     <div>
                       <p className="text-xs text-gray-500 font-semibold">Address</p>
-                      <p className="font-bold text-[#1B254B] text-sm">{MARKETING_USER.address}</p>
+                      <p className="font-bold text-[#1B254B] text-sm">{user?.location || MARKETING_USER.address}</p>
                     </div>
                   </div>
                 </div>
@@ -318,7 +320,7 @@ export const MarketingAdminPortal = ({ onBack }: MarketingAdminPortalProps) => {
                     <Briefcase className="text-blue-500" size={20} />
                     <div>
                       <p className="text-xs text-gray-500 font-semibold">Department</p>
-                      <p className="font-bold text-[#1B254B]">{MARKETING_USER.dept}</p>
+                      <p className="font-bold text-[#1B254B]">{user?.department || MARKETING_USER.dept}</p>
                     </div>
                   </div>
                 </div>
@@ -328,7 +330,7 @@ export const MarketingAdminPortal = ({ onBack }: MarketingAdminPortalProps) => {
                     <Award className="text-orange-500" size={20} />
                     <div>
                       <p className="text-xs text-gray-500 font-semibold">Reporting To</p>
-                      <p className="font-bold text-[#1B254B]">{MARKETING_USER.reportingTo}</p>
+                      <p className="font-bold text-[#1B254B]">{user?.reportingManager || MARKETING_USER.reportingTo}</p>
                     </div>
                   </div>
                 </div>
@@ -338,7 +340,7 @@ export const MarketingAdminPortal = ({ onBack }: MarketingAdminPortalProps) => {
                     <User className="text-green-500" size={20} />
                     <div>
                       <p className="text-xs text-gray-500 font-semibold">Date of Joining</p>
-                      <p className="font-bold text-[#1B254B]">{MARKETING_USER.dateOfJoining}</p>
+                      <p className="font-bold text-[#1B254B]">{user?.joinDate || MARKETING_USER.dateOfJoining}</p>
                     </div>
                   </div>
                 </div>

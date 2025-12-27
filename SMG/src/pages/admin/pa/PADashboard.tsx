@@ -44,7 +44,7 @@ export const PADashboard = ({ onNavigate }: PADashboardProps) => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {stats.map((stat, index) => (
-          <div key={index} className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all">
+          <div key={index} className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all border border-gray-200">
             <div className="flex items-center justify-between mb-4">
               <div className={`${stat.color} w-12 h-12 rounded-xl flex items-center justify-center`}>
                 <stat.icon className="text-white" size={24} />
@@ -77,7 +77,7 @@ export const PADashboard = ({ onNavigate }: PADashboardProps) => {
       </div>
 
       {/* Recent Activities */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm">
+      <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
         <h2 className="text-xl font-bold text-[#1B254B] mb-4">Recent Activities</h2>
         <div className="space-y-3">
           {recentActivities.map((activity) => (

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Users, TrendingUp, Activity, UserCheck, Search, Download, Eye, BarChart3, LayoutDashboard, X, Mail, Phone, CheckCircle, Clock as ClockIcon, Building2, ArrowUp, ArrowDown, Minus, Calendar, Award } from 'lucide-react';
+import { Users, TrendingUp, Activity, UserCheck, Search, Download, Eye, BarChart3, LayoutDashboard, X, Mail, Phone, CheckCircle, Clock as ClockIcon, Building2, ArrowUp, ArrowDown, Minus, Calendar, Award, PieChart } from 'lucide-react';
 
 export const AdminsAnalysisPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -205,21 +205,21 @@ export const AdminsAnalysisPage = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#0B4DA2] to-[#042A5B] rounded-3xl p-8 text-white shadow-xl">
+      <div className="bg-gradient-to-r from-[#0B4DA2] to-[#042A5B] rounded-2xl p-8 text-white shadow-xl">
         <h1 className="text-3xl font-bold mb-2 flex items-center gap-3">
           <LayoutDashboard size={32} />
           Super Admin Dashboard
         </h1>
         <p className="text-[#87CEEB] opacity-90">
-          Department-wise performance analysis and monitoring
+          Department-wise performance analysis and employee distribution
         </p>
       </div>
 
       {/* Overall Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
+        <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200 hover:shadow-xl transition-all">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0B4DA2] to-[#042A5B] flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0B4DA2] to-[#042A5B] flex items-center justify-center shadow-lg">
               <Building2 className="text-white" size={24} />
             </div>
             <div>
@@ -229,9 +229,9 @@ export const AdminsAnalysisPage = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
+        <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200 hover:shadow-xl transition-all">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0B4DA2] to-[#042A5B] flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0B4DA2] to-[#042A5B] flex items-center justify-center shadow-lg">
               <Activity className="text-white" size={24} />
             </div>
             <div>
@@ -241,9 +241,9 @@ export const AdminsAnalysisPage = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
+        <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200 hover:shadow-xl transition-all">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0B4DA2] to-[#042A5B] flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0B4DA2] to-[#042A5B] flex items-center justify-center shadow-lg">
               <UserCheck className="text-white" size={24} />
             </div>
             <div>
@@ -253,9 +253,9 @@ export const AdminsAnalysisPage = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
+        <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200 hover:shadow-xl transition-all">
           <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#0B4DA2] to-[#042A5B] flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0B4DA2] to-[#042A5B] flex items-center justify-center shadow-lg">
               <TrendingUp className="text-white" size={24} />
             </div>
             <div>
@@ -263,6 +263,130 @@ export const AdminsAnalysisPage = () => {
               <p className="text-2xl font-bold text-[#1B254B]">{totalStats.avgPerformance}%</p>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Employee Distribution by Department (Bar Chart) */}
+        <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
+          <div className="flex items-center gap-3 mb-6">
+            <BarChart3 size={24} className="text-[#0B4DA2]" />
+            <h3 className="text-xl font-bold text-[#1B254B]">Employee Distribution by Department</h3>
+          </div>
+          
+          <div className="space-y-4">
+            {departmentsData.map((dept, index) => {
+              const employeeCount = [45, 38, 52, 67, 41][index] || 35; // Sample data
+              const maxCount = 67;
+              const percentage = (employeeCount / maxCount) * 100;
+              
+              return (
+                <div key={dept.id}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{dept.icon}</span>
+                      <span className="font-semibold text-gray-900">{dept.name}</span>
+                    </div>
+                    <span className="font-bold text-[#0B4DA2]">{employeeCount}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-[#0B4DA2] to-[#042A5B] rounded-full transition-all duration-500"
+                      style={{ width: `${percentage}%` }}
+                    ></div>
+                  </div>
+                </div>
+              );
+            })}
+            <div className="pt-4 border-t border-gray-200 flex justify-between items-center">
+              <span className="text-sm font-semibold text-gray-600">Total Employees</span>
+              <span className="text-2xl font-bold text-[#0B4DA2]">243</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Department Performance (Pie Chart Visualization) */}
+        <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
+          <div className="flex items-center gap-3 mb-6">
+            <PieChart size={24} className="text-[#0B4DA2]" />
+            <h3 className="text-xl font-bold text-[#1B254B]">Department Performance Overview</h3>
+          </div>
+          
+          <div className="space-y-4">
+            {departmentsData.map((dept) => (
+              <div key={dept.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:shadow-md transition-all">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#0B4DA2] to-[#042A5B] flex items-center justify-center text-xl">
+                    {dept.icon}
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-900">{dept.name}</p>
+                    <p className="text-xs text-gray-600">Efficiency: {dept.stats.efficiency}%</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-2xl font-bold text-[#0B4DA2]">{dept.stats.performance}%</span>
+                    {getTrendIcon(dept.stats.trend)}
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-gray-600">
+                    <span>{dept.stats.completedRequests} completed</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Request Statistics Chart */}
+      <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Activity size={24} className="text-[#0B4DA2]" />
+            <h3 className="text-xl font-bold text-[#1B254B]">Active vs Completed Requests</h3>
+          </div>
+          <div className="flex gap-4 text-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-blue-600"></div>
+              <span className="text-gray-600">Active</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-blue-300"></div>
+              <span className="text-gray-600">Completed</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          {departmentsData.map((dept) => {
+            const maxValue = Math.max(dept.stats.activeRequests, dept.stats.completedRequests);
+            const activeHeight = (dept.stats.activeRequests / maxValue) * 100;
+            const completedHeight = (dept.stats.completedRequests / maxValue) * 100;
+            
+            return (
+              <div key={dept.id} className="text-center">
+                <div className="h-48 flex items-end justify-center gap-2 mb-3">
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-xs font-bold text-blue-600">{dept.stats.activeRequests}</span>
+                    <div 
+                      className="w-12 bg-gradient-to-t from-[#0B4DA2] to-blue-400 rounded-t-lg transition-all duration-500 hover:opacity-80"
+                      style={{ height: `${Math.max(activeHeight, 10)}%` }}
+                    ></div>
+                  </div>
+                  <div className="flex flex-col items-center gap-1">
+                    <span className="text-xs font-bold text-blue-300">{dept.stats.completedRequests}</span>
+                    <div 
+                      className="w-12 bg-gradient-to-t from-blue-300 to-blue-200 rounded-t-lg transition-all duration-500 hover:opacity-80"
+                      style={{ height: `${Math.max(completedHeight, 10)}%` }}
+                    ></div>
+                  </div>
+                </div>
+                <p className="text-sm font-semibold text-gray-900">{dept.name}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
 

@@ -7,6 +7,7 @@ import { TimeOfficeAdminPortal } from './TimeOfficeAdminPortal';
 import { EventsAdminPortal } from './EventsAdminPortal';
 import { HODAdminPortal } from './HODAdminPortal';
 import { MarketingAdminPortal } from './MarketingAdminPortal';
+import { HRAdminPortal } from './HRAdminPortal';
 
 interface DepartmentPortalProps {
   departmentName: string;
@@ -140,7 +141,7 @@ export const ReceptionPortal = ({ onBack }: { onBack: () => void }) => (
 );
 
 export const HRPortal = ({ onBack }: { onBack: () => void }) => (
-  <DepartmentPortal departmentName="Human Resource" departmentId="hr" onBack={onBack} />
+  <HRAdminPortal onBack={onBack} />
 );
 
 export const FinancePortal = ({ onBack }: { onBack: () => void }) => (

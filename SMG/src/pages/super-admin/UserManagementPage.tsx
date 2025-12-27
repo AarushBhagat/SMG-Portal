@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Users, 
   Search, 
@@ -10,6 +10,8 @@ import {
   Filter,
   X
 } from 'lucide-react';
+import { collection, getDocs, doc, updateDoc, addDoc, onSnapshot } from 'firebase/firestore';
+import { db } from '../../config/firebase';
 
 interface User {
   id: string;
@@ -20,6 +22,7 @@ interface User {
   email: string;
   phone: string;
   dateJoined: string;
+  designation?: string;
 }
 
 export const UserManagementPage = () => {
@@ -30,89 +33,51 @@ export const UserManagementPage = () => {
   const [showViewModal, setShowViewModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    role: 'employee',
+    department: '',
+    status: 'active',
+    designation: ''
+  });
 
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: 'EMP1001',
-      name: 'Rohit Sharma',
-      role: 'employee',
-      department: 'Assembly',
-      status: 'active',
-      email: 'rohit.sharma@smg.com',
-      phone: '+91 98765 43210',
-      dateJoined: '2023-01-15'
-    },
-    {
-      id: 'EMP1002',
-      name: 'Priya Singh',
-      role: 'admin',
-      department: 'HR',
-      status: 'active',
-      email: 'priya.singh@smg.com',
-      phone: '+91 98765 43211',
-      dateJoined: '2022-06-20'
-    },
-    {
-      id: 'EMP1003',
-      name: 'Amit Patel',
-      role: 'employee',
-      department: 'Quality',
-      status: 'inactive',
-      email: 'amit.patel@smg.com',
-      phone: '+91 98765 43212',
-      dateJoined: '2023-03-10'
-    },
-    {
-      id: 'EMP1004',
-      name: 'Sneha Reddy',
-      role: 'employee',
-      department: 'Technology',
-      status: 'active',
-      email: 'sneha.reddy@smg.com',
-      phone: '+91 98765 43213',
-      dateJoined: '2023-07-05'
-    },
-    {
-      id: 'EMP1005',
-      name: 'Vikram Kumar',
-      role: 'admin',
-      department: 'Finance',
-      status: 'active',
-      email: 'vikram.kumar@smg.com',
-      phone: '+91 98765 43214',
-      dateJoined: '2022-11-12'
-    },
-    {
-      id: 'EMP1006',
-      name: 'Anjali Gupta',
-      role: 'employee',
-      department: 'Marketing',
-      status: 'active',
-      email: 'anjali.gupta@smg.com',
-      phone: '+91 98765 43215',
-      dateJoined: '2023-02-28'
-    },
-    {
-      id: 'EMP1007',
-      name: 'Karthik Nair',
-      role: 'admin',
-      department: 'Time Office',
-      status: 'active',
-      email: 'karthik.nair@smg.com',
-      phone: '+91 98765 43216',
-      dateJoined: '2022-08-15'
-    },
-    {
-      id: 'EMP1008',
-      name: 'Neha Desai',
-      role: 'employee',
-      department: 'Canteen',
-      status: 'inactive',
-      email: 'neha.desai@smg.com',
-      phone: '+91 98765 43217',
-      dateJoined: '2023-05-20'
-    }
-  ]);
+  // Real-time listener for users collection
+  useEffect(() => {
+    console.log('🔄 Setting up real-time listener for users collection');
+    const unsubscribe = onSnapshot(
+      collection(db, 'users'),
+      (snapshot) => {
+        const usersData: User[] = [];
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          usersData.push({
+            id: doc.id,
+            name: data.name || '',
+            role: data.role || 'employee',
+            department: data.department || '',
+            status: data.status || 'active',
+            email: data.email || '',
+            phone: data.phone || '',
+            dateJoined: data.joinDate || data.createdAt?.toDate?.()?.toISOString()?.split('T')[0] || '',
+            designation: data.designation || ''
+          });
+        });
+        console.log('✅ Loaded users from Firebase:', usersData.length);
+        setUsers(usersData);
+        setLoading(false);
+      },
+      (error) => {
+        console.error('❌ Error fetching users:', error);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
 
   const [newUser, setNewUser] = useState({
     name: '',
@@ -132,36 +97,50 @@ export const UserManagementPage = () => {
     return matchesSearch && matchesRole && matchesStatus;
   });
 
-  const handleToggleStatus = (userId: string) => {
-    setUsers(users.map(user => 
-      user.id === userId 
-        ? { ...user, status: user.status === 'active' ? 'inactive' : 'active' } 
-        : user
-    ));
+  const handleToggleStatus = async (userId: string) => {
+    try {
+      const user = users.find(u => u.id === userId);
+      if (!user) return;
+      
+      const newStatus = user.status === 'active' ? 'inactive' : 'active';
+      await updateDoc(doc(db, 'users', userId), {
+        status: newStatus,
+        updatedAt: new Date()
+      });
+      console.log('✅ User status updated in Firebase');
+    } catch (error) {
+      console.error('❌ Error updating user status:', error);
+      alert('Failed to update user status');
+    }
   };
 
-  const handleCreateUser = () => {
-    const newId = `EMP${(users.length + 1001).toString()}`;
-    const user: User = {
-      id: newId,
-      name: newUser.name,
-      role: newUser.role as 'employee' | 'admin' | 'super_admin',
-      department: newUser.department,
-      status: newUser.status as 'active' | 'inactive',
-      email: newUser.email,
-      phone: newUser.phone,
-      dateJoined: new Date().toISOString().split('T')[0]
-    };
-    setUsers([...users, user]);
-    setShowCreateModal(false);
-    setNewUser({
-      name: '',
-      email: '',
-      phone: '',
-      role: 'employee',
-      department: '',
-      status: 'active'
-    });
+  const handleCreateUser = async () => {
+    try {
+      await addDoc(collection(db, 'users'), {
+        name: newUser.name,
+        email: newUser.email,
+        phone: newUser.phone,
+        role: newUser.role,
+        department: newUser.department,
+        status: newUser.status,
+        joinDate: new Date().toISOString().split('T')[0],
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+      console.log('✅ User created in Firebase');
+      setShowCreateModal(false);
+      setNewUser({
+        name: '',
+        email: '',
+        phone: '',
+        role: 'employee',
+        department: '',
+        status: 'active'
+      });
+    } catch (error) {
+      console.error('❌ Error creating user:', error);
+      alert('Failed to create user');
+    }
   };
 
   const handleViewUser = (user: User) => {
@@ -170,8 +149,46 @@ export const UserManagementPage = () => {
   };
 
   const handleEditUser = (user: User) => {
+    console.log('📝 Editing user:', { id: user.id, name: user.name, email: user.email });
     setSelectedUser(user);
+    setEditFormData({
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: user.role,
+      department: user.department,
+      designation: user.designation || '',
+      status: user.status
+    });
     setShowEditModal(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedUser) return;
+    
+    console.log('💾 Saving user edit:', {
+      userId: selectedUser.id,
+      updateData: editFormData
+    });
+    
+    try {
+      await updateDoc(doc(db, 'users', selectedUser.id), {
+        name: editFormData.name,
+        email: editFormData.email,
+        phone: editFormData.phone,
+        role: editFormData.role,
+        designation: editFormData.designation,
+        department: editFormData.department,
+        status: editFormData.status,
+        updatedAt: new Date()
+      });
+      console.log('✅ User updated in Firebase successfully!');
+      setShowEditModal(false);
+      setSelectedUser(null);
+    } catch (error) {
+      console.error('❌ Error updating user:', error);
+      alert('Failed to update user');
+    }
   };
 
   const getRoleBadgeColor = (role: string) => {
@@ -552,7 +569,8 @@ export const UserManagementPage = () => {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Full Name</label>
                   <input
                     type="text"
-                    defaultValue={selectedUser.name}
+                    value={editFormData.name}
+                    onChange={(e) => setEditFormData({...editFormData, name: e.target.value})}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0B4DA2] focus:border-transparent outline-none"
                   />
                 </div>
@@ -561,7 +579,8 @@ export const UserManagementPage = () => {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
                   <input
                     type="email"
-                    defaultValue={selectedUser.email}
+                    value={editFormData.email}
+                    onChange={(e) => setEditFormData({...editFormData, email: e.target.value})}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0B4DA2] focus:border-transparent outline-none"
                   />
                 </div>
@@ -570,7 +589,8 @@ export const UserManagementPage = () => {
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Phone</label>
                   <input
                     type="tel"
-                    defaultValue={selectedUser.phone}
+                    value={editFormData.phone}
+                    onChange={(e) => setEditFormData({...editFormData, phone: e.target.value})}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0B4DA2] focus:border-transparent outline-none"
                   />
                 </div>
@@ -578,7 +598,8 @@ export const UserManagementPage = () => {
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Role</label>
                   <select
-                    defaultValue={selectedUser.role}
+                    value={editFormData.role}
+                    onChange={(e) => setEditFormData({...editFormData, role: e.target.value})}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0B4DA2] focus:border-transparent outline-none bg-white"
                   >
                     <option value="employee">Employee</option>
@@ -588,9 +609,21 @@ export const UserManagementPage = () => {
                 </div>
 
                 <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Designation</label>
+                  <input
+                    type="text"
+                    value={editFormData.designation}
+                    onChange={(e) => setEditFormData({...editFormData, designation: e.target.value})}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0B4DA2] focus:border-transparent outline-none"
+                    placeholder="e.g., Senior Technician, Manager"
+                  />
+                </div>
+
+                <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Department</label>
                   <select
-                    defaultValue={selectedUser.department}
+                    value={editFormData.department}
+                    onChange={(e) => setEditFormData({...editFormData, department: e.target.value})}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0B4DA2] focus:border-transparent outline-none bg-white"
                   >
                     <option value="Assembly">Assembly</option>
@@ -607,7 +640,8 @@ export const UserManagementPage = () => {
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
                   <select
-                    defaultValue={selectedUser.status}
+                    value={editFormData.status}
+                    onChange={(e) => setEditFormData({...editFormData, status: e.target.value})}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-[#0B4DA2] focus:border-transparent outline-none bg-white"
                   >
                     <option value="active">Active</option>
@@ -625,7 +659,7 @@ export const UserManagementPage = () => {
                 Cancel
               </button>
               <button
-                onClick={() => setShowEditModal(false)}
+                onClick={handleSaveEdit}
                 className="px-6 py-3 bg-gradient-to-r from-[#0B4DA2] to-[#042A5B] text-white rounded-xl font-semibold hover:shadow-lg transition-all"
               >
                 Save Changes

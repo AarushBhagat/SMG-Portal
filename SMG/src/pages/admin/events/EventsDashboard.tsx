@@ -22,7 +22,7 @@ export const EventsDashboard = ({ onNavigate }: EventsDashboardProps) => {
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-br from-[#042A5B] to-[#0B4DA2] rounded-3xl p-8 text-white shadow-xl">
+      <div className="bg-gradient-to-br from-[#042A5B] to-[#0B4DA2] rounded-2xl p-8 text-white shadow-xl">
         <h1 className="text-3xl font-bold mb-2">Events Dashboard</h1>
         <p className="text-white/80">Manage and share company events on the portal</p>
       </div>
@@ -30,9 +30,9 @@ export const EventsDashboard = ({ onNavigate }: EventsDashboardProps) => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, idx) => (
-          <div key={idx} className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-lg transition-all border border-gray-100">
+          <div key={idx} className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all border border-gray-200">
             <div className="flex items-start justify-between mb-4">
-              <div className={`${stat.color} w-12 h-12 rounded-xl flex items-center justify-center`}>
+              <div className={`${stat.color} w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg`}>
                 <stat.icon className="text-white" size={24} />
               </div>
               <div className="flex items-center gap-1 text-xs font-semibold text-green-600">
@@ -60,7 +60,7 @@ export const EventsDashboard = ({ onNavigate }: EventsDashboardProps) => {
       </div>
 
       {/* Recent Activity */}
-      <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+      <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
         <h2 className="text-xl font-bold text-[#1B254B] mb-4">Recent Activity</h2>
         <div className="space-y-3">
           {recentActivity.map((activity, idx) => (

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
 import { FinanceDashboard } from './finance/FinanceDashboard';
 import { SalaryStatusDisplay } from './finance/SalaryStatusDisplay';
 import { InsuranceDetailsDisplay } from './finance/InsuranceDetailsDisplay';
@@ -46,6 +47,7 @@ const FINANCE_USER = {
 };
 
 export const FinanceAdminPortal = ({ onBack }: FinanceAdminPortalProps) => {
+  const { user } = useAuth();
   const [activePage, setActivePage] = useState('dashboard');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showNotificationPopup, setShowNotificationPopup] = useState(false);
@@ -131,10 +133,10 @@ export const FinanceAdminPortal = ({ onBack }: FinanceAdminPortalProps) => {
             onClick={() => setShowProfileModal(true)}
             className="flex items-center gap-3 bg-gray-50 p-1.5 pr-4 rounded-full cursor-pointer hover:bg-gray-100 transition-all"
           >
-            <img src={FINANCE_USER.avatar} alt="Profile" className="w-9 h-9 rounded-full border-2 border-gray-200" />
+            <img src={user?.avatar || FINANCE_USER.avatar} alt="Profile" className="w-9 h-9 rounded-full border-2 border-gray-200" />
             <div className="hidden lg:block text-left">
-              <p className="text-sm font-bold text-[#1B254B] leading-tight">{FINANCE_USER.name}</p>
-              <p className="text-[10px] text-gray-400 font-medium">{FINANCE_USER.role}</p>
+              <p className="text-sm font-bold text-[#1B254B] leading-tight">{user?.name || FINANCE_USER.name}</p>
+              <p className="text-[10px] text-gray-400 font-medium">{user?.designation || FINANCE_USER.role}</p>
             </div>
             <ChevronRight size={16} className="text-gray-400" />
           </div>
@@ -250,21 +252,21 @@ export const FinanceAdminPortal = ({ onBack }: FinanceAdminPortalProps) => {
             {/* Profile Content */}
             <div className="px-8 pb-8 -mt-16 overflow-y-auto flex-1">
               <div className="flex flex-col items-center mb-6">
-                <img src={FINANCE_USER.avatar} alt="Profile" className="w-32 h-32 rounded-full border-4 border-white shadow-xl mb-4" />
-                <h2 className="text-2xl font-bold text-[#1B254B]">{FINANCE_USER.name}</h2>
-                <p className="text-gray-500 font-medium">{FINANCE_USER.role}</p>
-                <p className="text-sm text-gray-400 mt-1">{FINANCE_USER.empId}</p>
+                <img src={user?.avatar || FINANCE_USER.avatar} alt="Profile" className="w-32 h-32 rounded-full border-4 border-white shadow-xl mb-4" />
+                <h2 className="text-2xl font-bold text-[#1B254B]">{user?.name || FINANCE_USER.name}</h2>
+                <p className="text-gray-500 font-medium">{user?.designation || FINANCE_USER.role}</p>
+                <p className="text-sm text-gray-400 mt-1">{user?.id || FINANCE_USER.empId}</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
-                  { icon: Mail, label: 'Email', value: FINANCE_USER.email },
-                  { icon: Phone, label: 'Phone', value: FINANCE_USER.phone },
-                  { icon: Briefcase, label: 'Department', value: FINANCE_USER.dept },
-                  { icon: Calendar, label: 'Date of Joining', value: FINANCE_USER.dateOfJoining },
-                  { icon: Calendar, label: 'Date of Birth', value: FINANCE_USER.dateOfBirth },
-                  { icon: Award, label: 'Reporting To', value: FINANCE_USER.reportingTo },
-                  { icon: MapPin, label: 'Address', value: FINANCE_USER.address, fullWidth: true }
+                  { icon: Mail, label: 'Email', value: user?.email || FINANCE_USER.email },
+                  { icon: Phone, label: 'Phone', value: user?.phone || FINANCE_USER.phone },
+                  { icon: Briefcase, label: 'Department', value: user?.department || FINANCE_USER.dept },
+                  { icon: Calendar, label: 'Date of Joining', value: user?.joinDate || FINANCE_USER.dateOfJoining },
+                  { icon: User, label: 'Employee ID', value: user?.id || FINANCE_USER.empId },
+                  { icon: Award, label: 'Reporting To', value: user?.reportingManager || FINANCE_USER.reportingTo },
+                  { icon: MapPin, label: 'Address', value: user?.location || FINANCE_USER.address, fullWidth: true }
                 ].map((item, idx) => (
                   <div key={idx} className={`p-4 bg-gray-50 rounded-xl ${item.fullWidth ? 'md:col-span-2' : ''}`}>
                     <div className="flex items-start gap-3">
