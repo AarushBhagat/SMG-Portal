@@ -111,7 +111,7 @@ export const SportsClubPage = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-[#0B4DA2] to-[#042A5B] rounded-2xl p-8 text-white shadow-xl">
+      <div className="bg-gradient-to-r from-[#0B4DA2] to-[#042A5B] rounded-3xl p-8 text-white shadow-xl">
         <h1 className="text-white mb-2 flex items-center gap-3">
           <Trophy size={32} /> Sports Club
         </h1>
@@ -120,7 +120,7 @@ export const SportsClubPage = () => {
 
       {/* Success Message */}
       {showSuccess && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3 text-green-800">
+        <div className="bg-green-50 border border-green-200 rounded-3xl p-4 flex items-center gap-3 text-green-800">
           <CheckCircle size={24} className="text-green-600" />
           <div>
             <h4 className="font-semibold">Registration Successful!</h4>
@@ -131,24 +131,24 @@ export const SportsClubPage = () => {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+        <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100">
           <Trophy className="text-[#0B4DA2] mb-3" size={28} />
           <h4 className="text-[#1B254B] mb-1">Total Events</h4>
           <p className="text-3xl font-bold text-[#0B4DA2]">{sportsEvents.length}</p>
         </div>
-        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+        <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100">
           <CheckCircle className="text-[#05CD99] mb-3" size={28} />
           <h4 className="text-[#1B254B] mb-1">Open Events</h4>
           <p className="text-3xl font-bold text-[#05CD99]">
             {sportsEvents.filter(e => e.status === 'Open').length}
           </p>
         </div>
-        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+        <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100">
           <Users className="text-[#FFB547] mb-3" size={28} />
           <h4 className="text-[#1B254B] mb-1">My Registrations</h4>
           <p className="text-3xl font-bold text-[#FFB547]">{registrations.length}</p>
         </div>
-        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+        <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100">
           <Calendar className="text-[#7551FF] mb-3" size={28} />
           <h4 className="text-[#1B254B] mb-1">Upcoming</h4>
           <p className="text-3xl font-bold text-[#7551FF]">
@@ -158,13 +158,13 @@ export const SportsClubPage = () => {
       </div>
 
       {/* Sports Events List */}
-      <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+      <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100">
         <h3 className="text-[#1B254B] mb-6 font-semibold text-lg">All Sports Events</h3>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {sportsEvents.map(event => (
             <div 
               key={event.id} 
-              className="border-2 border-gray-100 rounded-xl p-6 hover:border-[#0B4DA2] transition-all"
+              className="border-2 border-gray-100 rounded-3xl p-6 hover:border-[#0B4DA2] transition-all"
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
@@ -235,7 +235,7 @@ export const SportsClubPage = () => {
 
       {/* My Registrations */}
       {myRegistrations.length > 0 && (
-        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+        <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100">
           <h3 className="text-[#1B254B] mb-6 font-semibold text-lg">My Event Registrations</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -273,7 +273,7 @@ export const SportsClubPage = () => {
       {/* Registration Confirmation Modal */}
       {showRegistrationForm && selectedEvent && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full mx-4 shadow-2xl">
             <h3 className="text-[#1B254B] font-bold text-xl mb-4">Confirm Registration</h3>
             
             <div className="space-y-3 mb-6">

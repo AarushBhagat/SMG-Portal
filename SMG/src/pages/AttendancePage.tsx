@@ -11,6 +11,8 @@ interface AttendanceRecord {
 }
 
 export const AttendancePage = () => {
+    // State and logic for AttendancePage (mock data removed)
+    // TODO: Integrate with real data source or context
     const [currentDate, setCurrentDate] = useState(new Date());
     const [searchQuery, setSearchQuery] = useState('');
     const [filterStatus, setFilterStatus] = useState('All');
@@ -19,8 +21,7 @@ export const AttendancePage = () => {
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentDate(new Date());
-        }, 60000); // Update every minute
-
+        }, 60000);
         return () => clearInterval(timer);
     }, []);
 
@@ -35,31 +36,19 @@ export const AttendancePage = () => {
         return currentDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
     };
 
-    // Statistics
+    // Placeholder for stats and attendanceRecords (to be replaced with real data)
     const stats = {
-        present: 16,
-        absent: 4,
-        late: 3,
-        overtime: 5,
-        totalHours: '07h',
-        productiveHours: '06h 30m',
-        breakTime: '0h 30m',
-        overtimeHours: '35m'
+        present: 0,
+        absent: 0,
+        late: 0,
+        overtime: 0,
+        totalHours: '--',
+        productiveHours: '--',
+        breakTime: '--',
+        overtimeHours: '--'
     };
 
-    // Attendance records
-    const attendanceRecords: AttendanceRecord[] = [
-        { date: '01 Jan 2024', checkIn: '09:00 AM', checkOut: '06:12 PM', status: 'Present', break: '20 Min', overtime: '45 Min' },
-        { date: '02 Jan 2024', checkIn: '09:00 AM', checkOut: '06:13 PM', status: 'Present', break: '50 Min', overtime: '33 Min' },
-        { date: '03 Jan 2024', checkIn: '09:00 AM', checkOut: '07:15 PM', status: 'Present', break: '03 Min', overtime: '--' },
-        { date: '04 Jan 2024', checkIn: '09:00 AM', checkOut: '08:15 PM', status: 'Present', break: '12 Min', overtime: '--' },
-        { date: '05 Jan 2024', checkIn: '09:00 AM', checkOut: '06:23 PM', status: 'Present', break: '41 Min', overtime: '50 Min' },
-        { date: '06 Jan 2024', checkIn: '09:00 AM', checkOut: '06:45 PM', status: 'Present', break: '30 Min', overtime: '20 Min' },
-        { date: '07 Jan 2024', checkIn: '09:00 AM', checkOut: '06:43 PM', status: 'Present', break: '23 Min', overtime: '10 Min' },
-        { date: '08 Jan 2024', checkIn: '09:00 AM', checkOut: '09:23 PM', status: 'Absent', break: '10 Min', overtime: '45 Min' },
-        { date: '09 Jan 2024', checkIn: '09:00 AM', checkOut: '07:13 PM', status: 'Present', break: '32 Min', overtime: '--' },
-        { date: '10 Jan 2024', checkIn: '09:00 AM', checkOut: '09:17 PM', status: 'Present', break: '14 Min', overtime: '--' },
-    ];
+    const attendanceRecords: AttendanceRecord[] = [];
 
     const getStatusColor = (status: string) => {
         switch (status) {
@@ -71,7 +60,7 @@ export const AttendancePage = () => {
         }
     };
 
-    // Filter attendance records
+    // Filter attendance records (will be empty until real data is integrated)
     const filteredRecords = attendanceRecords.filter(record => {
         const matchesSearch = record.date.toLowerCase().includes(searchQuery.toLowerCase()) ||
             record.checkIn.toLowerCase().includes(searchQuery.toLowerCase()) ||

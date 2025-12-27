@@ -36,6 +36,36 @@ const DEMO_EMPLOYEE = {
   languages: ['Hindi (Native)', 'English (Fluent)', 'Punjabi (Conversational)']
 };
 
+// Mock admin user with Firebase UID
+const DEMO_ADMIN = {
+  id: 'cirYJ87jkkWdAQvyMtW6fjuggLp1',
+  empId: 'SMG-ADMIN-001',
+  name: 'Admin User',
+  email: 'admin@smg.com',
+  phone: '+91 90000 00000',
+  emergencyContact: '',
+  department: 'Administration',
+  position: 'Admin',
+  role: 'admin',
+  joiningDate: '2019-01-01',
+  dateOfBirth: '1990-01-01',
+  reportingTo: '',
+  shift: 'General',
+  employeeType: 'Full-time',
+  location: 'Head Office',
+  avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin',
+  salary: '₹1,00,000',
+  bankAccount: '',
+  panCard: '',
+  aadharCard: '',
+  bloodGroup: '',
+  address: '',
+  education: [],
+  certifications: [],
+  skills: ['Administration'],
+  languages: ['English']
+};
+
 interface AppContextType {
   // User Data
   currentUser: any;
@@ -153,6 +183,14 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [currentUser, setCurrentUser] = useState(DEMO_EMPLOYEE);
+
+  // Listen for login with admin@smg.com and set admin user/role
+  useEffect(() => {
+    if (currentUser && currentUser.email === 'admin@smg.com') {
+      setCurrentUser(DEMO_ADMIN);
+      setIsAdmin(true);
+    }
+  }, [currentUser?.email]);
   
   // Attendance State
   const [isClockedIn, setIsClockedIn] = useState(false);

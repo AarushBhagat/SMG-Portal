@@ -19,20 +19,26 @@ import { ResignationPage } from './pages/ResignationPage';
 import { LeaveHistoryPage } from './pages/LeaveHistoryPage';
 import { GatePassPage } from './pages/GatePassPage';
 import { AttendancePage } from './pages/AttendancePage';
+import { RatingPage } from './pages/RatingPage';
+import { FacilitiesInfoPage } from './pages/FacilitiesInfoPage';
+import { InsurancePolicyPage } from './pages/InsurancePolicyPage';
+import { LoanApprovalPage } from './pages/LoanApprovalPage';
 // Admin Pages
-import { AdminDashboard } from './pages/admin/AdminDashboard';
-import { AdminRequestsPage } from './pages/admin/AdminRequestsPage';
-import { AdminNotificationsPage } from './pages/admin/AdminNotificationsPage';
-import { AdminAnalyticsPage } from './pages/admin/AdminAnalyticsEnhanced';
+import { AdminPortalSelection } from './pages/admin/AdminPortalSelection';
+import { SuperAdminPortal } from './pages/super-admin/SuperAdminPortal';
 import {
-  AdminUsersPage,
-  AdminAttendancePage,
-  AdminTrainingPage,
-  AdminAnnouncementsPage,
-  AdminProductionPage,
-  AdminPayrollPage
-} from './pages/admin/AdminOtherPagesEnhanced';
-import { AdminProjectsPage } from './pages/admin/AdminProjectsEnhanced';
+  PNAPortal,
+  ReceptionPortal,
+  HRPortal,
+  FinancePortal,
+  TimeOfficePortal,
+  CanteenPortal,
+  EventsPortal,
+  HODPortal,
+  TechnicianPortal,
+  AssemblyPortal,
+  MarketingPortal
+} from './pages/admin/DepartmentPortals';
 import {
   UniformPage,
   SIMAllocationPage,
@@ -74,7 +80,12 @@ import {
   User,
   Clock,
   FilePlus,
-  UserX
+  UserX,
+  Star,
+  Building2,
+  Trophy,
+  Shield,
+  Wallet
 } from 'lucide-react';
 
 const INITIAL_DATA = {
@@ -220,7 +231,8 @@ const Topbar = ({ user, onMobileMenu, onNavigate }: TopbarProps) => {
         <img
           src="/Company Logo.jpg"
           alt="SMG Logo"
-          className="h-10 w-auto"
+          className="h-10 w-auto cursor-pointer"
+          onClick={() => onNavigate('dashboard')}
         />
         <button onClick={onMobileMenu} className="lg:hidden p-2 text-[#042A5B] bg-gray-50 rounded-lg hover:bg-gray-100">
           <Menu size={24} />
@@ -308,109 +320,99 @@ const Topbar = ({ user, onMobileMenu, onNavigate }: TopbarProps) => {
   );
 };
 
-// Admin Sidebar
-interface AdminSidebarProps {
-  activePage: string;
-  onNavigate: (page: string) => void;
-  onLogout: () => void;
-}
-
-const AdminSidebar = ({ activePage, onNavigate, onLogout }: AdminSidebarProps) => {
-  const menuGroups = [
-    {
-      title: "ADMIN",
-      items: [
-        { id: 'admin-dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-        { id: 'admin-requests', icon: FileText, label: 'View Requests' },
-        { id: 'admin-users', icon: User, label: 'User Management' },
-        { id: 'admin-attendance', icon: Calendar, label: 'Attendance Admin' },
-      ]
-    },
-    {
-      title: "OPERATIONS",
-      items: [
-        { id: 'admin-training', icon: BookOpen, label: 'Training Management' },
-        { id: 'admin-analytics', icon: Settings, label: 'Department Analytics' },
-        { id: 'admin-notifications', icon: Bell, label: 'Notifications' },
-        { id: 'admin-announcements', icon: Megaphone, label: 'Announcements' },
-        { id: 'admin-projects', icon: Briefcase, label: 'Project Listing' },
-        { id: 'admin-production', icon: Settings, label: 'Production Area' },
-        { id: 'admin-payroll', icon: FileText, label: 'Payroll Admin' }
-      ]
-    },
-    {
-      title: "EMPLOYEE VIEW",
-      items: [
-        { id: 'profile', icon: User, label: 'My Profile' },
-        { id: 'my-attendance', icon: Calendar, label: 'My Attendance' },
-        { id: 'payroll', icon: FileText, label: 'Payroll' },
-        { id: 'documents', icon: FolderOpen, label: 'My Documents' }
-      ]
-    }
-  ];
-
-  return (
-    <aside className="hidden lg:block w-[80px] hover:w-[260px] bg-[#042A5B] flex-col transition-all duration-300 group shadow-2xl overflow-y-auto sticky top-0 h-screen">
-      <nav className="px-3 py-6 space-y-6">
-        {menuGroups.map((group, idx) => (
-          <div key={idx}>
-            <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">{group.title}</p>
-            <div className="space-y-1">
-              {group.items.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => onNavigate(item.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 ${activePage === item.id
-                    ? 'bg-[#0B4DA2] text-white shadow-lg'
-                    : 'text-[#87CEEB] hover:bg-[#0B4DA2]/20'
-                    }`}
-                >
-                  <div className="shrink-0 flex justify-center w-6">
-                    <item.icon size={20} />
-                  </div>
-                  <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-sm font-bold flex-1 text-left">
-                    {item.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-      </nav>
-
-      <div className="p-4 border-t border-[#0B4DA2]/30 shrink-0">
-        <button
-          onClick={onLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#EE5D50] hover:bg-[#EE5D50]/10 transition-all duration-200 font-bold"
-        >
-          <div className="shrink-0 flex justify-center w-6"><LogOut size={20} /></div>
-          <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">Sign Out</span>
-        </button>
-      </div>
-    </aside>
-  );
-};
-
 export default function App() {
   const { user, loading, logout } = useAuth();
-  const [userRole, setUserRole] = useState<'employee' | 'admin'>('employee');
-  const [activePage, setActivePage] = useState('dashboard');
+
+  const [userRole, setUserRole] = useState<'employee' | 'admin' | 'super_admin'>('employee');
+  const [activePage, setActivePage] = useState(() => {
+    const page = window.history.state?.activePage;
+    return page || 'dashboard';
+  });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Force logout on page refresh
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      // Mark that page is being refreshed
+      sessionStorage.setItem('pageRefreshed', 'true');
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    // Check if page was refreshed and logout
+    if (sessionStorage.getItem('pageRefreshed') === 'true') {
+      sessionStorage.removeItem('pageRefreshed');
+      logout().catch(console.error);
+    }
+    
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [logout]);
+
+  // Handle browser back button - logout user
+  useEffect(() => {
+    const handlePopState = async () => {
+      // When user clicks browser back button, logout
+      await handleLogout();
+    };
+    
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Initialize page when user logs in
   useEffect(() => {
     if (user?.role) {
-      const role = user.role === 'super_admin' ? 'admin' : user.role;
+      const role = user.role;
       setUserRole(role);
-      setActivePage(role === 'admin' ? 'admin-dashboard' : 'dashboard');
+      
+      // Set initial page based on role
+      if (role === 'super_admin') {
+        setActivePage('super-admin-portal');
+      } else if (role === 'admin') {
+        // Check for specific UID to route directly to portal
+        const portalMapping: Record<string, string> = {
+          'AqZUGJQQnEcu9sd0R2MvNLCH3X63': 'admin-pna', // P&A Portal
+          'OITnem546yRePD5tjmbskOwJOtm1': 'admin-reception', // Reception Portal
+          'vjK5W2uLItUP5tbA6DaJlOP7zLK2': 'admin-hr', // HR Portal
+          'oir601BhY3YcEyx6DVbspseMX633': 'admin-finance', // Finance Portal
+          'pWVCFzCtOvX2lwIvyW2jhMPhjv93': 'admin-time-office', // Time Office Portal
+          'DSFMjPneZmSxYvtB1l7rWcgsg1A3': 'admin-canteen', // Canteen Portal
+          'rGgN4O81C9XJO07oidKG1O2oxJ53': 'admin-events', // Events Portal
+          'U9svtLlOeuTfzvxVXbp59RyXAgK2': 'admin-hod', // HOD Portal
+          'nHbVcJJLImOwrCgb5VcYq8uQDgL2': 'admin-marketing', // Marketing Portal
+          // Add more UID-to-portal mappings here as needed
+        };
+        
+        const directPortal = portalMapping[user.id];
+        if (directPortal) {
+          setActivePage(directPortal);
+          console.log(`🎯 Routing admin UID ${user.id} directly to ${directPortal}`);
+        } else {
+          setActivePage('admin-portal-selection');
+        }
+      } else {
+        setActivePage('dashboard');
+      }
+      
+      // Clear browser history and replace with login state
+      // This prevents back button from navigating within the app
+      window.history.replaceState(null, '', window.location.pathname);
     }
   }, [user]);
 
-  const handleLogin = (role: 'employee' | 'admin') => {
+  const handleLogin = (role: 'employee' | 'admin' | 'super_admin') => {
+    console.log('🔑 Handle login called with role:', role);
     setUserRole(role);
-    setActivePage(role === 'admin' ? 'admin-dashboard' : 'dashboard');
+    
+    // Note: Page routing is handled by useEffect that watches user state
+    // This ensures consistent routing whether user logs in fresh or reloads page
+    
+    // Clear history on login
+    window.history.replaceState(null, '', window.location.pathname);
   };
 
   const handleLogout = async () => {
+    console.log('🚪 Handle logout called');
     try {
       await logout();
       setActivePage('dashboard');
@@ -420,6 +422,7 @@ export default function App() {
   };
 
   if (loading) {
+    console.log('⏳ App is loading...');
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-sky-50">
         <div className="text-center">
@@ -431,9 +434,11 @@ export default function App() {
   }
 
   if (!user) {
+    console.log('👤 No user found, showing login');
     return <Login onLogin={handleLogin} />;
   }
 
+  console.log('✅ User authenticated, rendering app content');
   return (
     <AppProvider>
       <AppContent
@@ -485,6 +490,8 @@ function AppContent({ userRole, activePage, setActivePage, mobileMenuOpen, setMo
 
       // Work & Pay Pages
       case 'payroll': return <PayrollPageOld user={INITIAL_DATA.user} />;
+      case 'insurance-policy': return <InsurancePolicyPage />;
+      case 'loan-approval': return <LoanApprovalPage />;
       case 'training': return <TrainingPage />;
       case 'documents': return <MyDocumentsPageOld documents={INITIAL_DATA.documents} user={INITIAL_DATA.user} />;
 
@@ -492,21 +499,27 @@ function AppContent({ userRole, activePage, setActivePage, mobileMenuOpen, setMo
       case 'welfare': return <WelfarePage />;
       case 'imagine': return <ImaginePage />;
       case 'policies': return <PoliciesPage />;
+      case 'rating': return <RatingPage />;
+      case 'facilities-info': return <FacilitiesInfoPage />;
       case 'announcements': return <AnnouncementsPage />;
       case 'notifications': return <NotificationsPage />;
 
-      // Admin Pages
-      case 'admin-dashboard': return <AdminDashboard onNavigate={setActivePage} />;
-      case 'admin-requests': return <AdminRequestsPage onNavigate={setActivePage} />;
-      case 'admin-notifications': return <AdminNotificationsPage onNavigate={setActivePage} />;
-      case 'admin-users': return <AdminUsersPage />;
-      case 'admin-attendance': return <AdminAttendancePage />;
-      case 'admin-training': return <AdminTrainingPage />;
-      case 'admin-analytics': return <AdminAnalyticsPage />;
-      case 'admin-announcements': return <AdminAnnouncementsPage />;
-      case 'admin-projects': return <AdminProjectsPage />;
-      case 'admin-production': return <AdminProductionPage />;
-      case 'admin-payroll': return <AdminPayrollPage />;
+      // Admin Portal Selection and Department Portals
+      case 'admin-portal-selection': return <AdminPortalSelection onSelectPortal={(portal) => setActivePage(`admin-${portal}`)} />;
+      case 'admin-pna': return <PNAPortal onBack={() => setActivePage('admin-portal-selection')} />;
+      case 'admin-reception': return <ReceptionPortal onBack={() => setActivePage('admin-portal-selection')} />;
+      case 'admin-hr': return <HRPortal onBack={() => setActivePage('admin-portal-selection')} />;
+      case 'admin-finance': return <FinancePortal onBack={() => setActivePage('admin-portal-selection')} />;
+      case 'admin-time-office': return <TimeOfficePortal onBack={() => setActivePage('admin-portal-selection')} />;
+      case 'admin-canteen': return <CanteenPortal onBack={() => setActivePage('admin-portal-selection')} />;
+      case 'admin-events': return <EventsPortal onBack={() => setActivePage('admin-portal-selection')} />;
+      case 'admin-hod': return <HODPortal onBack={() => setActivePage('admin-portal-selection')} />;
+      case 'admin-technician': return <TechnicianPortal onBack={() => setActivePage('admin-portal-selection')} />;
+      case 'admin-assembly': return <AssemblyPortal onBack={() => setActivePage('admin-portal-selection')} />;
+      case 'admin-marketing': return <MarketingPortal onBack={() => setActivePage('admin-portal-selection')} />;
+
+      // Super Admin Portal
+      case 'super-admin-portal': return <SuperAdminPortal onBack={handleLogout} />;
 
       default: return (<div className="flex flex-col items-center justify-center h-[50vh] text-gray-400 animate-in fade-in"><Settings size={64} className="mb-4 text-[#0B4DA2] opacity-20" /><h2 className="text-xl font-bold text-[#1B254B]">Page Under Construction</h2><p className="text-sm text-[#A3AED0] mt-2">This page is being developed</p></div>);
     }
@@ -514,15 +527,17 @@ function AppContent({ userRole, activePage, setActivePage, mobileMenuOpen, setMo
 
   return (
     <div className="bg-[#F4F7FE] min-h-screen font-sans text-[#1B254B] selection:bg-[#0B4DA2] selection:text-white">
-      <Topbar user={INITIAL_DATA.user} onMobileMenu={() => setMobileMenuOpen(true)} onNavigate={setActivePage} />
+      {/* Only show Topbar for employee pages (hide for admin and super admin) */}
+      {!activePage.startsWith('admin-') && activePage !== 'super-admin-portal' && (
+        <Topbar user={INITIAL_DATA.user} onMobileMenu={() => setMobileMenuOpen(true)} onNavigate={setActivePage} />
+      )}
       <div className="flex min-h-screen">
-        {userRole === 'admin' ? (
-          <AdminSidebar activePage={activePage} onNavigate={setActivePage} onLogout={handleLogout} />
-        ) : (
+        {/* Only show sidebar for employee pages */}
+        {!activePage.startsWith('admin-') && activePage !== 'super-admin-portal' && (
           <Sidebar activePage={activePage} onNavigate={setActivePage} onLogout={handleLogout} />
         )}
         <div className="flex-1">
-          <main className="px-6 py-6 lg:px-8 lg:py-8 pb-24 lg:pb-8">{renderContent()}</main>
+          <main className={`${!activePage.startsWith('admin-') && activePage !== 'super-admin-portal' ? 'px-6 py-6 lg:px-8 lg:py-8 pb-24 lg:pb-8' : ''}`}>{renderContent()}</main>
         </div>
       </div>
       {mobileMenuOpen && (
@@ -594,9 +609,11 @@ const Sidebar = ({ activePage, onNavigate, onLogout }: SidebarProps) => {
             { id: 'leave-history', icon: Clock, label: 'Check Leave History' },
             { id: 'gate-pass', icon: LogOut, label: 'Gate Pass' },
             { id: 'resignation', icon: User, label: 'Resignation' }
-          ]
+          ]  
         },
         { id: 'payroll', icon: FileText, label: 'Salary' },
+        { id: 'insurance-policy', icon: Shield, label: 'Insurance Policy' },
+        { id: 'loan-approval', icon: Wallet, label: 'Loan Approval' },
         {
           id: 'my-request',
           icon: Briefcase,
@@ -622,6 +639,9 @@ const Sidebar = ({ activePage, onNavigate, onLogout }: SidebarProps) => {
         { id: 'imagine', icon: Lightbulb, label: 'SMG Imagine' },
         { id: 'welfare', icon: Heart, label: 'Grievance Redressal' },
         { id: 'policies', icon: BookOpen, label: 'Policies' },
+        { id: 'rating', icon: Star, label: 'Rating' },
+        { id: 'facilities-info', icon: Building2, label: 'School & Medical Info' },
+        { id: 'sports-club', icon: Trophy, label: 'Sports Club' },
         { id: 'profile', icon: User, label: 'Profile' }
       ]
     }

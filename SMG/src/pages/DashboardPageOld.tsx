@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import {
   Briefcase,
   Clock,
@@ -213,6 +214,7 @@ const TodaysMeetingsCard = ({ meetings }) => (
 export const DashboardPageOld = ({ data, onNavigate }) => {
   const greeting = getGreeting();
   const [isClockedIn, setIsClockedIn] = useState(true);
+  const { user } = useAuth();
 
   const handleClockIn = () => {
     const currentTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
@@ -226,6 +228,7 @@ export const DashboardPageOld = ({ data, onNavigate }) => {
     setIsClockedIn(false);
   };
 
+  if (!user) return null;
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -249,8 +252,8 @@ export const DashboardPageOld = ({ data, onNavigate }) => {
               <div className="shrink-0 animate-in slide-in-from-left duration-500">
                 <div className="w-24 h-24 rounded-2xl overflow-hidden border-4 border-white/20 shadow-2xl">
                   <img
-                    src={data.user.avatar || "https://via.placeholder.com/150"}
-                    alt={data.user.name}
+                    src={user.avatar || "https://via.placeholder.com/150"}
+                    alt={user.name}
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -260,13 +263,13 @@ export const DashboardPageOld = ({ data, onNavigate }) => {
                 <h2 className="text-3xl font-bold mb-2 animate-in slide-in-from-left duration-500">
                   {greeting},<br />
                   <span className="text-4xl bg-gradient-to-r from-white to-[#87CEEB] bg-clip-text text-transparent">
-                    {data.user.name.split(' ')[0]}!
+                    {user.name?.split(' ')[0]}!
                   </span>
                 </h2>
                 <div className="flex items-center gap-2 mb-4 animate-in slide-in-from-left duration-700">
                   <span className="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full text-xs font-bold border border-white/20 flex items-center gap-1 hover:bg-white/20 transition-all">
                     <Briefcase size={12} />
-                    {data.user.designation || 'Senior Technician'}
+                    {user.designation || 'Senior Technician'}
                   </span>
                   <span className="bg-[#05CD99]/20 px-3 py-1.5 rounded-full text-xs font-bold text-[#05CD99] border border-[#05CD99]/30 flex items-center gap-1 animate-pulse">
                     <div className="w-1.5 h-1.5 bg-[#05CD99] rounded-full"></div>
@@ -278,7 +281,6 @@ export const DashboardPageOld = ({ data, onNavigate }) => {
                   </span>
                 </div>
               </div>
-
               {/* Stats Mini Cards */}
               <div className="hidden md:flex flex-row gap-2 animate-in slide-in-from-right duration-700">
                 <div className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20 text-center min-w-[120px]">

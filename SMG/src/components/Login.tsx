@@ -1,20 +1,32 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Lock, Mail, ArrowRight, Users, Shield, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Lock, Mail, ArrowRight, Users, Shield, Eye, EyeOff, AlertCircle, Crown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface LoginProps {
-  onLogin: (role: 'employee' | 'admin') => void;
+  onLogin: (role: 'employee' | 'admin' | 'super_admin') => void;
 }
 
 export function Login({ onLogin }: LoginProps) {
   const { login, error: authError } = useAuth();
   const [email, setEmail] = useState('employee@smg.com');
   const [password, setPassword] = useState('Test@123');
-  const [selectedRole, setSelectedRole] = useState<'employee' | 'admin'>('employee');
+  const [selectedRole, setSelectedRole] = useState<'employee' | 'admin' | 'super_admin'>('employee');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Update email and password when role changes
+  const handleRoleChange = (role: 'employee' | 'admin' | 'super_admin') => {
+    setSelectedRole(role);
+    if (role === 'super_admin') {
+      setEmail('aarushbhagat093@gmail.com');
+      setPassword('Aarush@11');
+    } else {
+      setEmail('employee@smg.com');
+      setPassword('Test@123');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,6 +56,12 @@ export function Login({ onLogin }: LoginProps) {
       label: 'Admin Portal',
       icon: Shield,
       description: 'Manage department operations'
+    },
+    {
+      id: 'super_admin' as const,
+      label: 'Super Admin Portal',
+      icon: Crown,
+      description: 'Full system administration'
     }
   ];
 
@@ -108,7 +126,7 @@ export function Login({ onLogin }: LoginProps) {
               </motion.div>
               {/* Portal Heading - Changes based on selected role */}
               <h1 className="text-4xl font-bold tracking-wide text-[#042A5B]">
-                {selectedRole === 'employee' ? 'Employee Portal' : 'Admin Portal'}
+                {selectedRole === 'employee' ? 'Employee Portal' : selectedRole === 'admin' ? 'Admin Portal' : 'Super Admin Portal'}
               </h1>
             </div>
           </motion.div>
@@ -120,12 +138,12 @@ export function Login({ onLogin }: LoginProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
           >
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-3">
               {roles.map((role, index) => (
                 <motion.button
                   key={role.id}
                   type="button"
-                  onClick={() => setSelectedRole(role.id)}
+                  onClick={() => handleRoleChange(role.id)}
                   className={`p-4 rounded-2xl border-2 transition-all ${selectedRole === role.id
                       ? 'border-[#0B4DA2] bg-[#0B4DA2] text-white shadow-lg shadow-blue-200'
                       : 'border-gray-200 bg-white text-gray-700 hover:border-[#87CEEB]'
@@ -136,7 +154,7 @@ export function Login({ onLogin }: LoginProps) {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <div className="text-sm">{role.label}</div>
+                  <div className="text-sm font-semibold">{role.label}</div>
                   <div className={`text-xs mt-1 ${selectedRole === role.id ? 'text-blue-100' : 'text-gray-500'
                     }`}>
                     {role.description}
@@ -174,8 +192,17 @@ export function Login({ onLogin }: LoginProps) {
             >
               <p className="text-sm text-blue-800 font-medium mb-2">📝 Test Credentials:</p>
               <div className="space-y-1 text-xs text-blue-700">
-                <p><strong>Email:</strong> employee@smg.com</p>
-                <p><strong>Password:</strong> Test@123</p>
+                {selectedRole === 'super_admin' ? (
+                  <>
+                    <p><strong>Email:</strong> aarushbhagat093@gmail.com</p>
+                    <p><strong>Password:</strong> Aarush@11</p>
+                  </>
+                ) : (
+                  <>
+                    <p><strong>Email:</strong> employee@smg.com</p>
+                    <p><strong>Password:</strong> Test@123</p>
+                  </>
+                )}
               </div>
             </motion.div>
 

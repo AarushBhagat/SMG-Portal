@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Bus, Car, MapPin, Clock, CheckCircle, AlertCircle, Home, Phone, Navigation } from 'lucide-react';
+import { Bus, Car, MapPin, Clock, CheckCircle, AlertCircle, Home, Phone, Navigation, FileText, IndianRupee, Plus, Trash2 } from 'lucide-react';
 import { useApp } from '../context/AppContextEnhanced';
 
 export const TransportPage = () => {
@@ -34,6 +34,55 @@ export const TransportPage = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [error, setError] = useState('');
+
+  // Reimbursement form state
+  const [showReimbursementForm, setShowReimbursementForm] = useState(false);
+  const [reimbursementForm, setReimbursementForm] = useState({
+    // Basic Info
+    name: currentUser?.name || '',
+    personalAddress: '',
+    contactNumber: '',
+    emailId: currentUser?.email || '',
+    
+    // For Interview Candidates (if applicable)
+    isInterviewCandidate: false,
+    dateOfInterview: '',
+    interviewDepartment: '',
+    interviewCCN: '',
+    candidateName: '',
+    postAppliedFor: '',
+    bankAccountNumber: '',
+    ddPayableAt: '',
+    
+    // For New Joinee/Employee
+    dateOfJoining: '',
+    employeeDepartment: currentUser?.department || '',
+    employeeCCN: '',
+    employeeName: currentUser?.name || '',
+    designation: currentUser?.designation || '',
+    employeeCode: currentUser?.empId || '',
+    modeOfTravelling: '',
+    travelFrom: '',
+    travelTo: '',
+    distanceCovered: '',
+    
+    // Expense entries
+    expenses: [
+      { srNo: 1, from: '', to: '', modeOfTravel: '', amount: '' }
+    ],
+    
+    // Total and signatures
+    totalInWords: '',
+    recruiterName: '',
+    candidateSignature: '',
+    
+    // Office use
+    sanctionedAmount: '',
+    authorizedSignatory: '',
+    accountsDepartment: '',
+    hrSignature: '',
+    date: new Date().toISOString().split('T')[0]
+  });
 
   const busStatusSteps = ['Submitted', 'Under Review', 'Route Assigned', 'Active'];
   const parkingStatusSteps = ['Submitted', 'Under Review', 'Approved', 'Slot Allocated'];
@@ -162,6 +211,81 @@ export const TransportPage = () => {
       preferredSlot: '',
       remarks: ''
     });
+    setTimeout(() => setShowSuccess(false), 3000);
+    setSubmitting(false);
+  };
+
+  // Reimbursement form handlers
+  const addExpenseRow = () => {
+    setReimbursementForm({
+      ...reimbursementForm,
+      expenses: [
+        ...reimbursementForm.expenses,
+        { srNo: reimbursementForm.expenses.length + 1, from: '', to: '', modeOfTravel: '', amount: '' }
+      ]
+    });
+  };
+
+  const removeExpenseRow = (index: number) => {
+    if (reimbursementForm.expenses.length > 1) {
+      const updatedExpenses = reimbursementForm.expenses.filter((_, i) => i !== index);
+      const renumbered = updatedExpenses.map((exp, i) => ({ ...exp, srNo: i + 1 }));
+      setReimbursementForm({ ...reimbursementForm, expenses: renumbered });
+    }
+  };
+
+  const updateExpenseRow = (index: number, field: string, value: string) => {
+    const updatedExpenses = [...reimbursementForm.expenses];
+    updatedExpenses[index] = { ...updatedExpenses[index], [field]: value };
+    setReimbursementForm({ ...reimbursementForm, expenses: updatedExpenses });
+  };
+
+  const calculateTotal = () => {
+    return reimbursementForm.expenses.reduce((sum, exp) => sum + (parseFloat(exp.amount) || 0), 0);
+  };
+
+  const handleReimbursementSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setSuccessMessage('Travel Expenses Reimbursement Form submitted successfully!');
+    setShowSuccess(true);
+    setShowReimbursementForm(false);
+    
+    // Reset form
+    setReimbursementForm({
+      name: currentUser?.name || '',
+      personalAddress: '',
+      contactNumber: '',
+      emailId: currentUser?.email || '',
+      isInterviewCandidate: false,
+      dateOfInterview: '',
+      interviewDepartment: '',
+      interviewCCN: '',
+      candidateName: '',
+      postAppliedFor: '',
+      bankAccountNumber: '',
+      ddPayableAt: '',
+      dateOfJoining: '',
+      employeeDepartment: currentUser?.department || '',
+      employeeCCN: '',
+      employeeName: currentUser?.name || '',
+      designation: currentUser?.designation || '',
+      employeeCode: currentUser?.empId || '',
+      modeOfTravelling: '',
+      travelFrom: '',
+      travelTo: '',
+      distanceCovered: '',
+      expenses: [{ srNo: 1, from: '', to: '', modeOfTravel: '', amount: '' }],
+      totalInWords: '',
+      recruiterName: '',
+      candidateSignature: '',
+      sanctionedAmount: '',
+      authorizedSignatory: '',
+      accountsDepartment: '',
+      hrSignature: '',
+      date: new Date().toISOString().split('T')[0]
+    });
+    
     setTimeout(() => setShowSuccess(false), 3000);
     setSubmitting(false);
   };
@@ -815,6 +939,513 @@ export const TransportPage = () => {
             </table>
           </div>
         </div>
+      </div>
+
+      {/* Travelling Expenses Reimbursement Form Section */}
+      <div className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <FileText className="text-[#0B4DA2]" size={24} />
+            <h3 className="text-[#1B254B] font-semibold text-lg">Travelling Expenses Reimbursement</h3>
+          </div>
+          {!showReimbursementForm && (
+            <button
+              onClick={() => setShowReimbursementForm(true)}
+              className="bg-[#0B4DA2] text-white px-6 py-2.5 rounded-xl font-bold hover:bg-[#042A5B] transition-colors flex items-center gap-2"
+            >
+              <Plus size={18} />
+              Submit Reimbursement
+            </button>
+          )}
+        </div>
+
+        {showReimbursementForm ? (
+          <form onSubmit={handleReimbursementSubmit} className="space-y-6">
+            {/* Form Header */}
+            <div className="bg-gradient-to-r from-[#0B4DA2] to-[#042A5B] rounded-xl p-4 text-center">
+              <h2 className="text-white font-bold text-lg uppercase tracking-wide">
+                Travelling Expenses Reimbursement Form
+              </h2>
+            </div>
+
+            {/* Basic Information */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Name *</label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none"
+                  value={reimbursementForm.name}
+                  onChange={(e) => setReimbursementForm({ ...reimbursementForm, name: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Personal Address *</label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none"
+                  value={reimbursementForm.personalAddress}
+                  onChange={(e) => setReimbursementForm({ ...reimbursementForm, personalAddress: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Contact Number *</label>
+                <input
+                  type="tel"
+                  required
+                  maxLength={10}
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none"
+                  value={reimbursementForm.contactNumber}
+                  onChange={(e) => setReimbursementForm({ ...reimbursementForm, contactNumber: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Email ID *</label>
+                <input
+                  type="email"
+                  required
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none"
+                  value={reimbursementForm.emailId}
+                  onChange={(e) => setReimbursementForm({ ...reimbursementForm, emailId: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {/* Interview Candidate Toggle */}
+            <div className="flex items-center gap-3 bg-yellow-50 p-4 rounded-xl border-2 border-yellow-200">
+              <input
+                type="checkbox"
+                id="isInterviewCandidate"
+                className="w-5 h-5 text-[#0B4DA2] rounded focus:ring-[#0B4DA2]"
+                checked={reimbursementForm.isInterviewCandidate}
+                onChange={(e) => setReimbursementForm({ ...reimbursementForm, isInterviewCandidate: e.target.checked })}
+              />
+              <label htmlFor="isInterviewCandidate" className="text-[#1B254B] font-semibold cursor-pointer">
+                I am an Interview Candidate
+              </label>
+            </div>
+
+            {/* For Interview Candidates Section */}
+            {reimbursementForm.isInterviewCandidate && (
+              <div className="bg-yellow-50 p-6 rounded-xl border-2 border-yellow-200 space-y-4">
+                <h4 className="text-[#1B254B] font-bold uppercase text-sm mb-4 flex items-center gap-2">
+                  <div className="w-1 h-6 bg-yellow-500"></div>
+                  For Interview Candidates
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Date Of Interview *</label>
+                    <input
+                      type="date"
+                      required={reimbursementForm.isInterviewCandidate}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-white"
+                      value={reimbursementForm.dateOfInterview}
+                      onChange={(e) => setReimbursementForm({ ...reimbursementForm, dateOfInterview: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Department *</label>
+                    <input
+                      type="text"
+                      required={reimbursementForm.isInterviewCandidate}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-white"
+                      value={reimbursementForm.interviewDepartment}
+                      onChange={(e) => setReimbursementForm({ ...reimbursementForm, interviewDepartment: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">CCN</label>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-white"
+                      value={reimbursementForm.interviewCCN}
+                      onChange={(e) => setReimbursementForm({ ...reimbursementForm, interviewCCN: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Candidates Name *</label>
+                    <input
+                      type="text"
+                      required={reimbursementForm.isInterviewCandidate}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-white"
+                      value={reimbursementForm.candidateName}
+                      onChange={(e) => setReimbursementForm({ ...reimbursementForm, candidateName: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Post Applied For *</label>
+                    <input
+                      type="text"
+                      required={reimbursementForm.isInterviewCandidate}
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-white"
+                      value={reimbursementForm.postAppliedFor}
+                      onChange={(e) => setReimbursementForm({ ...reimbursementForm, postAppliedFor: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Bank Personal Account Number</label>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-white"
+                      value={reimbursementForm.bankAccountNumber}
+                      onChange={(e) => setReimbursementForm({ ...reimbursementForm, bankAccountNumber: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">DD payable at City name</label>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-white"
+                      value={reimbursementForm.ddPayableAt}
+                      onChange={(e) => setReimbursementForm({ ...reimbursementForm, ddPayableAt: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* For NEW Joinee/Employee Section */}
+            <div className="bg-blue-50 p-6 rounded-xl border-2 border-blue-200 space-y-4">
+              <h4 className="text-[#1B254B] font-bold uppercase text-sm mb-4 flex items-center gap-2">
+                <div className="w-1 h-6 bg-[#0B4DA2]"></div>
+                For NEW Joinee/Employee
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Date of Joining</label>
+                  <input
+                    type="date"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-white"
+                    value={reimbursementForm.dateOfJoining}
+                    onChange={(e) => setReimbursementForm({ ...reimbursementForm, dateOfJoining: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Department *</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-white"
+                    value={reimbursementForm.employeeDepartment}
+                    onChange={(e) => setReimbursementForm({ ...reimbursementForm, employeeDepartment: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">CCN</label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-white"
+                    value={reimbursementForm.employeeCCN}
+                    onChange={(e) => setReimbursementForm({ ...reimbursementForm, employeeCCN: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Employees Name *</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-white"
+                    value={reimbursementForm.employeeName}
+                    onChange={(e) => setReimbursementForm({ ...reimbursementForm, employeeName: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Designation *</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-white"
+                    value={reimbursementForm.designation}
+                    onChange={(e) => setReimbursementForm({ ...reimbursementForm, designation: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Employee Code *</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-white"
+                    value={reimbursementForm.employeeCode}
+                    onChange={(e) => setReimbursementForm({ ...reimbursementForm, employeeCode: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Mode of Travelling Committed *</label>
+                <select
+                  required
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-white"
+                  value={reimbursementForm.modeOfTravelling}
+                  onChange={(e) => setReimbursementForm({ ...reimbursementForm, modeOfTravelling: e.target.value })}
+                >
+                  <option value="">Select Mode</option>
+                  <option value="SL">SL (Sleeper Class)</option>
+                  <option value="2nd AC">2nd AC</option>
+                  <option value="3rd AC">3rd AC</option>
+                  <option value="CC">CC (Chair Car)</option>
+                  <option value="Volvo">Volvo</option>
+                  <option value="Economic Air Fare">Economic Air Fare</option>
+                </select>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">From *</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-white"
+                    value={reimbursementForm.travelFrom}
+                    onChange={(e) => setReimbursementForm({ ...reimbursementForm, travelFrom: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">To *</label>
+                  <input
+                    type="text"
+                    required
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-white"
+                    value={reimbursementForm.travelTo}
+                    onChange={(e) => setReimbursementForm({ ...reimbursementForm, travelTo: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Distance Covered (in kms) *</label>
+                  <input
+                    type="number"
+                    required
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-white"
+                    value={reimbursementForm.distanceCovered}
+                    onChange={(e) => setReimbursementForm({ ...reimbursementForm, distanceCovered: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Expense Table */}
+            <div className="space-y-4">
+              <div className="flex items-start gap-2 bg-gray-50 p-4 rounded-xl">
+                <AlertCircle size={20} className="text-[#0B4DA2] shrink-0 mt-0.5" />
+                <p className="text-sm text-gray-600">
+                  <span className="font-semibold text-[#1B254B]">Please Mention Travelling expenses (to & Fro):</span> Attach Railway tickets/Bus Tickets/Air Tickets (Boarding Pass Compulsory)/Taxi Receipt/RC No/Mode by (Petrol/Diesel), Toll Tax Slips & kms if using own car.
+                </p>
+              </div>
+
+              <div className="overflow-x-auto border-2 border-gray-200 rounded-xl">
+                <table className="w-full">
+                  <thead className="bg-gradient-to-r from-[#0B4DA2] to-[#042A5B] text-white">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-bold">Sr no</th>
+                      <th className="px-4 py-3 text-left text-sm font-bold">From</th>
+                      <th className="px-4 py-3 text-left text-sm font-bold">To</th>
+                      <th className="px-4 py-3 text-left text-sm font-bold">Mode Of Travel</th>
+                      <th className="px-4 py-3 text-left text-sm font-bold">Amount (in Rs)</th>
+                      <th className="px-4 py-3 text-center text-sm font-bold">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reimbursementForm.expenses.map((expense, index) => (
+                      <tr key={index} className="border-t border-gray-200 hover:bg-gray-50">
+                        <td className="px-4 py-3 text-sm font-semibold text-[#1B254B]">{expense.srNo}</td>
+                        <td className="px-4 py-3">
+                          <input
+                            type="text"
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#0B4DA2] outline-none text-sm"
+                            value={expense.from}
+                            onChange={(e) => updateExpenseRow(index, 'from', e.target.value)}
+                            placeholder="From location"
+                          />
+                        </td>
+                        <td className="px-4 py-3">
+                          <input
+                            type="text"
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#0B4DA2] outline-none text-sm"
+                            value={expense.to}
+                            onChange={(e) => updateExpenseRow(index, 'to', e.target.value)}
+                            placeholder="To location"
+                          />
+                        </td>
+                        <td className="px-4 py-3">
+                          <input
+                            type="text"
+                            required
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#0B4DA2] outline-none text-sm"
+                            value={expense.modeOfTravel}
+                            onChange={(e) => updateExpenseRow(index, 'modeOfTravel', e.target.value)}
+                            placeholder="Train/Bus/Air/Taxi"
+                          />
+                        </td>
+                        <td className="px-4 py-3">
+                          <input
+                            type="number"
+                            required
+                            min="0"
+                            step="0.01"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-[#0B4DA2] outline-none text-sm"
+                            value={expense.amount}
+                            onChange={(e) => updateExpenseRow(index, 'amount', e.target.value)}
+                            placeholder="0.00"
+                          />
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {reimbursementForm.expenses.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeExpenseRow(index)}
+                              className="text-red-500 hover:text-red-700 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot className="bg-gray-50 border-t-2 border-gray-300">
+                    <tr>
+                      <td colSpan={4} className="px-4 py-3 text-right font-bold text-[#1B254B]">Total (in Rs)</td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-lg border-2 border-[#0B4DA2]">
+                          <IndianRupee size={16} className="text-[#0B4DA2]" />
+                          <span className="font-bold text-[#0B4DA2]">{calculateTotal().toFixed(2)}</span>
+                        </div>
+                      </td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+
+              <button
+                type="button"
+                onClick={addExpenseRow}
+                className="w-full bg-gray-100 text-[#0B4DA2] py-3 rounded-xl font-bold hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 border-2 border-dashed border-gray-300"
+              >
+                <Plus size={20} />
+                Add Another Expense Row
+              </button>
+
+              <div>
+                <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Total In Words *</label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none"
+                  value={reimbursementForm.totalInWords}
+                  onChange={(e) => setReimbursementForm({ ...reimbursementForm, totalInWords: e.target.value })}
+                  placeholder="e.g., Five Thousand Rupees Only"
+                />
+              </div>
+            </div>
+
+            {/* Signatures Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-6 bg-gray-50 rounded-xl border-2 border-gray-200">
+              <div>
+                <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Recruiter Name & Signature</label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-white"
+                  value={reimbursementForm.recruiterName}
+                  onChange={(e) => setReimbursementForm({ ...reimbursementForm, recruiterName: e.target.value })}
+                  placeholder="Recruiter name (if applicable)"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Signature of the Candidate *</label>
+                <input
+                  type="text"
+                  required
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-white"
+                  value={reimbursementForm.candidateSignature}
+                  onChange={(e) => setReimbursementForm({ ...reimbursementForm, candidateSignature: e.target.value })}
+                  placeholder="Type your full name"
+                />
+              </div>
+            </div>
+
+            {/* For Office Use Only */}
+            <div className="bg-yellow-50 p-6 rounded-xl border-2 border-yellow-300 space-y-4">
+              <h4 className="text-[#1B254B] font-bold uppercase text-center text-sm mb-4 bg-yellow-200 py-2 rounded-lg">
+                FOR OFFICE USE ONLY
+              </h4>
+              <div>
+                <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Amount of Fare sanctioned in words & Figures</label>
+                <textarea
+                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-white resize-none"
+                  rows={2}
+                  value={reimbursementForm.sanctionedAmount}
+                  onChange={(e) => setReimbursementForm({ ...reimbursementForm, sanctionedAmount: e.target.value })}
+                  placeholder="To be filled by office"
+                  disabled
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Authorized Signatory</label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-gray-100"
+                    value={reimbursementForm.authorizedSignatory}
+                    onChange={(e) => setReimbursementForm({ ...reimbursementForm, authorizedSignatory: e.target.value })}
+                    disabled
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Accounts Department</label>
+                  <input
+                    type="text"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-gray-100"
+                    value={reimbursementForm.accountsDepartment}
+                    onChange={(e) => setReimbursementForm({ ...reimbursementForm, accountsDepartment: e.target.value })}
+                    disabled
+                  />
+                </div>
+                <div>
+                  <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Date</label>
+                  <input
+                    type="date"
+                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none bg-gray-100"
+                    value={reimbursementForm.date}
+                    disabled
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Form Actions */}
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => setShowReimbursementForm(false)}
+                className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-xl font-bold hover:bg-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="flex-1 bg-[#0B4DA2] text-white py-3 rounded-xl font-bold hover:bg-[#042A5B] transition-colors disabled:bg-gray-400"
+              >
+                {submitting ? 'Submitting...' : 'Submit Reimbursement Form'}
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="text-center py-12">
+            <FileText size={64} className="mx-auto mb-4 text-gray-300" />
+            <p className="text-gray-500 mb-2">No reimbursement form submitted yet</p>
+            <p className="text-sm text-gray-400">Click "Submit Reimbursement" button above to fill the travel expenses form</p>
+          </div>
+        )}
       </div>
     </div>
   );
