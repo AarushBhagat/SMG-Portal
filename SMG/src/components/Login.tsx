@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'motion/react';
-import { Lock, Mail, ArrowRight, Users, Shield, Eye, EyeOff, AlertCircle, Crown } from 'lucide-react';
+import { Lock, Mail, ArrowRight, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface LoginProps {
@@ -9,24 +9,11 @@ interface LoginProps {
 
 export function Login({ onLogin }: LoginProps) {
   const { login, error: authError } = useAuth();
-  const [email, setEmail] = useState('employee@smg.com');
-  const [password, setPassword] = useState('Test@123');
-  const [selectedRole, setSelectedRole] = useState<'employee' | 'admin' | 'super_admin'>('employee');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Update email and password when role changes
-  const handleRoleChange = (role: 'employee' | 'admin' | 'super_admin') => {
-    setSelectedRole(role);
-    if (role === 'super_admin') {
-      setEmail('aarushbhagat093@gmail.com');
-      setPassword('Aarush@11');
-    } else {
-      setEmail('employee@smg.com');
-      setPassword('Test@123');
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,7 +22,7 @@ export function Login({ onLogin }: LoginProps) {
 
     try {
       await login(email, password);
-      // Login successful - AuthContext will handle the redirect
+      // Login successful - AuthContext will handle the redirect based on user role
     } catch (err: any) {
       console.error('Login failed:', err);
       setError(err.message || 'Invalid email or password');
@@ -43,27 +30,6 @@ export function Login({ onLogin }: LoginProps) {
       setIsLoading(false);
     }
   };
-
-  const roles = [
-    {
-      id: 'employee' as const,
-      label: 'Employee Portal',
-      icon: Users,
-      description: 'Access your personal dashboard'
-    },
-    {
-      id: 'admin' as const,
-      label: 'Admin Portal',
-      icon: Shield,
-      description: 'Manage department operations'
-    },
-    {
-      id: 'super_admin' as const,
-      label: 'Super Admin Portal',
-      icon: Crown,
-      description: 'Full system administration'
-    }
-  ];
 
   return (
     <div className="min-h-screen flex">
@@ -124,43 +90,11 @@ export function Login({ onLogin }: LoginProps) {
                   className="w-48 h-auto ml-6"
                 />
               </motion.div>
-              {/* Portal Heading - Changes based on selected role */}
+              {/* Portal Heading */}
               <h1 className="text-4xl font-bold tracking-wide text-[#042A5B]">
-                {selectedRole === 'employee' ? 'Employee Portal' : selectedRole === 'admin' ? 'Admin Portal' : 'Super Admin Portal'}
+                SMG Employee Portal
               </h1>
-            </div>
-          </motion.div>
-
-          {/* Role Selection */}
-          <motion.div
-            className="mb-6"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-          >
-            <div className="grid grid-cols-3 gap-3">
-              {roles.map((role, index) => (
-                <motion.button
-                  key={role.id}
-                  type="button"
-                  onClick={() => handleRoleChange(role.id)}
-                  className={`p-4 rounded-2xl border-2 transition-all ${selectedRole === role.id
-                      ? 'border-[#0B4DA2] bg-[#0B4DA2] text-white shadow-lg shadow-blue-200'
-                      : 'border-gray-200 bg-white text-gray-700 hover:border-[#87CEEB]'
-                    }`}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 + index * 0.1 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <div className="text-sm font-semibold">{role.label}</div>
-                  <div className={`text-xs mt-1 ${selectedRole === role.id ? 'text-blue-100' : 'text-gray-500'
-                    }`}>
-                    {role.description}
-                  </div>
-                </motion.button>
-              ))}
+              <p className="text-gray-600 mt-2">Sign in to access your account</p>
             </div>
           </motion.div>
 
@@ -183,29 +117,6 @@ export function Login({ onLogin }: LoginProps) {
                 <p className="text-sm text-red-800">{error || authError}</p>
               </motion.div>
             )}
-
-            {/* Demo Credentials Info */}
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-4 rounded-xl bg-blue-50 border border-blue-200"
-            >
-              <p className="text-sm text-blue-800 font-medium mb-2">📝 Test Credentials:</p>
-              <div className="space-y-1 text-xs text-blue-700">
-                {selectedRole === 'super_admin' ? (
-                  <>
-                    <p><strong>Email:</strong> aarushbhagat093@gmail.com</p>
-                    <p><strong>Password:</strong> Aarush@11</p>
-                  </>
-                ) : (
-                  <>
-                    <p><strong>Email:</strong> employee@smg.com</p>
-                    <p><strong>Password:</strong> Test@123</p>
-                  </>
-                )}
-              </div>
-            </motion.div>
-
             {/* Email Input */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -346,44 +257,23 @@ export function Login({ onLogin }: LoginProps) {
         <div className="absolute inset-0 z-20 flex items-center justify-center p-16">
           <div className="text-white space-y-8 max-w-3xl">
             <motion.div
-              key={selectedRole}
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -30 }}
               transition={{ duration: 0.8 }}
               className="text-center"
             >
-              {selectedRole === 'employee' ? (
-                <>
-                  <h2 className="text-7xl font-extrabold mb-8 leading-tight tracking-tight drop-shadow-lg">
-                    Welcome to SMG
-                  </h2>
-                  <p className="text-3xl font-semibold text-white/95 leading-relaxed drop-shadow-md px-8">
-                    {(() => {
-                      const hour = new Date().getHours();
-                      if (hour < 12) return 'Good Morning! ';
-                      if (hour < 18) return 'Good Afternoon! ';
-                      return 'Good Evening! ';
-                    })()}
-                    Access your dashboard, submit requests, view documents, and manage your HR tasks seamlessly
-                  </p>
-                </>
-              ) : (
-                <>
-                  <h2 className="text-7xl font-extrabold mb-8 leading-tight tracking-tight drop-shadow-lg">
-                    Welcome Admin
-                  </h2>
-                  <p className="text-3xl font-semibold text-white/95 leading-relaxed drop-shadow-md px-8">
-                    {(() => {
-                      const hour = new Date().getHours();
-                      if (hour < 12) return 'Good Morning! ';
-                      if (hour < 18) return 'Good Afternoon! ';
-                      return 'Good Evening! ';
-                    })()}
-                    Manage employees, review requests, oversee operations, and maintain organizational excellence
-                  </p>
-                </>
-              )}
+              <h2 className="text-7xl font-extrabold mb-8 leading-tight tracking-tight drop-shadow-lg">
+                Welcome to SMG
+              </h2>
+              <p className="text-3xl font-semibold text-white/95 leading-relaxed drop-shadow-md px-8">
+                {(() => {
+                  const hour = new Date().getHours();
+                  if (hour < 12) return 'Good Morning! ';
+                  if (hour < 18) return 'Good Afternoon! ';
+                  return 'Good Evening! ';
+                })()}
+                Access your dashboard, submit requests, view documents, and manage your HR tasks seamlessly
+              </p>
             </motion.div>
           </div>
         </div>
