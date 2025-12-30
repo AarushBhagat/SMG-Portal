@@ -44,7 +44,7 @@ const DepartmentPortal = ({ departmentName, departmentId, onBack }: DepartmentPo
           className="flex items-center gap-2 text-[#0B4DA2] hover:text-[#042A5B] font-semibold mb-8 transition-colors group"
         >
           <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-          Back to Portal Selection
+          Logout
         </button>
 
         {/* Under Construction Card */}

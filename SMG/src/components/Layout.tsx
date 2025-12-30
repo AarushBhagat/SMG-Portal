@@ -6,16 +6,12 @@ import { MobileDrawer } from './MobileDrawer';
 import { MobileBottomNav } from './MobileBottomNav';
 
 export function Layout() {
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   return (
     <div className="flex h-screen overflow-hidden" style={{ backgroundColor: 'var(--smg-bg)' }}>
       {/* Desktop Sidebar */}
-      <Sidebar
-        isCollapsed={isSidebarCollapsed}
-        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-      />
+      <Sidebar />
 
       {/* Mobile Drawer */}
       <MobileDrawer

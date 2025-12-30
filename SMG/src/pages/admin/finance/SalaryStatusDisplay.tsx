@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DollarSign, Search, Calendar, Download, Filter } from 'lucide-react';
+import { IndianRupee, Search, Calendar, Download, Filter } from 'lucide-react';
 
 interface SalaryRecord {
   id: number;
@@ -94,7 +94,7 @@ export const SalaryStatusDisplay = () => {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-[#1B254B] flex items-center gap-3">
-          <DollarSign className="text-green-500" size={36} />
+          <IndianRupee className="text-green-500" size={36} />
           Salary Status Display
         </h1>
         <p className="text-gray-500 mt-1">View and manage employee salary records</p>
@@ -105,7 +105,7 @@ export const SalaryStatusDisplay = () => {
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-              <DollarSign className="text-green-500" size={24} />
+              <IndianRupee className="text-green-500" size={24} />
             </div>
             <div>
               <p className="text-2xl font-bold text-[#1B254B]">{salaryRecords.filter(r => r.status === 'Paid').length}</p>
@@ -127,7 +127,7 @@ export const SalaryStatusDisplay = () => {
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-              <DollarSign className="text-blue-500" size={24} />
+              <IndianRupee className="text-blue-500" size={24} />
             </div>
             <div>
               <p className="text-2xl font-bold text-[#1B254B]">₹{(totalPaid / 100000).toFixed(2)}L</p>

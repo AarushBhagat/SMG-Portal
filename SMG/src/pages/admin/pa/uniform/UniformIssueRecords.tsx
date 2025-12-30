@@ -10,7 +10,7 @@ interface IssueRecord {
   sizes: string;
   issueDate: string;
   issuedBy: string;
-  category: 'New Joiner' | 'Replacement' | 'Additional';
+  category: 'New Joiner' | 'Additional';
 }
 
 export const UniformIssueRecords = () => {
@@ -43,11 +43,11 @@ export const UniformIssueRecords = () => {
       empName: 'Rajesh Patel',
       empId: 'SMG-2024-123',
       dept: 'Finance',
-      items: 'Pants',
-      sizes: '36',
+      items: 'Shirt (Extra)',
+      sizes: 'L',
       issueDate: '2024-12-20',
       issuedBy: 'P&A Admin',
-      category: 'Replacement'
+      category: 'Additional'
     }
   ]);
 
@@ -67,7 +67,7 @@ export const UniformIssueRecords = () => {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
@@ -87,17 +87,6 @@ export const UniformIssueRecords = () => {
             <div>
               <p className="text-2xl font-bold text-[#1B254B]">{records.filter(r => r.category === 'New Joiner').length}</p>
               <p className="text-sm text-gray-500">New Joiners</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-              <ShirtIcon className="text-orange-500" size={24} />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-[#1B254B]">{records.filter(r => r.category === 'Replacement').length}</p>
-              <p className="text-sm text-gray-500">Replacements</p>
             </div>
           </div>
         </div>
@@ -161,7 +150,6 @@ export const UniformIssueRecords = () => {
                   <td className="py-4 px-4">
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                       record.category === 'New Joiner' ? 'bg-green-100 text-green-700' :
-                      record.category === 'Replacement' ? 'bg-orange-100 text-orange-700' :
                       'bg-blue-100 text-blue-700'
                     }`}>
                       {record.category}

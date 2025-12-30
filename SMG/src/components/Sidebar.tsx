@@ -158,11 +158,9 @@ const navigationItems: MenuItem[] = [
 ];
 
 interface SidebarProps {
-  isCollapsed: boolean;
-  onToggleCollapse: () => void;
 }
 
-export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
+export function Sidebar() {
   const [openDropdowns, setOpenDropdowns] = useState<string[]>(['leaves', 'my-request']);
 
   const toggleDropdown = (id: string) => {
@@ -173,23 +171,16 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
 
   return (
     <aside
-      className={`hidden lg:flex flex-col h-screen bg-[#1e3a5f] transition-all duration-300 shadow-lg ${isCollapsed ? 'w-20' : 'w-72'
-        }`}
+      className="hidden lg:flex flex-col h-screen bg-[#1e3a5f] w-72 shadow-lg"
       style={{ borderRight: '1px solid rgba(255,255,255,0.1)' }}
       aria-label="Main navigation"
     >
       {/* Logo */}
       <div className="h-16 flex items-center justify-center px-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-        {isCollapsed ? (
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md bg-white">
-            <span className="text-[#1e3a5f] font-bold text-lg">S</span>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center gap-2 w-full">
-            <h3 className="text-2xl font-bold text-white tracking-wider">SMG</h3>
-            <p className="text-xs text-white/80">Employee Portal</p>
-          </div>
-        )}
+        <div className="flex flex-col items-center gap-2 w-full">
+          <h3 className="text-2xl font-bold text-white tracking-wider">SMG</h3>
+          <p className="text-xs text-white/80">Employee Portal</p>
+        </div>
       </div>
 
       {/* Navigation */}
@@ -201,7 +192,7 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
               {item.subItems ? (
                 <div>
                   <button
-                    onClick={() => !isCollapsed && toggleDropdown(item.id)}
+                    onClick={() => toggleDropdown(item.id)}
                     className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl transition-all group ${openDropdowns.includes(item.id)
                         ? 'bg-white/10 text-white'
                         : 'text-white/80 hover:bg-white/5 hover:text-white'
@@ -210,26 +201,20 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
                     aria-label={item.name}
                   >
                     <div className="flex items-center gap-3">
-                      <item.icon
-                        size={20}
-                        strokeWidth={2}
-                        className={isCollapsed ? 'mx-auto' : ''}
-                      />
-                      {!isCollapsed && <span className="text-sm font-normal">{item.name}</span>}
+                      <item.icon size={20} strokeWidth={2} />
+                      <span className="text-sm font-normal">{item.name}</span>
                     </div>
-                    {!isCollapsed && (
-                      <motion.div
-                        animate={{ rotate: openDropdowns.includes(item.id) ? 180 : 0 }}
-                        transition={{ duration: 0.2 }}
-                      >
-                        <ChevronDown size={16} />
-                      </motion.div>
-                    )}
+                    <motion.div
+                      animate={{ rotate: openDropdowns.includes(item.id) ? 180 : 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <ChevronDown size={16} />
+                    </motion.div>
                   </button>
 
                   {/* Dropdown menu with animation */}
                   <AnimatePresence>
-                    {openDropdowns.includes(item.id) && !isCollapsed && (
+                    {openDropdowns.includes(item.id) && (
                       <motion.ul
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
@@ -274,8 +259,8 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
                   }
                   aria-label={item.name}
                 >
-                  <item.icon size={20} strokeWidth={2} className={isCollapsed ? 'mx-auto' : ''} />
-                  {!isCollapsed && <span className="text-sm font-normal">{item.name}</span>}
+                  <item.icon size={20} strokeWidth={2} />
+                  <span className="text-sm font-normal">{item.name}</span>
                 </NavLink>
               )}
             </li>
@@ -284,31 +269,12 @@ export function Sidebar({ isCollapsed, onToggleCollapse }: SidebarProps) {
       </nav>
 
       {/* Footer - Company Info */}
-      {!isCollapsed && (
-        <div className="px-4 py-3" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
-          <div className="bg-white/10 rounded-xl p-3">
-            <p className="text-xs text-white/60 mb-1">Powered by</p>
-            <p className="text-sm text-white font-medium">SMG Scooters Pvt Ltd</p>
-          </div>
+      <div className="px-4 py-3" style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}>
+        <div className="bg-white/10 rounded-xl p-3">
+          <p className="text-xs text-white/60 mb-1">Powered by</p>
+          <p className="text-sm text-white font-medium">SMG Scooters Pvt Ltd</p>
         </div>
-      )}
-
-      {/* Toggle button */}
-      <button
-        onClick={onToggleCollapse}
-        className="h-14 flex items-center justify-center hover:bg-white/5 transition-colors text-white/80 hover:text-white"
-        style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}
-        aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-      >
-        {isCollapsed ? (
-          <ChevronRight size={20} />
-        ) : (
-          <div className="flex items-center gap-2">
-            <ChevronLeft size={20} />
-            <span className="text-sm font-normal">Collapse</span>
-          </div>
-        )}
-      </button>
+      </div>
     </aside>
   );
 }

@@ -21,9 +21,9 @@ export const UniformRequestApproval = () => {
       empName: 'Vikram Singh',
       empId: 'SMG-2024-189',
       dept: 'Production',
-      requestType: 'Replacement',
-      reason: 'Damaged uniform pants',
-      items: 'Pants (Size 34)',
+      requestType: 'New Joiner',
+      reason: 'New employee joining production team',
+      items: 'Full Set (Shirt + Pants + Safety Shoes)',
       requestDate: '2024-12-26 11:00 AM',
       status: 'Pending'
     },
@@ -70,7 +70,7 @@ export const UniformRequestApproval = () => {
           <ShirtIcon className="text-purple-500" size={36} />
           Uniform Request Approval
         </h1>
-        <p className="text-gray-500 mt-1">Approve uniform replacement & additional requests from employees</p>
+        <p className="text-gray-500 mt-1">Approve uniform requests for new joiners & additional requirements</p>
       </div>
 
       {/* Stats */}

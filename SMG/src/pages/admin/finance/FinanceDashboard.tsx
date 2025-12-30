@@ -1,4 +1,4 @@
-import { DollarSign, Shield, TrendingUp, Package, Users, FileText } from 'lucide-react';
+import { IndianRupee, Shield, TrendingUp, Package, Users, FileText } from 'lucide-react';
 
 export const FinanceDashboard = () => {
   return (
@@ -13,7 +13,7 @@ export const FinanceDashboard = () => {
         <div className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all border border-gray-200">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-blue-100 rounded-2xl flex items-center justify-center shadow-lg">
-              <DollarSign className="text-blue-500" size={24} />
+              <IndianRupee className="text-blue-500" size={24} />
             </div>
             <div>
               <p className="text-2xl font-bold text-[#1B254B]">245</p>
@@ -63,7 +63,7 @@ export const FinanceDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
           <div className="flex items-center gap-3 mb-4">
-            <DollarSign className="text-blue-500" size={24} />
+            <IndianRupee className="text-blue-500" size={24} />
             <h2 className="text-xl font-bold text-[#1B254B]">Recent Salary Updates</h2>
           </div>
           <div className="space-y-3">

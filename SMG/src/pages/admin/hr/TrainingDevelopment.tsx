@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { GraduationCap, Plus, Calendar, Users, Download, Send, Award } from 'lucide-react';
+import { GraduationCap, Plus, Calendar, Users, Download, Send, Award, X } from 'lucide-react';
 
 export const TrainingDevelopment = () => {
   const [activeTab, setActiveTab] = useState('history');
-
-  const trainingHistory = [
+  const [showAddTrainingModal, setShowAddTrainingModal] = useState(false);
+  const [trainingHistory, setTrainingHistory] = useState([
     {
       id: 'TR-001',
       employeeName: 'Rahul Kumar',
@@ -32,9 +32,9 @@ export const TrainingDevelopment = () => {
       status: 'In Progress',
       certificateIssued: false,
     },
-  ];
+  ]);
 
-  const upcomingTrainings = [
+  const [upcomingTrainings, setUpcomingTrainings] = useState([
     {
       id: 'UT-001',
       trainingName: 'Advanced EV Servicing',
@@ -53,7 +53,36 @@ export const TrainingDevelopment = () => {
       department: 'Management',
       trainer: 'Ms Priya Sharma',
     },
-  ];
+  ]);
+
+  const [newTraining, setNewTraining] = useState({
+    trainingName: '',
+    date: '',
+    duration: '',
+    participants: '',
+    department: '',
+    trainer: ''
+  });
+
+  const handleAddTraining = () => {
+    const trainingId = `UT-${String(upcomingTrainings.length + 1).padStart(3, '0')}`;
+    const training = {
+      id: trainingId,
+      ...newTraining,
+      participants: parseInt(newTraining.participants)
+    };
+    setUpcomingTrainings([...upcomingTrainings, training]);
+    setShowAddTrainingModal(false);
+    setActiveTab('upcoming'); // Switch to upcoming tab to show the new training
+    setNewTraining({
+      trainingName: '',
+      date: '',
+      duration: '',
+      participants: '',
+      department: '',
+      trainer: ''
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -64,7 +93,10 @@ export const TrainingDevelopment = () => {
             <h2 className="text-2xl font-bold mb-2">Training & Development</h2>
             <p className="text-white/80">Employee Training Programs & Skill Development</p>
           </div>
-          <button className="bg-white text-[#0B4DA2] px-6 py-3 rounded-xl font-bold hover:bg-gray-100 transition-all flex items-center gap-2">
+          <button 
+            onClick={() => setShowAddTrainingModal(true)}
+            className="bg-white text-[#0B4DA2] px-6 py-3 rounded-xl font-bold hover:bg-gray-100 transition-all flex items-center gap-2"
+          >
             <Plus size={20} />
             Add Training
           </button>
@@ -206,7 +238,141 @@ export const TrainingDevelopment = () => {
                 </button>
               </div>
             </div>
-          ))}
+          ))}        </div>
+      )}
+
+      {/* Add Training Modal */}
+      {showAddTrainingModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-gradient-to-r from-[#0B4DA2] to-[#042A5B] p-6 rounded-t-2xl text-white flex justify-between items-center sticky top-0 z-10">
+              <div>
+                <h2 className="text-2xl font-bold">Add New Training</h2>
+                <p className="text-white/80 text-sm mt-1">Schedule a new training program</p>
+              </div>
+              <button
+                onClick={() => setShowAddTrainingModal(false)}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              {/* Training Information */}
+              <div className="space-y-4">
+                <h3 className="font-bold text-[#1B254B] text-lg border-b-2 border-gray-200 pb-2">Training Information</h3>
+                
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Training Name *</label>
+                  <input
+                    type="text"
+                    value={newTraining.trainingName}
+                    onChange={(e) => setNewTraining({...newTraining, trainingName: e.target.value})}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg font-medium focus:border-blue-500 focus:outline-none"
+                    placeholder="e.g., Advanced EV Servicing"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Department *</label>
+                    <select
+                      value={newTraining.department}
+                      onChange={(e) => setNewTraining({...newTraining, department: e.target.value})}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg font-medium focus:border-blue-500 focus:outline-none"
+                    >
+                      <option value="">Select Department</option>
+                      <option value="Technical">Technical</option>
+                      <option value="Management">Management</option>
+                      <option value="Sales">Sales</option>
+                      <option value="HR">HR</option>
+                      <option value="Finance">Finance</option>
+                      <option value="R&D">R&D</option>
+                      <option value="Production">Production</option>
+                      <option value="Quality">Quality</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Trainer Name *</label>
+                    <input
+                      type="text"
+                      value={newTraining.trainer}
+                      onChange={(e) => setNewTraining({...newTraining, trainer: e.target.value})}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg font-medium focus:border-blue-500 focus:outline-none"
+                      placeholder="e.g., Mr Rajesh Gupta"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Schedule Details */}
+              <div className="space-y-4">
+                <h3 className="font-bold text-[#1B254B] text-lg border-b-2 border-gray-200 pb-2">Schedule Details</h3>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Date *</label>
+                    <input
+                      type="date"
+                      value={newTraining.date}
+                      onChange={(e) => setNewTraining({...newTraining, date: e.target.value})}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg font-medium focus:border-blue-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Duration *</label>
+                    <select
+                      value={newTraining.duration}
+                      onChange={(e) => setNewTraining({...newTraining, duration: e.target.value})}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg font-medium focus:border-blue-500 focus:outline-none"
+                    >
+                      <option value="">Select Duration</option>
+                      <option value="Half Day">Half Day</option>
+                      <option value="1 Day">1 Day</option>
+                      <option value="2 Days">2 Days</option>
+                      <option value="3 Days">3 Days</option>
+                      <option value="5 Days">5 Days</option>
+                      <option value="1 Week">1 Week</option>
+                      <option value="2 Weeks">2 Weeks</option>
+                      <option value="1 Month">1 Month</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Expected Participants *</label>
+                  <input
+                    type="number"
+                    value={newTraining.participants}
+                    onChange={(e) => setNewTraining({...newTraining, participants: e.target.value})}
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg font-medium focus:border-blue-500 focus:outline-none"
+                    placeholder="Enter number of participants"
+                    min="1"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 bg-gray-50 rounded-b-2xl flex gap-3 justify-end border-t border-gray-200 sticky bottom-0">
+              <button
+                onClick={() => setShowAddTrainingModal(false)}
+                className="px-6 py-3 rounded-xl font-bold text-gray-700 hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddTraining}
+                disabled={!newTraining.trainingName || !newTraining.date || !newTraining.duration || !newTraining.department}
+                className="bg-gradient-to-r from-[#0B4DA2] to-[#042A5B] text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Plus size={20} />
+                Add Training
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

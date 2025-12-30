@@ -267,7 +267,7 @@ export const KeyPersonInformation = () => {
               <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-xl">
                 <Phone className="text-blue-600 shrink-0 mt-0.5" size={16} />
                 <div>
-                  <p className="text-xs text-gray-500 font-semibold">Direct Line</p>
+                  <p className="text-xs text-gray-500 font-semibold">Contact Number</p>
                   <p className="text-sm font-bold text-[#1B254B]">{person.phone}</p>
                 </div>
               </div>

@@ -74,7 +74,7 @@ export const HRAdminPortal = ({ onBack }: HRAdminPortalProps) => {
   };
 
   return (
-    <div className="bg-[#F4F7FE] min-h-screen font-sans text-[#1B254B]">
+    <div className="bg-[#F4F7FE] min-h-screen font-sans text-[#1B254B] flex flex-col">
       {/* Topbar */}
       <header className="bg-white shadow-sm sticky top-0 z-40">
         <div className="flex items-center justify-between px-4 lg:px-6 py-3">
@@ -182,12 +182,12 @@ export const HRAdminPortal = ({ onBack }: HRAdminPortalProps) => {
         </div>
       </header>
 
-      <div className="flex min-h-screen">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <aside className="hidden lg:block w-[80px] hover:w-[260px] bg-[#042A5B] flex-col transition-all duration-300 group shadow-2xl overflow-y-auto sticky top-0 h-screen">
-          <nav className="px-3 py-6 space-y-1">
+        <aside className="hidden lg:flex w-[200px] bg-[#042A5B] flex-col shadow-2xl">
+          <nav className="px-3 py-6 space-y-1 flex-1 overflow-y-auto">
             <div className="mb-4">
-              <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">HR Admin</p>
+              <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2">HR ADMIN</p>
               <div className="space-y-1">
                 {[
                   { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -200,38 +200,33 @@ export const HRAdminPortal = ({ onBack }: HRAdminPortalProps) => {
                   <button
                     key={item.id}
                     onClick={() => setActivePage(item.id)}
-                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all group/item ${
+                    className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${
                       activePage === item.id 
                         ? 'bg-white text-[#0B4DA2] shadow-lg' 
                         : 'text-white hover:bg-white/10'
                     }`}
-                    title={item.label}
                   >
-                    <item.icon size={22} className="shrink-0" />
-                    <span className="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      {item.label}
-                    </span>
+                    <item.icon size={20} className="shrink-0" />
+                    <span className="text-sm font-medium">{item.label}</span>
                   </button>
                 ))}
               </div>
             </div>
-
-            <div className="pt-4 border-t border-white/10">
-              <button 
-                onClick={onBack}
-                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-[#EE5D50] hover:bg-[#EE5D50]/10 transition-all"
-              >
-                <LogOut size={22} className="shrink-0" />
-                <span className="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  Back to Home
-                </span>
-              </button>
-            </div>
           </nav>
+
+          <div className="p-3 border-t border-white/10">
+            <button 
+              onClick={onBack}
+              className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-[#EE5D50] hover:bg-[#EE5D50]/10 transition-all"
+            >
+              <LogOut size={20} className="shrink-0" />
+              <span className="text-sm font-medium">Back to Home</span>
+            </button>
+          </div>
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 p-4 lg:p-6 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
           {renderContent()}
         </main>
       </div>

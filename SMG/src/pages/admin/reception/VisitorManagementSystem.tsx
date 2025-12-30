@@ -26,7 +26,8 @@ export const VisitorManagementSystem = () => {
     personToMeet: '',
     department: '',
     phone: '',
-    idProof: ''
+    idProof: '',
+    photo: ''
   });
 
   const [visitors, setVisitors] = useState<Visitor[]>([
@@ -88,11 +89,11 @@ export const VisitorManagementSystem = () => {
       ...formData,
       checkInTime: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       status: 'Checked In',
-      photo: `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name}`
+      photo: formData.photo || `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name}`
     };
     setVisitors([newVisitor, ...visitors]);
     setShowAddModal(false);
-    setFormData({ name: '', company: '', purpose: '', personToMeet: '', department: '', phone: '', idProof: '' });
+    setFormData({ name: '', company: '', purpose: '', personToMeet: '', department: '', phone: '', idProof: '', photo: '' });
   };
 
   const handleCheckOut = (id: number) => {
@@ -282,13 +283,13 @@ export const VisitorManagementSystem = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Company *</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Company</label>
                   <input
                     type="text"
                     value={formData.company}
                     onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                     className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] focus:ring-4 focus:ring-blue-100 outline-none"
-                    placeholder="Enter company"
+                    placeholder="Enter company (optional)"
                   />
                 </div>
                 <div>
@@ -331,6 +332,36 @@ export const VisitorManagementSystem = () => {
                     placeholder="Enter department"
                   />
                 </div>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Visitor Photo (Optional)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setFormData({ ...formData, photo: reader.result as string });
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="w-full px-4 py-2 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] focus:ring-4 focus:ring-blue-100 outline-none file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                />
+                {formData.photo && (
+                  <div className="mt-2 flex items-center gap-3">
+                    <img src={formData.photo} alt="Preview" className="w-16 h-16 rounded-full object-cover border-2 border-gray-200" />
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, photo: '' })}
+                      className="text-sm text-red-600 font-semibold hover:text-red-700"
+                    >
+                      Remove Photo
+                    </button>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Purpose of Visit *</label>

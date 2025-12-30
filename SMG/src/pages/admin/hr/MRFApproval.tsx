@@ -235,16 +235,16 @@ export const MRFApproval = () => {
 
       {/* New MRF Modal */}
       {showNewMRFModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full my-8">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[95vh] flex flex-col">
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-[#0B4DA2] to-[#042A5B] p-6 rounded-t-2xl text-white">
+            <div className="bg-gradient-to-r from-[#0B4DA2] to-[#042A5B] p-6 rounded-t-2xl text-white flex-shrink-0">
               <h2 className="text-2xl font-bold">New Manpower Requirement Form</h2>
               <p className="text-white/80 text-sm mt-1">SMG Electric Scooters Ltd</p>
             </div>
 
-            {/* Modal Body */}
-            <div className="p-6 max-h-[70vh] overflow-y-auto">
+            {/* Modal Body - Scrollable */}
+            <div className="p-6 overflow-y-auto flex-1">{/* This ensures scrollable content */}
               {/* Vacancy Type */}
               <div className="mb-6 bg-yellow-50 p-4 rounded-xl">
                 <label className="block text-sm font-bold text-gray-700 mb-3">VACANCY TYPE</label>
@@ -420,8 +420,8 @@ export const MRFApproval = () => {
               </div>
             </div>
 
-            {/* Modal Footer */}
-            <div className="p-6 bg-gray-50 rounded-b-2xl flex gap-3 justify-end border-t border-gray-200">
+            {/* Modal Footer - Fixed at bottom */}
+            <div className="p-6 bg-gray-50 rounded-b-2xl flex gap-3 justify-end border-t border-gray-200 flex-shrink-0">
               <button
                 onClick={() => setShowNewMRFModal(false)}
                 className="px-6 py-3 rounded-xl font-bold text-gray-700 hover:bg-gray-200 transition-colors"

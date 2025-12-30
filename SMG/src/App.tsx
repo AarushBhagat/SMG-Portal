@@ -24,7 +24,6 @@ import { FacilitiesInfoPage } from './pages/FacilitiesInfoPage';
 import { InsurancePolicyPage } from './pages/InsurancePolicyPage';
 import { LoanApprovalPage } from './pages/LoanApprovalPage';
 // Admin Pages
-import { AdminPortalSelection } from './pages/admin/AdminPortalSelection';
 import { SuperAdminPortal } from './pages/super-admin/SuperAdminPortal';
 import {
   PNAPortal,
@@ -396,7 +395,8 @@ export default function App() {
           setActivePage(directPortal);
           console.log(`🎯 Routing admin UID ${user.id} directly to ${directPortal}`);
         } else {
-          setActivePage('admin-portal-selection');
+          // Default admin portal if no specific mapping
+          setActivePage('admin-pna');
         }
       } else {
         setActivePage('dashboard');
@@ -512,19 +512,18 @@ function AppContent({ userRole, activePage, setActivePage, mobileMenuOpen, setMo
       case 'announcements': return <AnnouncementsPage />;
       case 'notifications': return <NotificationsPage />;
 
-      // Admin Portal Selection and Department Portals
-      case 'admin-portal-selection': return <AdminPortalSelection onSelectPortal={(portal) => setActivePage(`admin-${portal}`)} />;
-      case 'admin-pna': return <PNAPortal onBack={() => setActivePage('admin-portal-selection')} />;
-      case 'admin-reception': return <ReceptionPortal onBack={() => setActivePage('admin-portal-selection')} />;
-      case 'admin-hr': return <HRPortal onBack={() => setActivePage('admin-portal-selection')} />;
-      case 'admin-finance': return <FinancePortal onBack={() => setActivePage('admin-portal-selection')} />;
-      case 'admin-time-office': return <TimeOfficePortal onBack={() => setActivePage('admin-portal-selection')} />;
-      case 'admin-canteen': return <CanteenPortal onBack={() => setActivePage('admin-portal-selection')} />;
-      case 'admin-events': return <EventsPortal onBack={() => setActivePage('admin-portal-selection')} />;
-      case 'admin-hod': return <HODPortal onBack={() => setActivePage('admin-portal-selection')} />;
-      case 'admin-technician': return <TechnicianPortal onBack={() => setActivePage('admin-portal-selection')} />;
-      case 'admin-assembly': return <AssemblyPortal onBack={() => setActivePage('admin-portal-selection')} />;
-      case 'admin-marketing': return <MarketingPortal onBack={() => setActivePage('admin-portal-selection')} />;
+      // Admin Department Portals
+      case 'admin-pna': return <PNAPortal onBack={handleLogout} />;
+      case 'admin-reception': return <ReceptionPortal onBack={handleLogout} />;
+      case 'admin-hr': return <HRPortal onBack={handleLogout} />;
+      case 'admin-finance': return <FinancePortal onBack={handleLogout} />;
+      case 'admin-time-office': return <TimeOfficePortal onBack={handleLogout} />;
+      case 'admin-canteen': return <CanteenPortal onBack={handleLogout} />;
+      case 'admin-events': return <EventsPortal onBack={handleLogout} />;
+      case 'admin-hod': return <HODPortal onBack={handleLogout} />;
+      case 'admin-technician': return <TechnicianPortal onBack={handleLogout} />;
+      case 'admin-assembly': return <AssemblyPortal onBack={handleLogout} />;
+      case 'admin-marketing': return <MarketingPortal onBack={handleLogout} />;
 
       // Super Admin Portal
       case 'super-admin-portal': return <SuperAdminPortal onBack={handleLogout} />;
