@@ -85,7 +85,7 @@ export function Login({ onLogin }: LoginProps) {
                 transition={{ delay: 0.1, duration: 0.5 }}
               >
                 <img
-                  src="/Company Logo.jpg"
+                  src="/smg-logo.jpg"
                   alt="SMG Logo"
                   className="w-48 h-auto ml-6"
                 />
