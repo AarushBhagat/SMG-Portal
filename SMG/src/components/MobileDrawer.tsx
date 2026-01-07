@@ -177,13 +177,11 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
         {/* Header */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-md" style={{ background: 'linear-gradient(135deg, var(--smg-royal) 0%, var(--smg-dark) 100%)' }}>
-              <span className="text-white font-bold text-lg">S</span>
-            </div>
-            <div>
-              <h3 className="text-sm" style={{ color: 'var(--smg-dark)' }}>SMG Scooters Pvt Ltd</h3>
-              <p className="text-xs text-gray-400">Admin Portal</p>
-            </div>
+            <img 
+              src="/smg-logo.jpg" 
+              alt="SMG Logo" 
+              className="h-10 w-auto object-contain"
+            />
           </div>
           <button
             onClick={onClose}

@@ -236,7 +236,7 @@ const Topbar = ({ onMobileMenu, onNavigate }: TopbarProps) => {
       {/* Left Side - Logo */}
       <div className="flex items-center gap-4">
         <img
-          src="/Company Logo.jpg"
+          src="/smg-logo.jpg"
           alt="SMG Logo"
           className="h-10 w-auto cursor-pointer"
           onClick={() => onNavigate('dashboard')}

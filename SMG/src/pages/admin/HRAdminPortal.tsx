@@ -87,7 +87,7 @@ export const HRAdminPortal = ({ onBack }: HRAdminPortalProps) => {
             </button>
             <div className="flex items-center gap-3">
               <img 
-                src="/Company Logo.jpg" 
+                src="/smg-logo.jpg" 
                 alt="SMG Logo" 
                 className="h-12 w-auto object-contain"
               />

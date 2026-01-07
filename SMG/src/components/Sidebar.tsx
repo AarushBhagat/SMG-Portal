@@ -178,8 +178,11 @@ export function Sidebar() {
       {/* Logo */}
       <div className="h-16 flex items-center justify-center px-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
         <div className="flex flex-col items-center gap-2 w-full">
-          <h3 className="text-2xl font-bold text-white tracking-wider">SMG</h3>
-          <p className="text-xs text-white/80">Employee Portal</p>
+          <img 
+            src="/smg-logo.jpg" 
+            alt="SMG Logo" 
+            className="h-12 w-auto object-contain"
+          />
         </div>
       </div>
 
