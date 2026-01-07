@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
+import smgLogo from '../assets/smg-logo.jpg';
 import {
   LayoutDashboard,
   User,
@@ -179,7 +180,7 @@ export function Sidebar() {
       <div className="h-16 flex items-center justify-center px-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
         <div className="flex flex-col items-center gap-2 w-full">
           <img 
-            src="/smg-logo.jpg" 
+            src={smgLogo} 
             alt="SMG Logo" 
             className="h-12 w-auto object-contain"
           />

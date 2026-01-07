@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import smgLogo from '../../assets/smg-logo.jpg';
 import { HRDashboard } from './hr/HRDashboard';
 import { MRFApproval } from './hr/MRFApproval';
 import { InterviewManagement } from './hr/InterviewManagement';
@@ -87,7 +88,7 @@ export const HRAdminPortal = ({ onBack }: HRAdminPortalProps) => {
             </button>
             <div className="flex items-center gap-3">
               <img 
-                src="/smg-logo.jpg" 
+                src={smgLogo} 
                 alt="SMG Logo" 
                 className="h-12 w-auto object-contain"
               />

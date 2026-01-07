@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { Lock, Mail, ArrowRight, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import smgLogo from '../assets/smg-logo.jpg';
 
 interface LoginProps {
   onLogin: (role: 'employee' | 'admin' | 'super_admin') => void;
@@ -85,7 +86,7 @@ export function Login({ onLogin }: LoginProps) {
                 transition={{ delay: 0.1, duration: 0.5 }}
               >
                 <img
-                  src="/smg-logo.jpg"
+                  src={smgLogo}
                   alt="SMG Logo"
                   className="w-48 h-auto ml-6"
                 />

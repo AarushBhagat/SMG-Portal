@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { AppProvider } from './context/AppContextEnhanced';
 import { useAuth } from './context/AuthContext';
 import { Login } from './components/Login';
+import smgLogo from './assets/smg-logo.jpg';
 import { DashboardPageOld } from './pages/DashboardPageOld';
 import { MyAttendancePageOld } from './pages/MyAttendancePageOld';
 import { ProfilePage } from './pages/ProfilePage';
@@ -236,7 +237,7 @@ const Topbar = ({ onMobileMenu, onNavigate }: TopbarProps) => {
       {/* Left Side - Logo */}
       <div className="flex items-center gap-4">
         <img
-          src="/smg-logo.jpg"
+          src={smgLogo}
           alt="SMG Logo"
           className="h-10 w-auto cursor-pointer"
           onClick={() => onNavigate('dashboard')}

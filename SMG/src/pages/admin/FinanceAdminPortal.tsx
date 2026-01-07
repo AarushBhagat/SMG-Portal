@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import smgLogo from '../../assets/smg-logo.jpg';
 import { FinanceDashboard } from './finance/FinanceDashboard';
 import { SalaryStatusDisplay } from './finance/SalaryStatusDisplay';
 import { InsuranceDetailsDisplay } from './finance/InsuranceDetailsDisplay';
@@ -76,7 +77,7 @@ export const FinanceAdminPortal = ({ onBack }: FinanceAdminPortalProps) => {
       <header className="sticky top-0 z-50 bg-white px-6 py-3 flex justify-between items-center border-b border-gray-200 shadow-sm">
         <div className="flex items-center gap-4">
           <img
-            src="/smg-logo.jpg"
+            src={smgLogo}
             alt="SMG Logo"
             className="h-10 w-auto cursor-pointer"
             onClick={() => setActivePage('dashboard')}

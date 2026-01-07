@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import smgLogo from '../../assets/smg-logo.jpg';
 import { AdminsAnalysisPage } from './AdminsAnalysisPage';
 import { DepartmentsPage } from './DepartmentsPage';
 import { DepartmentWorkingPage } from './DepartmentWorkingPage';
@@ -115,7 +116,7 @@ export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
       <header className="sticky top-0 z-50 bg-white px-6 py-3 flex justify-between items-center border-b border-gray-200 shadow-sm">
         <div className="flex items-center gap-4">
           <img
-            src="/smg-logo.jpg"
+            src={smgLogo}
             alt="SMG Logo"
             className="h-10 w-auto cursor-pointer"
             onClick={() => setActivePage('admins-analysis')}
@@ -317,7 +318,7 @@ export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
             <aside className="fixed left-0 top-0 h-full w-[280px] bg-[#042A5B] z-50 lg:hidden shadow-2xl overflow-y-auto">
               <div className="p-4 border-b border-white/10 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <img src="/smg-logo.jpg" alt="SMG Logo" className="h-10" />
+                  <img src={smgLogo} alt="SMG Logo" className="h-10" />
                 </div>
                 <button onClick={() => setMobileMenuOpen(false)} className="text-white hover:bg-white/10 p-2 rounded-lg">
                   <X size={24} />

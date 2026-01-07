@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, ChevronDown } from 'lucide-react';
+import smgLogo from '../assets/smg-logo.jpg';
 import {
   LayoutDashboard,
   User,
@@ -178,7 +179,7 @@ export function MobileDrawer({ isOpen, onClose }: MobileDrawerProps) {
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200">
           <div className="flex items-center gap-3">
             <img 
-              src="/smg-logo.jpg" 
+              src={smgLogo} 
               alt="SMG Logo" 
               className="h-10 w-auto object-contain"
             />
