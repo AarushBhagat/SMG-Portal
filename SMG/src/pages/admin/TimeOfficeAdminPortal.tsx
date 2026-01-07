@@ -139,60 +139,60 @@ export const TimeOfficeAdminPortal = ({ onBack }: TimeOfficeAdminPortalProps) =>
         </div>
       </header>
 
-      <div className="flex min-h-screen">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <aside className="hidden lg:block w-[80px] hover:w-[260px] bg-[#042A5B] flex-col transition-all duration-300 group shadow-2xl overflow-y-auto sticky top-0 h-screen">
-          <nav className="px-3 py-6 space-y-1">
+        <aside className="hidden lg:flex w-[240px] bg-[#042A5B] flex-col shadow-2xl">
+          <nav className="px-3 py-6 space-y-1 flex-1 overflow-y-auto">
             <div className="mb-4">
-              <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Time Office Admin</p>
+              <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 whitespace-nowrap">Time Office Admin</p>
               <button
                 onClick={() => setActivePage('dashboard')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activePage === 'dashboard' ? 'bg-[#0B4DA2] text-white shadow-lg' : 'text-white/70 hover:bg-white/10'}`}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${activePage === 'dashboard' ? 'bg-[#0B4DA2] text-white shadow-lg' : 'text-[#87CEEB] hover:bg-[#0B4DA2]/20'}`}
               >
-                <LayoutDashboard size={20} className="shrink-0 text-white" />
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap font-medium text-white">Dashboard</span>
+                <LayoutDashboard size={20} className="shrink-0" />
+                <span className="whitespace-nowrap text-sm font-bold flex-1 text-left">Dashboard</span>
               </button>
             </div>
 
             <div className="space-y-1">
-              <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Leave & Attendance</p>
+              <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 whitespace-nowrap">Leave & Attendance</p>
               <button
                 onClick={() => setActivePage('leave-gatepass')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activePage === 'leave-gatepass' ? 'bg-[#0B4DA2] text-white shadow-lg' : 'text-white/70 hover:bg-white/10'}`}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${activePage === 'leave-gatepass' ? 'bg-[#0B4DA2] text-white shadow-lg' : 'text-[#87CEEB] hover:bg-[#0B4DA2]/20'}`}
               >
-                <ClipboardCheck size={20} className="shrink-0 text-white" />
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap font-medium text-white">Leave & Gate Pass</span>
+                <ClipboardCheck size={20} className="shrink-0" />
+                <span className="whitespace-nowrap text-sm font-bold flex-1 text-left">Leave & Gate Pass</span>
               </button>
               <button
                 onClick={() => setActivePage('attendance')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activePage === 'attendance' ? 'bg-[#0B4DA2] text-white shadow-lg' : 'text-white/70 hover:bg-white/10'}`}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${activePage === 'attendance' ? 'bg-[#0B4DA2] text-white shadow-lg' : 'text-[#87CEEB] hover:bg-[#0B4DA2]/20'}`}
               >
-                <Calendar size={20} className="shrink-0 text-white" />
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap font-medium text-white">Attendance Details</span>
+                <Calendar size={20} className="shrink-0" />
+                <span className="whitespace-nowrap text-sm font-bold flex-1 text-left">Attendance Details</span>
               </button>
               <button
                 onClick={() => setActivePage('shifts')}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activePage === 'shifts' ? 'bg-[#0B4DA2] text-white shadow-lg' : 'text-white/70 hover:bg-white/10'}`}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${activePage === 'shifts' ? 'bg-[#0B4DA2] text-white shadow-lg' : 'text-[#87CEEB] hover:bg-[#0B4DA2]/20'}`}
               >
-                <Clock size={20} className="shrink-0 text-white" />
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap font-medium text-white">Shift Information</span>
+                <Clock size={20} className="shrink-0" />
+                <span className="whitespace-nowrap text-sm font-bold flex-1 text-left">Shift Information</span>
               </button>
             </div>
           </nav>
 
-          <div className="mt-auto p-3">
+          <div className="p-3 border-t border-[#0B4DA2]/30">
             <button
               onClick={onBack}
-              className="w-full flex items-center gap-3 px-4 py-3 bg-[#EE5D50]/10 text-[#EE5D50] rounded-xl font-bold hover:bg-[#EE5D50]/20 transition-all"
+              className="w-full flex items-center gap-3 px-3 py-2.5 bg-[#EE5D50]/10 text-[#EE5D50] rounded-xl font-bold hover:bg-[#EE5D50]/20 transition-all"
             >
               <LogOut size={20} className="shrink-0" />
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Sign Out</span>
+              <span className="whitespace-nowrap">Sign Out</span>
             </button>
           </div>
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-x-hidden">
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
           {renderContent()}
         </main>
       </div>

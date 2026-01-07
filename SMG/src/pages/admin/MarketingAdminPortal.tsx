@@ -128,10 +128,10 @@ export const MarketingAdminPortal = ({ onBack }: MarketingAdminPortalProps) => {
         </div>
       </header>
 
-      <div className="flex">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <aside className="hidden lg:flex flex-col w-20 hover:w-64 transition-all duration-300 bg-[#042A5B] min-h-[calc(100vh-64px)] group relative overflow-hidden">
-          <nav className="flex-1 px-3 py-6 space-y-8">
+        <aside className="hidden lg:flex w-[240px] bg-[#042A5B] flex-col shadow-2xl">
+          <nav className="px-3 py-6 space-y-1 flex-1 overflow-y-auto">
             <div className="space-y-1">
               <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Overview</p>
               

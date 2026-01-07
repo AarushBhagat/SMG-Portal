@@ -155,10 +155,10 @@ export const ReceptionAdminPortal = ({ onBack }: ReceptionAdminPortalProps) => {
         </div>
       </header>
 
-      <div className="flex min-h-screen">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <aside className="hidden lg:block w-[80px] hover:w-[260px] bg-[#042A5B] flex-col transition-all duration-300 group shadow-2xl overflow-y-auto sticky top-0 h-screen">
-          <nav className="px-3 py-6 space-y-1">
+        <aside className="hidden lg:flex w-[240px] bg-[#042A5B] flex-col shadow-2xl">
+          <nav className="px-3 py-6 space-y-1 flex-1 overflow-y-auto">
             <div className="mb-4">
               <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Reception Admin</p>
               <div className="space-y-1">
@@ -200,11 +200,9 @@ export const ReceptionAdminPortal = ({ onBack }: ReceptionAdminPortalProps) => {
         </aside>
 
         {/* Main Content */}
-        <div className="flex-1">
-          <main className="px-6 py-6 lg:px-8 lg:py-8 pb-24 lg:pb-8">
-            {renderContent()}
-          </main>
-        </div>
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+          {renderContent()}
+        </main>
       </div>
 
       {/* Mobile Menu */}

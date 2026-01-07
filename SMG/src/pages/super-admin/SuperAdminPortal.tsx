@@ -183,10 +183,10 @@ export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
         </div>
       </header>
 
-      <div className="flex min-h-screen">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <aside className="hidden lg:block w-[80px] hover:w-[260px] bg-[#042A5B] flex-col transition-all duration-300 group shadow-2xl overflow-y-auto sticky top-0 h-screen">
-          <nav className="px-3 py-6 space-y-1">
+        <aside className="hidden lg:flex w-[240px] bg-[#042A5B] flex-col shadow-2xl">
+          <nav className="px-3 py-6 space-y-1 flex-1 overflow-y-auto">
             <div className="mb-4">
               <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Super Admin</p>
               <div className="space-y-1">
@@ -282,14 +282,14 @@ export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
                 </button>
                 <button
                   onClick={() => setActivePage('broadcast')}
-                  className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${
                     activePage === 'broadcast'
-                      ? 'bg-white/10 text-white shadow-md'
-                      : 'text-[#87CEEB] hover:bg-white/5 hover:text-white'
+                      ? 'bg-[#0B4DA2] text-white shadow-lg'
+                      : 'text-[#87CEEB] hover:bg-[#0B4DA2]/20'
                   }`}
                 >
-                  <Radio size={22} className="shrink-0" />
-                  <span className="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <Radio size={20} className="shrink-0" />
+                  <span className="text-sm font-bold whitespace-nowrap flex-1 text-left">
                     Broadcast
                   </span>
                 </button>
@@ -298,13 +298,13 @@ export const SuperAdminPortal = ({ onBack }: SuperAdminPortalProps) => {
           </nav>
 
           {/* Sign Out Button */}
-          <div className="mt-auto px-3 pb-6 border-t border-white/10 pt-6">
+          <div className="px-3 pb-6 border-t border-white/10 pt-6">
             <button
               onClick={onBack}
-              className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-[#EE5D50] hover:bg-[#EE5D50]/10 transition-all"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#EE5D50] hover:bg-[#EE5D50]/10 transition-all"
             >
-              <LogOut size={22} className="shrink-0" />
-              <span className="text-sm font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <LogOut size={20} className="shrink-0" />
+              <span className="text-sm font-bold whitespace-nowrap flex-1 text-left">
                 Sign Out
               </span>
             </button>

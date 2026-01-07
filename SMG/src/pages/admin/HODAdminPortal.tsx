@@ -142,10 +142,10 @@ export const HODAdminPortal = ({ onBack }: HODAdminPortalProps) => {
         </div>
       </header>
 
-      <div className="flex min-h-screen">
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar */}
-        <aside className="hidden lg:block w-[80px] hover:w-[260px] bg-[#042A5B] flex-col transition-all duration-300 group shadow-2xl overflow-y-auto sticky top-0 h-screen">
-          <nav className="px-3 py-6 space-y-1">
+        <aside className="hidden lg:flex w-[240px] bg-[#042A5B] flex-col shadow-2xl">
+          <nav className="px-3 py-6 space-y-1 flex-1 overflow-y-auto">
             <div className="mb-4">
               <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">HOD Portal</p>
               <button
@@ -251,7 +251,7 @@ export const HODAdminPortal = ({ onBack }: HODAdminPortalProps) => {
         )}
 
         {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
           {renderContent()}
         </main>
       </div>
