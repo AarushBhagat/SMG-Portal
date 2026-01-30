@@ -435,8 +435,10 @@ export default function App() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-sky-50">
         <div className="text-center">
+          <img src={smgLogo} alt="SMG Logo" className="w-24 h-24 mx-auto mb-4 rounded-full shadow-lg" />
           <div className="w-16 h-16 border-4 border-[#0B4DA2] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600 font-medium">Restoring your session...</p>
+          <p className="text-gray-400 text-sm mt-2">Please wait</p>
         </div>
       </div>
     );
@@ -656,11 +658,11 @@ const Sidebar = ({ activePage, onNavigate, onLogout }: SidebarProps) => {
   ];
 
   return (
-    <aside className="hidden lg:block w-[80px] hover:w-[260px] bg-[#042A5B] flex-col transition-all duration-300 group shadow-2xl overflow-y-auto sticky top-0 h-screen">
+    <aside className="hidden lg:block w-[260px] bg-[#042A5B] flex-col transition-all duration-300 shadow-2xl overflow-y-auto sticky top-0 h-screen">
       <nav className="px-3 py-6 space-y-1">
         {menuGroups.map((group, idx) => (
           <div key={idx} className="mb-4 last:mb-0">
-            <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">{group.title}</p>
+            <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 whitespace-nowrap">{group.title}</p>
             <div className="space-y-1">
               {group.items.map((item) => (
                 <div key={item.id}>
@@ -675,13 +677,13 @@ const Sidebar = ({ activePage, onNavigate, onLogout }: SidebarProps) => {
                     <div className="shrink-0 flex justify-center w-6">
                       <item.icon size={20} />
                     </div>
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-sm font-bold flex-1 text-left">
+                    <span className="whitespace-nowrap text-sm font-bold flex-1 text-left">
                       {item.label}
                     </span>
                     {item.hasDropdown && (
                       <ChevronDown
                         size={16}
-                        className={`opacity-0 group-hover:opacity-100 transition-all duration-300 ${openDropdowns.includes(item.id) ? 'rotate-180' : ''
+                        className={`transition-all duration-300 ${openDropdowns.includes(item.id) ? 'rotate-180' : ''
                           }`}
                       />
                     )}
@@ -689,7 +691,7 @@ const Sidebar = ({ activePage, onNavigate, onLogout }: SidebarProps) => {
 
                   {/* Sub-items */}
                   {item.hasDropdown && openDropdowns.includes(item.id) && (
-                    <div className="ml-9 mt-1 space-y-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="ml-9 mt-1 space-y-1">
                       {item.subItems.map((subItem) => (
                         <button
                           key={subItem.id}
@@ -718,7 +720,7 @@ const Sidebar = ({ activePage, onNavigate, onLogout }: SidebarProps) => {
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#EE5D50] hover:bg-[#EE5D50]/10 transition-all duration-200 font-bold"
         >
           <div className="shrink-0 flex justify-center w-6"><LogOut size={20} /></div>
-          <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">Sign Out</span>
+          <span>Sign Out</span>
         </button>
       </div>
     </aside>

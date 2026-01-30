@@ -1,8 +1,10 @@
 import React from 'react';
-import { upcomingTraining } from '../../mock/mockData';
+import { useApp } from '../../context/AppContextEnhanced';
 import { GraduationCap, Calendar, Clock, User, CheckCircle } from 'lucide-react';
 
 export function Training() {
+  const { trainings } = useApp();
+  
   return (
     <div className="p-4 lg:p-6 space-y-6">
       <div>
@@ -68,7 +70,7 @@ export function Training() {
         </div>
 
         <div className="divide-y divide-gray-200">
-          {upcomingTraining.map((training) => (
+          {trainings.map((training) => (
             <div
               key={training.id}
               className="p-6 hover:bg-gray-50 transition-colors"

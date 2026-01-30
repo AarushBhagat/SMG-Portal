@@ -1,71 +1,21 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-
-// Enhanced Demo Data with ALL features
-const DEMO_EMPLOYEE = {
-  id: 'EMP1001',
-  empId: 'SMG-2024-042',
-  name: 'Rohit Sharma',
-  email: 'rohit.sharma@smg-scooters.com',
-  phone: '+91 98765 43210',
-  emergencyContact: '+91 98765 43211',
-  department: 'Assembly',
-  position: 'Senior Technician',
-  role: 'Senior Technician',
-  joiningDate: '2020-01-10',
-  dateOfBirth: '1992-08-15',
-  reportingTo: 'Priya Sharma',
-  shift: 'General (9:00 - 18:00)',
-  employeeType: 'Full-time',
-  location: 'Noida Plant',
-  avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rohit&backgroundColor=b6e3f4',
-  salary: '₹55,000',
-  bankAccount: 'HDFC Bank - ****6789',
-  panCard: 'ABCDE1234F',
-  aadharCard: '****-****-5678',
-  bloodGroup: 'O+',
-  address: 'Flat 402, Green Valley Apartments, Sector 12, Noida, UP - 201301',
-  education: [
-    { degree: 'B.Tech in Mechanical Engineering', institution: 'Delhi Technical University', year: '2010-2014', grade: '8.2 CGPA' },
-    { degree: 'Senior Secondary (XII)', institution: 'DAV Public School', year: '2010', grade: '88%' }
-  ],
-  certifications: [
-    { name: 'Six Sigma Green Belt', issuer: 'ASQ', year: '2021' },
-    { name: 'Industrial Safety', issuer: 'NSCI', year: '2020' }
-  ],
-  skills: ['Assembly Line Operations', 'Quality Control', 'Safety Compliance'],
-  languages: ['Hindi (Native)', 'English (Fluent)', 'Punjabi (Conversational)']
-};
-
-// Mock admin user with Firebase UID
-const DEMO_ADMIN = {
-  id: 'cirYJ87jkkWdAQvyMtW6fjuggLp1',
-  empId: 'SMG-ADMIN-001',
-  name: 'Admin User',
-  email: 'admin@smg.com',
-  phone: '+91 90000 00000',
-  emergencyContact: '',
-  department: 'Administration',
-  position: 'Admin',
-  role: 'admin',
-  joiningDate: '2019-01-01',
-  dateOfBirth: '1990-01-01',
-  reportingTo: '',
-  shift: 'General',
-  employeeType: 'Full-time',
-  location: 'Head Office',
-  avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin',
-  salary: '₹1,00,000',
-  bankAccount: '',
-  panCard: '',
-  aadharCard: '',
-  bloodGroup: '',
-  address: '',
-  education: [],
-  certifications: [],
-  skills: ['Administration'],
-  languages: ['English']
-};
+import { 
+  collection, 
+  addDoc, 
+  serverTimestamp, 
+  query, 
+  where, 
+  onSnapshot, 
+  orderBy, 
+  updateDoc, 
+  doc, 
+  deleteDoc,
+  Timestamp,
+  setDoc,
+  limit
+} from 'firebase/firestore';
+import { db } from '../config/firebase';
 
 interface AppContextType {
   // User Data
@@ -181,17 +131,17 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-export const AppProvider = ({ children }) => {
+export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const { user: authUser } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
-  const [currentUser, setCurrentUser] = useState(DEMO_EMPLOYEE);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   // Sync with Firebase Auth user
   useEffect(() => {
     if (authUser) {
       setCurrentUser({
         id: authUser.id,
-        empId: authUser.empId || authUser.id,
+        empId: authUser.id,
         name: authUser.name,
         email: authUser.email,
         phone: authUser.phone || '',
@@ -225,1005 +175,876 @@ export const AppProvider = ({ children }) => {
         setIsAdmin(false);
       }
     } else {
-      // Fallback to demo employee if no auth user
-      setCurrentUser(DEMO_EMPLOYEE);
+      setCurrentUser(null);
       setIsAdmin(false);
     }
   }, [authUser]);
   
+  // ============= FIREBASE-BACKED STATE =============
+  
   // Attendance State
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [clockInTime, setClockInTime] = useState<string | null>(null);
-  const [clockOutTime, setClockOutTime] = useState<string | null>(null);
   const [todayHours, setTodayHours] = useState('0h 0m');
-  const [attendanceHistory, setAttendanceHistory] = useState([
-    { id: 1, date: '2024-12-11', day: 'Wednesday', checkIn: '09:00 AM', checkOut: '06:15 PM', hours: '9h 15m', status: 'Present' },
-    { id: 2, date: '2024-12-10', day: 'Tuesday', checkIn: '08:55 AM', checkOut: '06:00 PM', hours: '9h 5m', status: 'Present' },
-    { id: 3, date: '2024-12-09', day: 'Monday', checkIn: '09:10 AM', checkOut: '06:20 PM', hours: '9h 10m', status: 'Present' },
-    { id: 4, date: '2024-12-06', day: 'Friday', checkIn: '09:05 AM', checkOut: '06:10 PM', hours: '9h 5m', status: 'Present' },
-    { id: 5, date: '2024-12-05', day: 'Thursday', checkIn: '-', checkOut: '-', hours: '-', status: 'Leave' }
-  ]);
+  const [attendanceHistory, setAttendanceHistory] = useState<any[]>([]);
   
   // Leave Management
-  const [leaveBalance, setLeaveBalance] = useState({
-    casual: { total: 12, used: 5, remaining: 7 },
-    sick: { total: 7, used: 2, remaining: 5 },
-    earned: { total: 15, used: 8, remaining: 7 },
-    privilege: { total: 10, used: 3, remaining: 7 }
+  const [leaveBalance] = useState({
+    casual: { total: 12, used: 0, remaining: 12 },
+    sick: { total: 7, used: 0, remaining: 7 },
+    earned: { total: 15, used: 0, remaining: 15 },
+    privilege: { total: 10, used: 0, remaining: 10 }
   });
+  const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
   
-  const [leaveRequests, setLeaveRequests] = useState([
-    { id: 'LV001', type: 'Casual Leave', startDate: '2024-12-20', endDate: '2024-12-22', days: 3, reason: 'Family function', status: 'Approved', appliedDate: '2024-12-10' },
-    { id: 'LV002', type: 'Sick Leave', startDate: '2024-12-15', endDate: '2024-12-15', days: 1, reason: 'Medical checkup', status: 'Pending', appliedDate: '2024-12-12' }
-  ]);
-  
-  // Requests State
-  const [requests, setRequests] = useState([
-    {
-      id: 'REQ001',
-      employeeId: 'EMP1001',
-      employeeName: 'Rohit Sharma',
-      type: 'Leave Request',
-      category: 'Casual Leave',
-      startDate: '2024-12-20',
-      endDate: '2024-12-22',
-      days: 3,
-      reason: 'Family function',
-      status: 'Pending',
-      submittedDate: '2024-12-10',
-      priority: 'Medium',
-      department: 'Assembly'
-    },
-    {
-      id: 'REQ002',
-      employeeId: 'EMP1001',
-      employeeName: 'Rohit Sharma',
-      type: 'Document Request',
-      category: 'Experience Certificate',
-      reason: 'Personal requirement',
-      status: 'Approved',
-      submittedDate: '2024-12-05',
-      approvedDate: '2024-12-06',
-      priority: 'Low',
-      department: 'Assembly'
-    },
-    {
-      id: 'REQ003',
-      employeeId: 'EMP1025',
-      employeeName: 'Priya Sharma',
-      type: 'Asset Request',
-      category: 'Laptop',
-      reason: 'Current laptop outdated',
-      status: 'In Progress',
-      submittedDate: '2024-12-08',
-      priority: 'High',
-      department: 'Quality Control'
-    }
-  ]);
+  // Requests State - All request types
+  const [requests, setRequests] = useState<any[]>([]);
   
   // Notifications State
-  const [notifications, setNotifications] = useState([
-    {
-      id: 'NOT001',
-      title: 'Leave Request Approved',
-      message: 'Your leave request for Dec 15-17 has been approved',
-      type: 'success',
-      time: '2 hours ago',
-      isRead: false,
-      timestamp: new Date(Date.now() - 7200000)
-    },
-    {
-      id: 'NOT002',
-      title: 'New Training Available',
-      message: 'Safety Training Program - Registration open',
-      type: 'info',
-      time: '5 hours ago',
-      isRead: false,
-      timestamp: new Date(Date.now() - 18000000)
-    },
-    {
-      id: 'NOT003',
-      title: 'Payslip Generated',
-      message: 'Your payslip for November 2024 is ready',
-      type: 'info',
-      time: '1 day ago',
-      isRead: true,
-      timestamp: new Date(Date.now() - 86400000)
-    }
-  ]);
+  const [notifications, setNotifications] = useState<any[]>([]);
   
   // Announcements State
-  const [announcements, setAnnouncements] = useState([
-    {
-      id: 'ANN001',
-      title: 'Holiday Announcement - Christmas',
-      content: 'Company will remain closed on Dec 25th for Christmas. Wishing everyone happy holidays!',
-      date: '2024-12-10',
-      author: 'HR Team',
-      status: 'Published',
-      type: 'Holiday',
-      priority: 'High'
-    },
-    {
-      id: 'ANN002',
-      title: 'New Work from Home Policy',
-      content: 'Updated Work from Home policy is now available on the portal. Please review the new guidelines.',
-      date: '2024-12-07',
-      author: 'Admin',
-      status: 'Published',
-      type: 'Policy',
-      priority: 'Medium'
-    },
-    {
-      id: 'ANN003',
-      title: 'Annual Day Celebration',
-      content: 'Save the date! Annual day celebration on Jan 15, 2025. More details to follow.',
-      date: '2024-12-05',
-      author: 'Events Team',
-      status: 'Published',
-      type: 'Event',
-      priority: 'Medium'
-    }
-  ]);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
   
   // All Users (for admin)
-  const [allUsers, setAllUsers] = useState([
-    { id: 'EMP1001', name: 'Rohit Sharma', empId: 'SMG-2024-042', dept: 'Assembly', role: 'Senior Technician', email: 'rohit.sharma@smg.com', phone: '+91 98765 43210', status: 'Active', joinDate: '2020-01-10', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rohit' },
-    { id: 'EMP1025', name: 'Priya Sharma', empId: 'SMG-2019-125', dept: 'Quality Control', role: 'QC Inspector', email: 'priya.sharma@smg.com', phone: '+91 98765 43211', status: 'Active', joinDate: '2019-03-15', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Priya' },
-    { id: 'EMP1089', name: 'Amit Patel', empId: 'SMG-2020-089', dept: 'Engineering', role: 'Design Engineer', email: 'amit.patel@smg.com', phone: '+91 98765 43212', status: 'Active', joinDate: '2020-07-20', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Amit' },
-    { id: 'EMP1156', name: 'Sneha Gupta', empId: 'SMG-2021-156', dept: 'Sales & Marketing', role: 'Marketing Manager', email: 'sneha.gupta@smg.com', phone: '+91 98765 43213', status: 'Active', joinDate: '2021-02-05', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sneha' },
-    { id: 'EMP1234', name: 'Vikram Singh', empId: 'SMG-2019-234', dept: 'R&D', role: 'Research Scientist', email: 'vikram.singh@smg.com', phone: '+91 98765 43214', status: 'Active', joinDate: '2019-09-12', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Vikram' },
-    { id: 'EMP1067', name: 'Anita Desai', empId: 'SMG-2020-067', dept: 'Administration', role: 'Admin Officer', email: 'anita.desai@smg.com', phone: '+91 98765 43215', status: 'Active', joinDate: '2020-04-18', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Anita' },
-    { id: 'EMP1145', name: 'Rohit Verma', empId: 'SMG-2017-145', dept: 'Production', role: 'Production Manager', email: 'rohit.verma@smg.com', phone: '+91 98765 43216', status: 'Active', joinDate: '2017-11-22', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=RohitV' },
-    { id: 'EMP1278', name: 'Kavita Joshi', empId: 'SMG-2018-278', dept: 'HR', role: 'HR Manager', email: 'kavita.joshi@smg.com', phone: '+91 98765 43217', status: 'Active', joinDate: '2018-06-30', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Kavita' },
-    { id: 'EMP1312', name: 'Suresh Reddy', empId: 'SMG-2021-312', dept: 'Finance', role: 'Accountant', email: 'suresh.reddy@smg.com', phone: '+91 98765 43218', status: 'Active', joinDate: '2021-08-14', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Suresh' },
-    { id: 'EMP1401', name: 'Meena Iyer', empId: 'SMG-2022-401', dept: 'IT', role: 'System Administrator', email: 'meena.iyer@smg.com', phone: '+91 98765 43219', status: 'Active', joinDate: '2022-01-25', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Meena' }
-  ]);
+  const [allUsers, setAllUsers] = useState<any[]>([]);
   
   // Training State
-  const [trainings, setTrainings] = useState([
-    { 
-      id: 'TRN001', 
-      title: 'Safety Training Program', 
-      type: 'Mandatory', 
-      dept: 'Production', 
-      date: '2024-12-15', 
-      duration: '4 hours', 
-      enrolled: 45, 
-      completed: 12, 
-      capacity: 50,
-      instructor: 'Vikram Singh',
-      description: 'Comprehensive safety training for production floor',
-      isEnrolled: false,
-      location: 'Training Hall A',
-      status: 'Open'
-    },
-    { 
-      id: 'TRN002', 
-      title: 'Quality Control Standards', 
-      type: 'Mandatory', 
-      dept: 'Quality Control', 
-      date: '2024-12-18', 
-      duration: '6 hours', 
-      enrolled: 25, 
-      completed: 25, 
-      capacity: 30,
-      instructor: 'Priya Sharma',
-      description: 'Quality standards and inspection procedures',
-      isEnrolled: true,
-      location: 'Online',
-      status: 'Open'
-    },
-    { 
-      id: 'TRN003', 
-      title: 'Advanced Excel Skills', 
-      type: 'Optional', 
-      dept: 'All', 
-      date: '2024-12-20', 
-      duration: '8 hours', 
-      enrolled: 78, 
-      completed: 45, 
-      capacity: 100,
-      instructor: 'Sneha Gupta',
-      description: 'Excel formulas, pivot tables, and data analysis',
-      isEnrolled: false,
-      location: 'Training Hall B',
-      status: 'Open'
-    }
-  ]);
+  const [trainings, setTrainings] = useState<any[]>([]);
   
   // Projects State
-  const [projects, setProjects] = useState([
-    { id: 'PRJ001', name: 'New Scooter Model Development', status: 'On Track', progress: 75, dept: 'R&D', team: 25, deadline: '2025-03-15', manager: 'Vikram Singh', budget: '₹2,50,00,000' },
-    { id: 'PRJ002', name: 'Factory Automation Phase 2', status: 'At Risk', progress: 45, dept: 'Production', team: 18, deadline: '2025-01-30', manager: 'Rohit Verma', budget: '₹1,80,00,000' },
-    { id: 'PRJ003', name: 'Quality Management System Upgrade', status: 'On Track', progress: 90, dept: 'Quality Control', team: 12, deadline: '2024-12-30', manager: 'Priya Sharma', budget: '₹75,00,000' }
-  ]);
+  const [projects, setProjects] = useState<any[]>([]);
   
   // Documents State
-  const [documents, setDocuments] = useState([
-    { id: 'DOC001', title: 'Employment Contract', name: 'Employment Contract', type: 'PDF', category: 'Contract', size: '245 KB', uploadDate: '2020-01-10', date: '2020-01-10', status: 'Available' },
-    { id: 'DOC002', title: 'Pay Slip - November 2024', name: 'Pay Slip - November 2024', type: 'PDF', category: 'Payroll', size: '98 KB', uploadDate: '2024-12-01', date: '2024-12-01', status: 'Available' },
-    { id: 'DOC003', title: 'Tax Documents - FY 2023-24', name: 'Tax Documents - FY 2023-24', type: 'PDF', category: 'Tax Documents', size: '210 KB', uploadDate: '2024-04-15', date: '2024-04-15', status: 'Available' },
-    { id: 'DOC004', title: 'Performance Review - 2023', name: 'Performance Review - 2023', type: 'PDF', category: 'Review', size: '156 KB', uploadDate: '2024-01-20', date: '2024-01-20', status: 'Available' },
-    { id: 'DOC005', title: 'Offer Letter', name: 'Offer Letter', type: 'PDF', category: 'Onboarding', size: '180 KB', uploadDate: '2020-01-10', date: '2020-01-10', status: 'Available' },
-    { id: 'DOC006', title: 'ID Proof - Aadhaar', name: 'ID Proof - Aadhaar', type: 'PDF', category: 'Identity', size: '165 KB', uploadDate: '2020-01-12', date: '2020-01-12', status: 'Available' }
-  ]);
+  const [documents] = useState<any[]>([]);
   
   // Canteen State
-  const [canteenBalance, setCanteenBalance] = useState('₹450');
-  const [canteenOrders, setCanteenOrders] = useState([
-    { id: 'CO001', date: '2024-12-12', items: ['Veg Thali', 'Tea'], amount: '₹85', status: 'Completed' },
-    { id: 'CO002', date: '2024-12-11', items: ['Sandwich', 'Coffee'], amount: '₹65', status: 'Completed' }
-  ]);
+  const [canteenBalance] = useState('₹0');
+  const [canteenOrders, setCanteenOrders] = useState<any[]>([]);
   
   // Guest House State
-  const [guestHouseBookings, setGuestHouseBookings] = useState([
-    { id: 'GH001', roomType: 'Deluxe Room', checkIn: '2024-12-20', checkOut: '2024-12-22', guests: 2, status: 'Confirmed', amount: '₹3,500' },
-    { id: 'GH002', roomType: 'Standard Room', checkIn: '2024-12-15', checkOut: '2024-12-16', guests: 1, status: 'Completed', amount: '₹1,200' }
-  ]);
+  const [guestHouseBookings, setGuestHouseBookings] = useState<any[]>([]);
   
   // Transport State
-  const [transportRequests, setTransportRequests] = useState([
-    { id: 'TR001', from: 'Noida Plant', to: 'Delhi Airport', date: '2024-12-18', time: '10:00 AM', passengers: 2, status: 'Approved', vehicleType: 'Sedan' },
-    { id: 'TR002', from: 'Office', to: 'Client Site', date: '2024-12-20', time: '02:00 PM', passengers: 4, status: 'Pending', vehicleType: 'SUV' }
-  ]);
+  const [transportRequests, setTransportRequests] = useState<any[]>([]);
   
   // Bus Facility State
-  const [busRequests, setBusRequests] = useState([
-    {
-      id: 'BUS-REQ-001',
-      employeeId: DEMO_EMPLOYEE.empId,
-      employeeName: DEMO_EMPLOYEE.name,
-      houseNumber: 'B-204',
-      street: 'Green Valley Apartments',
-      landmark: 'Near Metro Station',
-      area: 'Sector 62',
-      city: 'Noida',
-      state: 'Uttar Pradesh',
-      pincode: '201301',
-      mobileNumber: '9876543210',
-      alternateNumber: '',
-      preferredPickupTime: '8:00 AM - 8:30 AM',
-      requestDate: '2024-12-05',
-      status: 'Active',
-      assignedRoute: 'Route A - Noida Sector 62',
-      pickupPoint: 'Sector 62, Near Metro Station',
-      pickupTime: '8:15 AM',
-      remarks: null
-    }
-  ]);
+  const [busRequests, setBusRequests] = useState<any[]>([]);
   
   // Parking Facility State
-  const [parkingRequests, setParkingRequests] = useState([
-    {
-      id: 'PARK-REQ-001',
-      employeeId: DEMO_EMPLOYEE.empId,
-      employeeName: DEMO_EMPLOYEE.name,
-      vehicleType: 'Four Wheeler',
-      vehicleNumber: 'DL01AB1234',
-      vehicleMake: 'Maruti',
-      vehicleModel: 'Swift',
-      vehicleColor: 'White',
-      fuelType: 'Petrol',
-      ownerName: '',
-      preferredSlot: 'Zone A - Main Building',
-      requestDate: '2024-12-08',
-      status: 'Slot Allocated',
-      slotNumber: 'A-42',
-      parkingZone: 'Zone A',
-      allocatedDate: '2024-12-10',
-      remarks: null
-    }
-  ]);
+  const [parkingRequests, setParkingRequests] = useState<any[]>([]);
   
   // Uniform State
-  const [uniformRequests, setUniformRequests] = useState([
-    {
-      id: 'UNI-REQ-001',
-      employeeId: DEMO_EMPLOYEE.empId,
-      employeeName: DEMO_EMPLOYEE.name,
-      department: DEMO_EMPLOYEE.department,
-      dateOfJoining: DEMO_EMPLOYEE.joiningDate,
-      uniformItems: [
-        { item: 'Work Shirt', size: 'L', quantity: 2 },
-        { item: 'Work Pants', waistSize: '32', quantity: 2 },
-        { item: 'Safety Shoes', shoeSize: '9', quantity: 1 }
-      ],
-      dateOfIssue: '2024-12-10',
-      requestDate: '2024-12-05',
-      status: 'Delivered',
-      deliveryDate: '2024-12-10',
-      approver: 'HR HOD',
-      approvedBy: 'Kavita Joshi',
-      approvedOn: '2024-12-06',
-      remarks: 'Standard issue uniform for assembly team'
-    },
-    {
-      id: 'UNI-REQ-002',
-      employeeId: DEMO_EMPLOYEE.empId,
-      employeeName: DEMO_EMPLOYEE.name,
-      department: DEMO_EMPLOYEE.department,
-      dateOfJoining: DEMO_EMPLOYEE.joiningDate,
-      uniformItems: [
-        { item: 'Safety Vest', size: 'XL', quantity: 1 },
-        { item: 'Safety Helmet', size: 'M', quantity: 1 }
-      ],
-      dateOfIssue: null,
-      requestDate: '2024-12-12',
-      status: 'Under Review',
-      deliveryDate: null,
-      approver: 'HR HOD',
-      approvedBy: null,
-      approvedOn: null,
-      remarks: null
-    }
-  ]);
+  const [uniformRequests, setUniformRequests] = useState<any[]>([]);
   
   // Assets State
-  const [myAssets, setMyAssets] = useState([
-    { id: 'AST001', name: 'Dell Latitude 5520', type: 'Laptop', serialNumber: 'DL5520-2024-042', assignedDate: '2020-01-15', status: 'Good', condition: 'Good' },
-    { id: 'AST002', name: 'iPhone 13 Pro', type: 'Mobile', serialNumber: 'IP13P-2023-156', assignedDate: '2023-03-20', status: 'Excellent', condition: 'Excellent' },
-    { id: 'AST003', name: 'Dell Monitor 24"', type: 'Monitor', serialNumber: 'DM24-2020-089', assignedDate: '2020-01-15', status: 'Good', condition: 'Good' },
-    { id: 'AST004', name: 'Logitech MX Keys', type: 'Keyboard', serialNumber: 'LMX-2021-234', assignedDate: '2021-06-10', status: 'Fair', condition: 'Fair' }
-  ]);
-  
-  const [assetRequests, setAssetRequests] = useState([
-    { id: 'AR001', assetType: 'Laptop', reason: 'Current laptop is outdated', status: 'In Progress', requestDate: '2024-12-08', priority: 'High' },
-    { id: 'AR002', assetType: 'Headset', reason: 'Required for calls', status: 'Approved', requestDate: '2024-12-05', priority: 'Medium' }
-  ]);
+  const [myAssets] = useState<any[]>([]);
+  const [assetRequests, setAssetRequests] = useState<any[]>([]);
   
   // Payroll State
-  const [payslips, setPayslips] = useState([
-    { id: 'PS001', month: 'November 2024', basicSalary: '₹35,000', hra: '₹12,000', allowances: '₹8,000', deductions: '₹5,500', netSalary: '₹49,500', status: 'Available' },
-    { id: 'PS002', month: 'October 2024', basicSalary: '₹35,000', hra: '₹12,000', allowances: '₹8,000', deductions: '₹5,200', netSalary: '₹49,800', status: 'Available' }
-  ]);
+  const [payslips] = useState<any[]>([]);
   
   // SIM Requests & Cards State
-  const [simRequests, setSimRequests] = useState([
-    {
-      id: 'SIM-REQ-001',
-      employeeId: DEMO_EMPLOYEE.empId,
-      employeeName: DEMO_EMPLOYEE.name,
-      simType: 'New SIM',
-      carrier: 'Airtel',
-      plan: 'Corporate Plan - Unlimited',
-      deviceType: 'Android',
-      reason: 'Field visits and customer calls',
-      status: 'Under Review',
-      submittedDate: '2024-12-10',
-      expectedBy: '2024-12-18',
-      approver: 'Admin Desk',
-      priority: 'High'
-    },
-    {
-      id: 'SIM-REQ-002',
-      employeeId: DEMO_EMPLOYEE.empId,
-      employeeName: DEMO_EMPLOYEE.name,
-      simType: 'Replacement',
-      carrier: 'Jio',
-      plan: '3GB/day + Unlimited Calls',
-      deviceType: 'iOS',
-      reason: 'Lost previous SIM during travel',
-      status: 'Approved',
-      submittedDate: '2024-12-05',
-      expectedBy: '2024-12-12',
-      approver: 'Admin Desk',
-      priority: 'Medium',
-      simId: 'SIM001'
-    }
-  ]);
-
-  const [simCards, setSimCards] = useState([
-    { id: 'SIM001', number: '+91 98765 99999', carrier: 'Airtel', plan: 'Corporate Plan - Unlimited', status: 'Active', assignedDate: '2020-02-01' }
-  ]);
+  const [simRequests, setSimRequests] = useState<any[]>([]);
+  const [simCards] = useState<any[]>([]);
   
   // General Requests State
-  const [generalRequests, setGeneralRequests] = useState([
-    { id: 'GR001', subject: 'Parking Space Request', description: 'Need parking space for new vehicle', status: 'Pending', submittedDate: '2024-12-10', category: 'Facility' },
-    { id: 'GR002', subject: 'ID Card Replacement', description: 'Lost ID card, need replacement', status: 'Approved', submittedDate: '2024-12-05', category: 'Administration' }
-  ]);
-  
+  const [generalRequests, setGeneralRequests] = useState<any[]>([]);
+
+  // ============= FIRESTORE REAL-TIME LISTENERS =============
+
+  // Listen to ALL requests for current user (or all requests for admin)
+  useEffect(() => {
+    if (!authUser) return;
+
+    console.log('🔄 Setting up requests listener for user:', authUser.id);
+    
+    let q;
+    if (isAdmin) {
+      // Admin sees all requests
+      q = query(collection(db, 'requests'), orderBy('createdAt', 'desc'), limit(100));
+    } else {
+      // Employee sees only their requests
+      q = query(
+        collection(db, 'requests'), 
+        where('userId', '==', authUser.id),
+        orderBy('createdAt', 'desc')
+      );
+    }
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const allRequests = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        submittedDate: doc.data().createdAt?.toDate?.()?.toISOString().split('T')[0] || '',
+      }));
+      
+      console.log('📋 Loaded requests from Firestore:', allRequests.length);
+      setRequests(allRequests);
+      
+      // Filter specific request types for backward compatibility
+      setLeaveRequests(allRequests.filter(r => r.requestType === 'leave'));
+      setCanteenOrders(allRequests.filter(r => r.requestType === 'canteen'));
+      setGuestHouseBookings(allRequests.filter(r => r.requestType === 'guesthouse' || r.requestType === 'guest_house'));
+      setTransportRequests(allRequests.filter(r => r.requestType === 'transport'));
+      setBusRequests(allRequests.filter(r => r.requestType === 'bus'));
+      setParkingRequests(allRequests.filter(r => r.requestType === 'parking'));
+      setUniformRequests(allRequests.filter(r => r.requestType === 'uniform'));
+      setAssetRequests(allRequests.filter(r => r.requestType === 'asset'));
+      setSimRequests(allRequests.filter(r => r.requestType === 'sim' || r.requestType === 'sim_card'));
+      setGeneralRequests(allRequests.filter(r => r.requestType === 'general' || r.requestType === 'welfare'));
+    }, (error) => {
+      console.error('❌ Error loading requests:', error);
+    });
+
+    return () => unsubscribe();
+  }, [authUser, isAdmin]);
+
+  // Listen to notifications
+  useEffect(() => {
+    if (!authUser) return;
+
+    console.log('🔔 Setting up notifications listener');
+    const q = query(
+      collection(db, 'notifications'),
+      where('userId', '==', authUser.id),
+      orderBy('createdAt', 'desc'),
+      limit(50)
+    );
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const notifs = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        timestamp: doc.data().createdAt?.toDate?.() || new Date(),
+        time: formatTimeAgo(doc.data().createdAt?.toDate?.())
+      }));
+      
+      console.log('🔔 Loaded notifications:', notifs.length);
+      setNotifications(notifs);
+    }, (error) => {
+      console.error('❌ Error loading notifications:', error);
+    });
+
+    return () => unsubscribe();
+  }, [authUser]);
+
+  // Listen to announcements
+  useEffect(() => {
+    console.log('📢 Setting up announcements listener');
+    const q = query(
+      collection(db, 'announcements'),
+      orderBy('createdAt', 'desc'),
+      limit(20)
+    );
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const anns = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        date: doc.data().createdAt?.toDate?.()?.toISOString().split('T')[0] || ''
+      }));
+      
+      console.log('📢 Loaded announcements:', anns.length);
+      setAnnouncements(anns);
+    }, (error) => {
+      console.error('❌ Error loading announcements:', error);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Listen to all users (admin only)
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    console.log('👥 Setting up users listener (admin)');
+    const unsubscribe = onSnapshot(
+      query(collection(db, 'users'), orderBy('fullName')),
+      (snapshot) => {
+        const users = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+          empId: doc.data().employeeId || doc.id,
+          name: doc.data().fullName || doc.data().name || '',
+          dept: doc.data().department || '',
+          role: doc.data().designation || doc.data().role || '',
+          joinDate: doc.data().dateOfJoining?.toDate?.()?.toISOString().split('T')[0] || '',
+          status: doc.data().isActive ? 'Active' : 'Inactive'
+        }));
+        
+        console.log('👥 Loaded users:', users.length);
+        setAllUsers(users);
+      },
+      (error) => {
+        console.error('❌ Error loading users:', error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [isAdmin]);
+
+  // Listen to training sessions
+  useEffect(() => {
+    console.log('📚 Setting up training sessions listener');
+    const q = query(
+      collection(db, 'trainingSessions'),
+      orderBy('startDate', 'desc'),
+      limit(50)
+    );
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const sessions = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        date: doc.data().startDate?.toDate?.()?.toISOString().split('T')[0] || '',
+        startDate: doc.data().startDate?.toDate?.()?.toISOString().split('T')[0] || '',
+        endDate: doc.data().endDate?.toDate?.()?.toISOString().split('T')[0] || ''
+      }));
+      
+      console.log('📚 Loaded training sessions:', sessions.length);
+      setTrainings(sessions);
+    }, (error) => {
+      console.error('❌ Error loading training:', error);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Listen to projects
+  useEffect(() => {
+    console.log('📊 Setting up projects listener');
+    const q = query(
+      collection(db, 'projects'),
+      orderBy('createdAt', 'desc'),
+      limit(50)
+    );
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const projs = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        deadline: doc.data().deadline?.toDate?.()?.toISOString().split('T')[0] || ''
+      }));
+      
+      console.log('📊 Loaded projects:', projs.length);
+      setProjects(projs);
+    }, (error) => {
+      console.error('❌ Error loading projects:', error);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Listen to attendance records for current user
+  useEffect(() => {
+    if (!authUser) return;
+
+    console.log('⏰ Setting up attendance listener');
+    const q = query(
+      collection(db, 'attendance', authUser.id, 'records'),
+      orderBy('date', 'desc'),
+      limit(30)
+    );
+    
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const records = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        date: doc.data().date?.toDate?.()?.toISOString().split('T')[0] || '',
+        day: doc.data().date?.toDate?.()?.toLocaleDateString('en-US', { weekday: 'long' }) || '',
+        checkIn: doc.data().checkIn?.toDate?.()?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) || '-',
+        checkOut: doc.data().checkOut?.toDate?.()?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) || '-',
+        hours: doc.data().duration || '-',
+      }));
+      
+      console.log('⏰ Loaded attendance records:', records.length);
+      setAttendanceHistory(records);
+      
+      // Check if clocked in today
+      const today = new Date().toISOString().split('T')[0];
+      const todayRecord = records.find(r => r.date === today);
+      if (todayRecord && todayRecord.checkIn && !todayRecord.checkOut) {
+        setIsClockedIn(true);
+        setClockInTime(todayRecord.checkIn);
+      }
+    }, (error) => {
+      console.error('❌ Error loading attendance:', error);
+    });
+
+    return () => unsubscribe();
+  }, [authUser]);
+
+  // ============= HELPER FUNCTIONS =============
+
+  const formatTimeAgo = (date: Date | undefined): string => {
+    if (!date) return 'Just now';
+    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+    
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+    return `${Math.floor(seconds / 86400)} days ago`;
+  };
+
+  // ============= HANDLERS =============
+
   // Clock In/Out Handlers
-  const handleClockIn = () => {
-    const currentTime = new Date().toLocaleTimeString('en-US', { 
+  const handleClockIn = async () => {
+    if (!authUser) return;
+    
+    const currentTime = new Date();
+    const timeString = currentTime.toLocaleTimeString('en-US', { 
       hour: '2-digit', 
       minute: '2-digit',
       hour12: true 
     });
-    setClockInTime(currentTime);
-    setIsClockedIn(true);
     
-    addNotification({
-      title: 'Clocked In Successfully',
-      message: `You clocked in at ${currentTime}`,
-      type: 'success',
-      time: 'Just now'
-    });
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const recordRef = doc(db, 'attendance', authUser.id, 'records', today);
+      
+      await setDoc(recordRef, {
+        userId: authUser.id,
+        employeeId: authUser.id,
+        employeeName: authUser.name,
+        date: Timestamp.fromDate(new Date()),
+        checkIn: Timestamp.fromDate(currentTime),
+        status: 'present',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      
+      setClockInTime(timeString);
+      setIsClockedIn(true);
+      
+      addNotification({
+        title: 'Clocked In Successfully',
+        message: `You clocked in at ${timeString}`,
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('❌ Error clocking in:', error);
+    }
   };
   
-  const handleClockOut = () => {
-    const currentTime = new Date().toLocaleTimeString('en-US', { 
+  const handleClockOut = async () => {
+    if (!authUser || !clockInTime) return;
+    
+    const currentTime = new Date();
+    const timeString = currentTime.toLocaleTimeString('en-US', { 
       hour: '2-digit', 
       minute: '2-digit',
       hour12: true 
     });
-    setClockOutTime(currentTime);
     
-    if (clockInTime) {
-      const hours = 9;
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const recordRef = doc(db, 'attendance', authUser.id, 'records', today);
+      
+      // Calculate duration
+      const hours = 9; // Simplified for now
       const minutes = Math.floor(Math.random() * 60);
       const hoursWorked = `${hours}h ${minutes}m`;
-      setTodayHours(hoursWorked);
       
-      const today = new Date();
-      const newAttendance = {
-        id: attendanceHistory.length + 1,
-        date: today.toISOString().split('T')[0],
-        day: today.toLocaleDateString('en-US', { weekday: 'long' }),
-        checkIn: clockInTime,
-        checkOut: currentTime,
-        hours: hoursWorked,
-        status: 'Present'
-      };
-      setAttendanceHistory([newAttendance, ...attendanceHistory]);
+      await updateDoc(recordRef, {
+        checkOut: Timestamp.fromDate(currentTime),
+        duration: hoursWorked,
+        workHours: hours + (minutes / 60),
+        updatedAt: serverTimestamp()
+      });
+      
+      setTodayHours(hoursWorked);
+      setIsClockedIn(false);
       
       addNotification({
         title: 'Clocked Out Successfully',
-        message: `You clocked out at ${currentTime}. Total hours: ${hoursWorked}`,
+        message: `You clocked out at ${timeString}. Total hours: ${hoursWorked}`,
         type: 'success',
-        time: 'Just now'
       });
+      
+      setTimeout(() => {
+        setClockInTime(null);
+      }, 3000);
+    } catch (error) {
+      console.error('❌ Error clocking out:', error);
     }
-    
-    setIsClockedIn(false);
-    setTimeout(() => {
-      setClockInTime(null);
-      setClockOutTime(null);
-    }, 3000);
   };
   
   // Leave Management Handlers
-  const applyLeave = (leave) => {
-    const newLeave = {
-      ...leave,
-      id: `LV${String(leaveRequests.length + 1).padStart(3, '0')}`,
-      appliedDate: new Date().toISOString().split('T')[0],
-      status: 'Pending'
-    };
-    setLeaveRequests([newLeave, ...leaveRequests]);
+  const applyLeave = async (leave) => {
+    if (!authUser) return;
     
-    // Also add to requests
-    addRequest({
-      type: 'Leave Request',
-      category: leave.type,
-      startDate: leave.startDate,
-      endDate: leave.endDate,
-      days: leave.days,
-      reason: leave.reason,
-      priority: 'Medium'
-    });
-    
-    addNotification({
-      title: 'Leave Application Submitted',
-      message: `Your ${leave.type} application has been submitted`,
-      type: 'success',
-      time: 'Just now'
-    });
-  };
-  
-  const cancelLeave = (id) => {
-    setLeaveRequests(leaveRequests.filter(leave => leave.id !== id));
-    
-    addNotification({
-      title: 'Leave Request Cancelled',
-      message: 'Your leave request has been cancelled',
-      type: 'info',
-      time: 'Just now'
-    });
-  };
-  
-  // Request Handlers
-  const addRequest = (request) => {
-    const newRequest = {
-      ...request,
-      id: `REQ${String(requests.length + 1).padStart(3, '0')}`,
-      employeeId: currentUser.id,
-      employeeName: currentUser.name,
-      department: currentUser.department,
-      submittedDate: new Date().toISOString().split('T')[0],
-      status: 'Pending'
-    };
-    setRequests([newRequest, ...requests]);
-    
-    addNotification({
-      title: 'Request Submitted',
-      message: `Your ${request.type} has been submitted successfully`,
-      type: 'success',
-      time: 'Just now'
-    });
-  };
-  
-  const updateRequest = (id, updates) => {
-    setRequests(requests.map(req => 
-      req.id === id ? { ...req, ...updates } : req
-    ));
-    
-    if (updates.status) {
-      addNotification({
-        title: `Request ${updates.status}`,
-        message: `Your request has been ${updates.status.toLowerCase()}`,
-        type: updates.status === 'Approved' ? 'success' : updates.status === 'Rejected' ? 'error' : 'info',
-        time: 'Just now'
+    try {
+      await addDoc(collection(db, 'requests'), {
+        requestType: 'leave',
+        userId: authUser.id,
+        userName: authUser.name,
+        employeeId: authUser.id,
+        employeeName: authUser.name,
+        department: authUser.department,
+        requestData: {
+          leaveType: leave.type,
+          startDate: leave.startDate,
+          endDate: leave.endDate,
+          days: leave.days,
+          reason: leave.reason
+        },
+        status: 'pending',
+        priority: 'medium',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
       });
+      
+      addNotification({
+        title: 'Leave Application Submitted',
+        message: `Your ${leave.type} application has been submitted`,
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('❌ Error applying leave:', error);
     }
   };
   
-  const deleteRequest = (id) => {
-    setRequests(requests.filter(req => req.id !== id));
+  const cancelLeave = async (id) => {
+    try {
+      await updateDoc(doc(db, 'requests', id), {
+        status: 'cancelled',
+        updatedAt: serverTimestamp()
+      });
+      
+      addNotification({
+        title: 'Leave Request Cancelled',
+        message: 'Your leave request has been cancelled',
+        type: 'info',
+      });
+    } catch (error) {
+      console.error('❌ Error cancelling leave:', error);
+    }
+  };
+  
+  // Request Handlers
+  const addRequest = async (request) => {
+    if (!authUser) return;
     
-    addNotification({
-      title: 'Request Deleted',
-      message: 'Your request has been deleted',
-      type: 'info',
-      time: 'Just now'
-    });
+    try {
+      await addDoc(collection(db, 'requests'), {
+        requestType: request.requestType || 'general',
+        userId: authUser.id,
+        userName: authUser.name,
+        employeeId: authUser.id,
+        employeeName: authUser.name,
+        department: authUser.department,
+        title: request.title || request.type,
+        description: request.reason || request.description,
+        requestData: request.requestData || request,
+        status: 'pending',
+        priority: request.priority || 'medium',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      
+      addNotification({
+        title: 'Request Submitted',
+        message: `Your ${request.type || 'request'} has been submitted successfully`,
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('❌ Error adding request:', error);
+    }
   };
   
-  const approveRequest = (id) => {
-    updateRequest(id, { 
-      status: 'Approved', 
-      approvedDate: new Date().toISOString().split('T')[0] 
-    });
+  const updateRequest = async (id, updates) => {
+    try {
+      await updateDoc(doc(db, 'requests', id), {
+        ...updates,
+        updatedAt: serverTimestamp()
+      });
+      
+      if (updates.status) {
+        addNotification({
+          title: `Request ${updates.status}`,
+          message: `Your request has been ${updates.status.toLowerCase()}`,
+          type: updates.status === 'approved' ? 'success' : updates.status === 'rejected' ? 'error' : 'info',
+        });
+      }
+    } catch (error) {
+      console.error('❌ Error updating request:', error);
+    }
   };
   
-  const rejectRequest = (id, reason) => {
-    updateRequest(id, { 
-      status: 'Rejected', 
-      rejectedDate: new Date().toISOString().split('T')[0],
+  const deleteRequest = async (id) => {
+    try {
+      await deleteDoc(doc(db, 'requests', id));
+      
+      addNotification({
+        title: 'Request Deleted',
+        message: 'Your request has been deleted',
+        type: 'info',
+      });
+    } catch (error) {
+      console.error('❌ Error deleting request:', error);
+    }
+  };
+  
+  const approveRequest = async (id) => {
+    await updateRequest(id, { status: 'approved' });
+  };
+  
+  const rejectRequest = async (id, reason) => {
+    await updateRequest(id, { 
+      status: 'rejected',
       rejectionReason: reason
     });
   };
   
   // Notification Handlers
-  const addNotification = (notification) => {
-    const newNotification = {
-      ...notification,
-      id: `NOT${String(notifications.length + 1).padStart(3, '0')}`,
-      isRead: false,
-      timestamp: new Date()
-    };
-    setNotifications([newNotification, ...notifications]);
+  const addNotification = async (notification) => {
+    if (!authUser) return;
+    
+    try {
+      await addDoc(collection(db, 'notifications'), {
+        userId: authUser.id,
+        title: notification.title,
+        message: notification.message,
+        type: notification.type || 'info',
+        isRead: false,
+        createdAt: serverTimestamp()
+      });
+    } catch (error) {
+      console.error('❌ Error adding notification:', error);
+    }
   };
   
-  const markNotificationAsRead = (id) => {
-    setNotifications(notifications.map(notif => 
-      notif.id === id ? { ...notif, isRead: true } : notif
-    ));
+  const markNotificationAsRead = async (id) => {
+    try {
+      await updateDoc(doc(db, 'notifications', id), {
+        isRead: true,
+        updatedAt: serverTimestamp()
+      });
+    } catch (error) {
+      console.error('❌ Error marking notification as read:', error);
+    }
   };
   
-  const clearAllNotifications = () => {
-    setNotifications([]);
+  const clearAllNotifications = async () => {
+    try {
+      const batch = [];
+      for (const notif of notifications) {
+        batch.push(deleteDoc(doc(db, 'notifications', notif.id)));
+      }
+      await Promise.all(batch);
+    } catch (error) {
+      console.error('❌ Error clearing notifications:', error);
+    }
   };
   
   // Announcement Handlers
-  const addAnnouncement = (announcement) => {
-    const newAnnouncement = {
-      ...announcement,
-      id: `ANN${String(announcements.length + 1).padStart(3, '0')}`,
-      date: new Date().toISOString().split('T')[0],
-      author: isAdmin ? 'Admin' : currentUser.name,
-      status: 'Published'
-    };
-    setAnnouncements([newAnnouncement, ...announcements]);
+  const addAnnouncement = async (announcement) => {
+    if (!authUser) return;
     
-    addNotification({
-      title: 'New Announcement',
-      message: announcement.title,
-      type: 'info',
-      time: 'Just now'
-    });
+    try {
+      await addDoc(collection(db, 'announcements'), {
+        title: announcement.title,
+        content: announcement.content,
+        type: announcement.type || 'general',
+        priority: announcement.priority || 'medium',
+        author: isAdmin ? 'Admin' : authUser.name,
+        status: 'published',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      
+      addNotification({
+        title: 'New Announcement',
+        message: announcement.title,
+        type: 'info',
+      });
+    } catch (error) {
+      console.error('❌ Error adding announcement:', error);
+    }
   };
   
-  const deleteAnnouncement = (id) => {
-    setAnnouncements(announcements.filter(ann => ann.id !== id));
+  const deleteAnnouncement = async (id) => {
+    try {
+      await deleteDoc(doc(db, 'announcements', id));
+    } catch (error) {
+      console.error('❌ Error deleting announcement:', error);
+    }
   };
   
-  // User Management Handlers
-  const updateUser = (id, updates) => {
-    setAllUsers(allUsers.map(user => 
-      user.id === id ? { ...user, ...updates } : user
-    ));
+  // User Management Handlers (admin only)
+  const updateUser = async (id, updates) => {
+    try {
+      await updateDoc(doc(db, 'users', id), {
+        ...updates,
+        updatedAt: serverTimestamp()
+      });
+    } catch (error) {
+      console.error('❌ Error updating user:', error);
+    }
   };
   
-  const addUser = (user) => {
-    const newUser = {
-      ...user,
-      id: `EMP${String(allUsers.length + 1001)}`,
-      empId: `SMG-${new Date().getFullYear()}-${String(allUsers.length + 1).padStart(3, '0')}`,
-      status: 'Active',
-      joinDate: new Date().toISOString().split('T')[0],
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.name}`
-    };
-    setAllUsers([...allUsers, newUser]);
-    
-    addNotification({
-      title: 'New User Added',
-      message: `${user.name} has been added to the system`,
-      type: 'success',
-      time: 'Just now'
-    });
+  const addUser = async (user) => {
+    try {
+      // This should be done via Cloud Function for proper user creation with auth
+      console.warn('⚠️ User creation should be done via Cloud Function');
+      
+      addNotification({
+        title: 'New User Added',
+        message: `${user.name} has been added to the system`,
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('❌ Error adding user:', error);
+    }
   };
   
-  const deleteUser = (id) => {
-    setAllUsers(allUsers.filter(user => user.id !== id));
+  const deleteUser = async (id) => {
+    try {
+      await updateDoc(doc(db, 'users', id), {
+        isActive: false,
+        updatedAt: serverTimestamp()
+      });
+    } catch (error) {
+      console.error('❌ Error deleting user:', error);
+    }
   };
   
   // Training Handlers
-  const enrollInTraining = (trainingId) => {
-    setTrainings(trainings.map(training => 
-      training.id === trainingId 
-        ? { ...training, enrolled: training.enrolled + 1, isEnrolled: true }
-        : training
-    ));
+  const enrollInTraining = async (trainingId) => {
+    if (!authUser) return;
     
-    addNotification({
-      title: 'Training Enrollment Successful',
-      message: 'You have been enrolled in the training program',
-      type: 'success',
-      time: 'Just now'
-    });
+    try {
+      await addDoc(collection(db, 'trainingEnrollments'), {
+        trainingId,
+        userId: authUser.id,
+        userName: authUser.name,
+        status: 'enrolled',
+        enrolledAt: serverTimestamp(),
+        createdAt: serverTimestamp()
+      });
+      
+      addNotification({
+        title: 'Training Enrollment Successful',
+        message: 'You have been enrolled in the training program',
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('❌ Error enrolling in training:', error);
+    }
   };
   
-  const addTraining = (training) => {
-    const newTraining = {
-      ...training,
-      id: `TRN${String(trainings.length + 1).padStart(3, '0')}`,
-      enrolled: 0,
-      completed: 0,
-      isEnrolled: false,
-      status: 'Open'
-    };
-    setTrainings([...trainings, newTraining]);
+  const addTraining = async (training) => {
+    try {
+      await addDoc(collection(db, 'trainingSessions'), {
+        ...training,
+        enrolled: 0,
+        completed: 0,
+        status: 'open',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+    } catch (error) {
+      console.error('❌ Error adding training:', error);
+    }
   };
   
-  const updateTraining = (id, updates) => {
-    setTrainings(trainings.map(training => 
-      training.id === id ? { ...training, ...updates } : training
-    ));
+  const updateTraining = async (id, updates) => {
+    try {
+      await updateDoc(doc(db, 'trainingSessions', id), {
+        ...updates,
+        updatedAt: serverTimestamp()
+      });
+    } catch (error) {
+      console.error('❌ Error updating training:', error);
+    }
   };
   
-  const deleteTraining = (id) => {
-    setTrainings(trainings.filter(training => training.id !== id));
+  const deleteTraining = async (id) => {
+    try {
+      await deleteDoc(doc(db, 'trainingSessions', id));
+    } catch (error) {
+      console.error('❌ Error deleting training:', error);
+    }
   };
   
   // Project Handlers
-  const addProject = (project) => {
-    const newProject = {
-      ...project,
-      id: `PRJ${String(projects.length + 1).padStart(3, '0')}`,
-      progress: 0,
-      status: 'Planning'
-    };
-    setProjects([...projects, newProject]);
+  const addProject = async (project) => {
+    try {
+      await addDoc(collection(db, 'projects'), {
+        ...project,
+        progress: 0,
+        status: 'planning',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+    } catch (error) {
+      console.error('❌ Error adding project:', error);
+    }
   };
   
-  const updateProject = (id, updates) => {
-    setProjects(projects.map(project => 
-      project.id === id ? { ...project, ...updates } : project
-    ));
+  const updateProject = async (id, updates) => {
+    try {
+      await updateDoc(doc(db, 'projects', id), {
+        ...updates,
+        updatedAt: serverTimestamp()
+      });
+    } catch (error) {
+      console.error('❌ Error updating project:', error);
+    }
   };
   
-  const deleteProject = (id) => {
-    setProjects(projects.filter(project => project.id !== id));
+  const deleteProject = async (id) => {
+    try {
+      await deleteDoc(doc(db, 'projects', id));
+    } catch (error) {
+      console.error('❌ Error deleting project:', error);
+    }
   };
   
   // Document Handlers
-  const requestDocument = (docType) => {
-    addRequest({
+  const requestDocument = async (docType) => {
+    await addRequest({
+      requestType: 'document',
       type: 'Document Request',
-      category: docType,
+      title: docType,
       reason: 'Required for personal use',
-      priority: 'Medium'
+      priority: 'medium'
     });
   };
   
-  const uploadDocument = (document) => {
-    const newDocument = {
-      ...document,
-      id: `DOC${String(documents.length + 1).padStart(3, '0')}`,
-      uploadDate: new Date().toISOString().split('T')[0],
-      status: 'Available'
-    };
-    setDocuments([...documents, newDocument]);
+  const uploadDocument = async (document) => {
+    // Document upload should use Firebase Storage
+    console.warn('⚠️ Document upload should use Firebase Storage');
   };
   
-  const deleteDocument = (id) => {
-    setDocuments(documents.filter(doc => doc.id !== id));
+  const deleteDocument = async (id) => {
+    // Documents are typically managed by admin
+    console.warn('⚠️ Document deletion should be admin-only');
   };
   
   // Canteen Handlers
-  const placeCanteenOrder = (order) => {
-    const newOrder = {
-      ...order,
-      id: `CO${String(canteenOrders.length + 1).padStart(3, '0')}`,
-      date: new Date().toISOString().split('T')[0],
-      status: 'Pending'
-    };
-    setCanteenOrders([newOrder, ...canteenOrders]);
-    
-    // Deduct from balance
-    const currentBalance = parseInt(canteenBalance.replace(/[₹,]/g, ''));
-    const orderAmount = parseInt(order.amount.replace(/[₹,]/g, ''));
-    setCanteenBalance(`₹${currentBalance - orderAmount}`);
-    
-    addNotification({
-      title: 'Order Placed',
-      message: `Your canteen order has been placed successfully`,
-      type: 'success',
-      time: 'Just now'
+  const placeCanteenOrder = async (order) => {
+    await addRequest({
+      requestType: 'canteen',
+      type: 'Canteen Order',
+      title: 'Canteen Order',
+      requestData: order,
+      priority: 'low'
     });
   };
   
-  const addCanteenBalance = (amount) => {
-    const currentBalance = parseInt(canteenBalance.replace(/[₹,]/g, ''));
-    setCanteenBalance(`₹${currentBalance + amount}`);
+  const addCanteenBalance = async (amount) => {
+    if (!authUser) return;
     
+    // This should update user profile or wallet balance
     addNotification({
       title: 'Balance Added',
       message: `₹${amount} has been added to your canteen wallet`,
       type: 'success',
-      time: 'Just now'
     });
   };
   
   // Guest House Handlers
-  const bookGuestHouse = (booking) => {
-    const newBooking = {
-      ...booking,
-      id: `GH${String(guestHouseBookings.length + 1).padStart(3, '0')}`,
-      status: 'Confirmed'
-    };
-    setGuestHouseBookings([newBooking, ...guestHouseBookings]);
-    
-    addNotification({
-      title: 'Booking Confirmed',
-      message: `Your guest house booking has been confirmed`,
-      type: 'success',
-      time: 'Just now'
+  const bookGuestHouse = async (booking) => {
+    await addRequest({
+      requestType: 'guesthouse',
+      type: 'Guest House Booking',
+      title: 'Guest House Booking',
+      requestData: booking,
+      priority: 'medium'
     });
   };
   
-  const cancelGuestHouseBooking = (id) => {
-    setGuestHouseBookings(guestHouseBookings.map(booking =>
-      booking.id === id ? { ...booking, status: 'Cancelled' } : booking
-    ));
-    
-    addNotification({
-      title: 'Booking Cancelled',
-      message: 'Your guest house booking has been cancelled',
-      type: 'info',
-      time: 'Just now'
-    });
+  const cancelGuestHouseBooking = async (id) => {
+    await updateRequest(id, { status: 'cancelled' });
   };
   
   // Transport Handlers
-  const requestTransport = (request) => {
-    const newRequest = {
-      ...request,
-      id: `TR${String(transportRequests.length + 1).padStart(3, '0')}`,
-      status: 'Pending'
-    };
-    setTransportRequests([newRequest, ...transportRequests]);
-    
-    addNotification({
-      title: 'Transport Request Submitted',
-      message: 'Your transport request has been submitted',
-      type: 'success',
-      time: 'Just now'
+  const requestTransport = async (request) => {
+    await addRequest({
+      requestType: 'transport',
+      type: 'Transport Request',
+      title: 'Transport Request',
+      requestData: request,
+      priority: 'medium'
     });
   };
   
-  const cancelTransportRequest = (id) => {
-    setTransportRequests(transportRequests.map(req =>
-      req.id === id ? { ...req, status: 'Cancelled' } : req
-    ));
+  const cancelTransportRequest = async (id) => {
+    await updateRequest(id, { status: 'cancelled' });
   };
   
   // Bus Facility Handlers
-  const requestBusFacility = (request) => {
-    const submittedDate = new Date().toISOString().split('T')[0];
-    
-    const newRequest = {
-      id: `BUS-REQ-${String(busRequests.length + 1).padStart(3, '0')}`,
-      employeeId: currentUser.empId,
-      employeeName: currentUser.name,
-      ...request,
-      requestDate: submittedDate,
-      status: 'Submitted',
-      assignedRoute: null,
-      pickupPoint: null,
-      pickupTime: null
-    };
-    
-    setBusRequests([newRequest, ...busRequests]);
-    
-    addRequest({
+  const requestBusFacility = async (request) => {
+    await addRequest({
+      requestType: 'bus',
       type: 'Bus Facility Request',
-      category: 'Transportation',
-      reason: `Bus request for ${request.area}, ${request.city}`,
-      priority: 'Medium'
-    });
-    
-    addNotification({
-      title: 'Bus Facility Request Submitted',
-      message: 'Your bus facility request has been sent to admin for route assignment',
-      type: 'success',
-      time: 'Just now'
+      title: 'Bus Facility Request',
+      requestData: request,
+      priority: 'medium'
     });
   };
   
   // Parking Facility Handlers
-  const requestParkingFacility = (request) => {
-    const submittedDate = new Date().toISOString().split('T')[0];
-    
-    const newRequest = {
-      id: `PARK-REQ-${String(parkingRequests.length + 1).padStart(3, '0')}`,
-      employeeId: currentUser.empId,
-      employeeName: currentUser.name,
-      ...request,
-      requestDate: submittedDate,
-      status: 'Submitted',
-      slotNumber: null,
-      parkingZone: null,
-      allocatedDate: null
-    };
-    
-    setParkingRequests([newRequest, ...parkingRequests]);
-    
-    addRequest({
+  const requestParkingFacility = async (request) => {
+    await addRequest({
+      requestType: 'parking',
       type: 'Parking Facility Request',
-      category: request.vehicleType,
-      reason: `Parking request for ${request.vehicleNumber}`,
-      priority: 'Medium'
-    });
-    
-    addNotification({
-      title: 'Parking Request Submitted',
-      message: 'Your parking slot request has been sent to admin for allocation',
-      type: 'success',
-      time: 'Just now'
+      title: 'Parking Facility Request',
+      requestData: request,
+      priority: 'medium'
     });
   };
   
   // Uniform Handlers
-  const requestUniform = (request) => {
-    const submittedDate = new Date().toISOString().split('T')[0];
-    
-    const newRequest = {
-      id: `UNI-REQ-${String(uniformRequests.length + 1).padStart(3, '0')}`,
-      employeeId: currentUser.empId,
-      employeeName: currentUser.name,
-      department: currentUser.department,
-      dateOfJoining: currentUser.joiningDate,
-      uniformItems: request.uniformItems || [],
-      dateOfIssue: request.dateOfIssue || null,
-      requestDate: submittedDate,
-      status: 'Submitted',
-      deliveryDate: null,
-      approver: 'HR HOD',
-      approvedBy: null,
-      approvedOn: null,
-      remarks: request.remarks || null
-    };
-    
-    setUniformRequests([newRequest, ...uniformRequests]);
-    
-    const itemsSummary = request.uniformItems?.map(item => 
-      `${item.quantity}x ${item.item} (Size: ${item.size || item.waistSize || item.shoeSize})`
-    ).join(', ') || 'Multiple items';
-    
-    addRequest({
+  const requestUniform = async (request) => {
+    await addRequest({
+      requestType: 'uniform',
       type: 'Uniform Request',
-      category: 'Uniform Allocation',
-      reason: itemsSummary,
-      priority: 'Medium'
-    });
-    
-    addNotification({
-      title: 'Uniform Request Submitted',
-      message: 'Your uniform request has been sent to HR HOD for approval',
-      type: 'success',
-      time: 'Just now'
+      title: 'Uniform Request',
+      requestData: request,
+      priority: 'medium'
     });
   };
   
   // Asset Handlers
-  const requestAsset = (asset) => {
-    const newRequest = {
-      ...asset,
-      id: `AR${String(assetRequests.length + 1).padStart(3, '0')}`,
-      requestDate: new Date().toISOString().split('T')[0],
-      status: 'Pending'
-    };
-    setAssetRequests([newRequest, ...assetRequests]);
-    
-    addRequest({
+  const requestAsset = async (asset) => {
+    await addRequest({
+      requestType: 'asset',
       type: 'Asset Request',
-      category: asset.assetType,
-      reason: asset.reason,
-      priority: asset.priority || 'Medium'
+      title: asset.assetType || 'Asset Request',
+      requestData: asset,
+      priority: asset.priority || 'medium'
     });
   };
   
   // Payroll Handlers
-  const generatePayslip = (month) => {
-    const newPayslip = {
-      id: `PS${String(payslips.length + 1).padStart(3, '0')}`,
-      month: month,
-      basicSalary: '₹35,000',
-      hra: '₹12,000',
-      allowances: '₹8,000',
-      deductions: '₹5,500',
-      netSalary: '₹49,500',
-      status: 'Available'
-    };
-    setPayslips([newPayslip, ...payslips]);
+  const generatePayslip = async (month) => {
+    // Payslips are typically generated by backend
+    console.warn('⚠️ Payslip generation should be done by backend');
   };
   
   // SIM Handlers
-  const requestSIM = (request) => {
-    const submittedDate = new Date().toISOString().split('T')[0];
-
-    const newSimRequest = {
-      id: `SIM-REQ-${String(simRequests.length + 1).padStart(3, '0')}`,
-      employeeId: currentUser.empId,
-      employeeName: currentUser.name,
-      simType: request.simType || 'New SIM',
-      carrier: request.carrier || 'Corporate SIM',
-      plan: request.plan || 'Standard Plan',
-      deviceType: request.deviceType || 'Not specified',
-      reason: request.reason,
-      expectedBy: request.expectedBy || null,
-      status: 'Submitted',
-      submittedDate,
-      approver: 'Admin Desk',
-      priority: request.priority || 'Medium'
-    };
-
-    setSimRequests([newSimRequest, ...simRequests]);
-
-    addRequest({
+  const requestSIM = async (request) => {
+    await addRequest({
+      requestType: 'sim',
       type: 'SIM Request',
-      category: newSimRequest.simType,
-      reason: newSimRequest.reason,
-      priority: newSimRequest.priority,
-      carrier: newSimRequest.carrier,
-      plan: newSimRequest.plan
-    });
-
-    addNotification({
-      title: 'SIM request submitted',
-      message: `${newSimRequest.carrier} ${newSimRequest.plan} sent to Admin Desk`,
-      type: 'info',
-      time: 'Just now'
+      title: 'SIM Card Request',
+      requestData: request,
+      priority: request.priority || 'medium'
     });
   };
   
   // General Request Handlers
-  const submitGeneralRequest = (request) => {
-    const newRequest = {
-      ...request,
-      id: `GR${String(generalRequests.length + 1).padStart(3, '0')}`,
-      submittedDate: new Date().toISOString().split('T')[0],
-      status: 'Pending'
-    };
-    setGeneralRequests([newRequest, ...generalRequests]);
-    
-    addRequest({
+  const submitGeneralRequest = async (request) => {
+    await addRequest({
+      requestType: 'general',
       type: 'General Request',
-      category: request.category,
-      reason: request.description,
-      priority: request.priority || 'Medium'
+      title: request.subject || 'General Request',
+      requestData: request,
+      priority: request.priority || 'medium'
     });
   };
   

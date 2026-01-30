@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { Home, Calendar, MapPin, Users, Clock, CheckCircle, XCircle, Send } from 'lucide-react';
+import { useApp } from '../context/AppContextEnhanced';
+import { useAuth } from '../context/AuthContext';
 
 export const GuestHousePage = () => {
+  const { guestHouseBookings, addRequest } = useApp();
+  const { user } = useAuth();
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState('1');
@@ -18,44 +22,39 @@ export const GuestHousePage = () => {
     return 0;
   };
 
-  const handleSubmitRequest = () => {
-    alert('Guest house booking request submitted successfully!');
-  };
+  const handleSubmitRequest = async () => {
+    if (!user || !checkIn || !checkOut || !purpose) {
+      alert('Please fill in all fields');
+      return;
+    }
 
-  const myBookings = [
-    {
-      id: 'GH001',
-      checkIn: 'Dec 20, 2024',
-      checkOut: 'Dec 22, 2024',
-      days: 2,
-      guests: 2,
-      purpose: 'Client Meeting',
-      status: 'Pending',
-      requestDate: 'Dec 14, 2024'
-    },
-    {
-      id: 'GH002',
-      checkIn: 'Dec 5, 2024',
-      checkOut: 'Dec 6, 2024',
-      days: 1,
-      guests: 1,
-      purpose: 'Training Session',
-      status: 'Approved',
-      requestDate: 'Dec 1, 2024',
-      visited: false
-    },
-    {
-      id: 'GH003',
-      checkIn: 'Nov 15, 2024',
-      checkOut: 'Nov 16, 2024',
-      days: 1,
-      guests: 3,
-      purpose: 'Official Visit',
-      status: 'Approved',
-      requestDate: 'Nov 10, 2024',
-      visited: true
-    },
-  ];
+    try {
+      await addRequest({
+        requestType: 'guesthouse',
+        status: 'pending',
+        requestData: {
+          checkIn,
+          checkOut,
+          guests: parseInt(guests),
+          days: calculateDays(),
+          purpose
+        },
+        userId: user.id,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+      
+      alert('Guest house booking request submitted successfully!');
+      // Reset form
+      setCheckIn('');
+      setCheckOut('');
+      setGuests('1');
+      setPurpose('');
+    } catch (error) {
+      console.error('Error submitting guest house request:', error);
+      alert('Failed to submit request. Please try again.');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -131,17 +130,17 @@ export const GuestHousePage = () => {
           {/* Pending Requests - Big Box */}
           <div>
             <h4 className="text-lg font-bold text-[#1B254B] mb-4">Pending Requests</h4>
-            {myBookings.filter(b => b.status === 'Pending').map((booking) => (
+            {guestHouseBookings.filter(b => b.status === 'pending').map((booking) => (
               <div key={booking.id} className="border-2 border-yellow-200 bg-yellow-50 rounded-2xl p-6 hover:shadow-lg transition-all">
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <div className="flex items-center gap-3 mb-2">
-                      <h4 className="text-lg font-bold text-[#1B254B]">Booking #{booking.id}</h4>
+                      <h4 className="text-lg font-bold text-[#1B254B]">Booking #{booking.id?.substring(0, 8)}</h4>
                       <span className="px-4 py-1.5 bg-yellow-100 text-yellow-700 text-sm font-bold rounded-lg flex items-center gap-1">
                         <Clock size={16} /> PENDING
                       </span>
                     </div>
-                    <p className="text-sm text-[#A3AED0]">Request Date: {booking.requestDate}</p>
+                    <p className="text-sm text-[#A3AED0]">Request Date: {booking.createdAt?.toDate?.()?.toLocaleDateString()}</p>
                   </div>
                 </div>
 
@@ -149,34 +148,34 @@ export const GuestHousePage = () => {
                   <div>
                     <p className="text-xs text-[#A3AED0] mb-1">Check-in</p>
                     <p className="font-bold text-[#1B254B] flex items-center gap-1">
-                      <Calendar size={16} /> {booking.checkIn}
+                      <Calendar size={16} /> {booking.requestData?.checkIn || 'N/A'}
                     </p>
                   </div>
                   <div>
                     <p className="text-xs text-[#A3AED0] mb-1">Check-out</p>
                     <p className="font-bold text-[#1B254B] flex items-center gap-1">
-                      <Calendar size={16} /> {booking.checkOut}
+                      <Calendar size={16} /> {booking.requestData?.checkOut || 'N/A'}
                     </p>
                   </div>
                   <div>
                     <p className="text-xs text-[#A3AED0] mb-1">Duration</p>
-                    <p className="font-bold text-[#1B254B]">{booking.days} {booking.days === 1 ? 'Day' : 'Days'}</p>
+                    <p className="font-bold text-[#1B254B]">{booking.requestData?.days || 0} {booking.requestData?.days === 1 ? 'Day' : 'Days'}</p>
                   </div>
                   <div>
                     <p className="text-xs text-[#A3AED0] mb-1">Guests</p>
                     <p className="font-bold text-[#1B254B] flex items-center gap-1">
-                      <Users size={16} /> {booking.guests}
+                      <Users size={16} /> {booking.requestData?.guests || 0}
                     </p>
                   </div>
                 </div>
 
                 <div className="p-4 bg-white rounded-xl">
                   <p className="text-xs text-[#A3AED0] mb-1">Purpose of Visit</p>
-                  <p className="text-sm font-bold text-[#1B254B]">{booking.purpose}</p>
+                  <p className="text-sm font-bold text-[#1B254B]">{booking.requestData?.purpose || 'N/A'}</p>
                 </div>
               </div>
             ))}
-            {myBookings.filter(b => b.status === 'Pending').length === 0 && (
+            {guestHouseBookings.filter(b => b.status === 'pending').length === 0 && (
               <div className="border-2 border-dashed border-gray-300 rounded-2xl p-8 text-center">
                 <p className="text-[#A3AED0]">No pending requests</p>
               </div>
@@ -187,52 +186,44 @@ export const GuestHousePage = () => {
           <div>
             <h4 className="text-lg font-bold text-[#1B254B] mb-4">Booking History</h4>
             <div className="space-y-3 max-h-[600px] overflow-y-auto custom-scrollbar">
-              {myBookings.filter(b => b.status !== 'Pending').map((booking) => (
+              {guestHouseBookings.filter(b => b.status !== 'pending').map((booking) => (
                 <div key={booking.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all bg-white">
                   <div className="flex items-center justify-between mb-3">
-                    <h5 className="font-bold text-[#1B254B]">Booking #{booking.id}</h5>
-                    {booking.status === 'Approved' && !booking.visited && (
+                    <h5 className="font-bold text-[#1B254B]">Booking #{booking.id?.substring(0, 8)}</h5>
+                    {booking.status === 'approved' && (
                       <span className="px-3 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-lg flex items-center gap-1">
                         <CheckCircle size={14} /> APPROVED
                       </span>
                     )}
-                    {booking.status === 'Approved' && booking.visited && (
-                      <span className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-bold rounded-lg flex items-center gap-1">
-                        <CheckCircle size={14} /> COMPLETED
-                      </span>
-                    )}
-                    {booking.status === 'Denied' && (
+                    {booking.status === 'rejected' && (
                       <span className="px-3 py-1 bg-red-50 text-red-700 text-xs font-bold rounded-lg flex items-center gap-1">
-                        <XCircle size={14} /> DENIED
+                        <XCircle size={14} /> REJECTED
                       </span>
                     )}
                   </div>
 
-                  {booking.status === 'Approved' && !booking.visited && (
+                  {booking.status === 'approved' && (
                     <p className="text-lg font-bold text-green-600 mb-2">Confirmed Booking</p>
-                  )}
-                  {booking.status === 'Approved' && booking.visited && (
-                    <p className="text-lg font-bold text-blue-600 mb-2">Completed</p>
                   )}
 
                   <div className="grid grid-cols-2 gap-2 text-sm mb-2">
                     <div>
                       <p className="text-xs text-[#A3AED0]">Check-in</p>
-                      <p className="font-bold text-[#1B254B]">{booking.checkIn}</p>
+                      <p className="font-bold text-[#1B254B]">{booking.requestData?.checkIn || 'N/A'}</p>
                     </div>
                     <div>
                       <p className="text-xs text-[#A3AED0]">Check-out</p>
-                      <p className="font-bold text-[#1B254B]">{booking.checkOut}</p>
+                      <p className="font-bold text-[#1B254B]">{booking.requestData?.checkOut || 'N/A'}</p>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-4 text-xs">
-                    <span className="text-[#A3AED0]">{booking.days} {booking.days === 1 ? 'Day' : 'Days'}</span>
-                    <span className="text-[#A3AED0]">{booking.guests} Guests</span>
+                    <span className="text-[#A3AED0]">{booking.requestData?.days || 0} {booking.requestData?.days === 1 ? 'Day' : 'Days'}</span>
+                    <span className="text-[#A3AED0]">{booking.requestData?.guests || 0} Guests</span>
                   </div>
 
                   <div className="mt-2 pt-2 border-t border-gray-100">
-                    <p className="text-xs text-[#A3AED0]">Purpose: <span className="text-[#1B254B] font-bold">{booking.purpose}</span></p>
+                    <p className="text-xs text-[#A3AED0]">Purpose: <span className="text-[#1B254B] font-bold">{booking.requestData?.purpose || 'N/A'}</span></p>
                   </div>
                 </div>
               ))}

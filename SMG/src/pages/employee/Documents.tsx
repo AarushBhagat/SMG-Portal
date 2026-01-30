@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { FileUpload } from '../../components/FileUpload';
-import { documents } from '../../mock/mockData';
+import { useApp } from '../../context/AppContextEnhanced';
 import { FileText, Download, Eye, Upload as UploadIcon } from 'lucide-react';
 
 export function Documents() {
+  const { documents } = useApp();
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [showUploadModal, setShowUploadModal] = useState(false);
 

@@ -40,13 +40,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [initializing, setInitializing] = useState(true);
 
   useEffect(() => {
     // Add timeout to prevent infinite loading
     const loadingTimeout = setTimeout(() => {
-      if (loading) {
+      if (loading || initializing) {
         console.warn('⚠️ Auth loading timeout - setting loading to false');
         setLoading(false);
+        setInitializing(false);
       }
     }, 5000);
 
@@ -54,8 +56,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       console.log('🔐 Auth state changed:', firebaseUser?.email);
-      setLoading(true);
       setError(null);
+      
+      // Don't show loading spinner on subsequent auth checks
+      if (initializing) {
+        setLoading(true);
+      }
 
       // Cleanup previous user data listener
       if (userDataUnsubscribe) {
@@ -96,6 +102,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 };
                 setUser(user);
                 setFirebaseUser(firebaseUser);
+                setLoading(false);
+                setInitializing(false);
                 console.log('✅ User state updated in AuthContext:', {
                   name: user.name,
                   designation: user.designation,
@@ -105,13 +113,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 console.error('❌ User document does not exist in Firestore');
                 setError('User data not found in Firestore. Please contact administrator.');
                 signOut(auth);
+                setLoading(false);
+                setInitializing(false);
               }
-              setLoading(false);
             },
             (err) => {
               console.error('❌ Error in real-time listener:', err);
               setError('Failed to sync user data');
               setLoading(false);
+              setInitializing(false);
             }
           );
         } catch (err) {
@@ -119,12 +129,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setError('Failed to load user data');
           await signOut(auth);
           setLoading(false);
+          setInitializing(false);
         }
       } else {
         console.log('🚪 User logged out');
         setUser(null);
         setFirebaseUser(null);
         setLoading(false);
+        setInitializing(false);
       }
       
       clearTimeout(loadingTimeout);

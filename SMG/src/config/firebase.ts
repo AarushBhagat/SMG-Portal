@@ -23,6 +23,12 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 
+// Enable auth persistence (session persists across page reloads)
+import { setPersistence, browserLocalPersistence } from 'firebase/auth';
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+  console.error('Failed to set auth persistence:', error);
+});
+
 // Initialize Analytics only if supported (avoid errors in certain environments)
 let analytics;
 try {
