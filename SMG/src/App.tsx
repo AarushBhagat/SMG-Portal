@@ -22,6 +22,7 @@ import { GatePassPage } from './pages/GatePassPage';
 import { AttendancePage } from './pages/AttendancePage';
 import { RatingPage } from './pages/RatingPage';
 import { FacilitiesInfoPage } from './pages/FacilitiesInfoPage';
+import { EventsPage } from './pages/EventsPage';
 import { InsurancePolicyPage } from './pages/InsurancePolicyPage';
 import { LoanApprovalPage } from './pages/LoanApprovalPage';
 // Admin Pages
@@ -512,6 +513,7 @@ function AppContent({ userRole, activePage, setActivePage, mobileMenuOpen, setMo
       case 'policies': return <PoliciesPage />;
       case 'rating': return <RatingPage />;
       case 'facilities-info': return <FacilitiesInfoPage />;
+      case 'events': return <EventsPage />;
       case 'announcements': return <AnnouncementsPage />;
       case 'notifications': return <NotificationsPage />;
 
@@ -651,6 +653,7 @@ const Sidebar = ({ activePage, onNavigate, onLogout }: SidebarProps) => {
         { id: 'policies', icon: BookOpen, label: 'Policies' },
         { id: 'rating', icon: Star, label: 'Rating' },
         { id: 'facilities-info', icon: Building2, label: 'School & Medical Info' },
+        { id: 'events', icon: Calendar, label: 'Events' },
         { id: 'sports-club', icon: Trophy, label: 'Sports Club' },
         { id: 'profile', icon: User, label: 'Profile' }
       ]
