@@ -117,18 +117,19 @@ service cloud.firestore {
       // Read: Own requests OR approver OR admin/super-admin
       allow read: if isSignedIn() && (
         resource.data.userId == request.auth.uid ||
-        request.auth.uid in resource.data.approvers ||
+        (resource.data.keys().hasAny(['approvers']) && request.auth.uid in resource.data.approvers) ||
         isSuperAdmin() ||
-        (isAdmin() && managesDepartment(resource.data.department))
+        (isAdmin() && resource.data.keys().hasAny(['department']) && managesDepartment(resource.data.department)) ||
+        isAdmin()
       );
       
       // Create: Any authenticated user
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn();
       
       // Update: Owner can update pending requests OR approvers can approve/reject OR admin
       allow update: if isSignedIn() && (
         (resource.data.userId == request.auth.uid && resource.data.status == 'pending') ||
-        (request.auth.uid in resource.data.approvers) ||
+        (resource.data.keys().hasAny(['approvers']) && request.auth.uid in resource.data.approvers) ||
         isAdminOrAbove()
       );
       
@@ -176,6 +177,54 @@ service cloud.firestore {
       
       // Write: Only Cloud Functions (auto-generated)
       allow write: if false;
+    }
+    
+    // ========================================
+    // TRAINING SESSIONS (Top-level Collection)
+    // ========================================
+    match /trainingSessions/{sessionId} {
+      // Read: Everyone can view sessions
+      allow read: if isSignedIn();
+      
+      // Create/Update/Delete: Only admin or super admin
+      allow create, update, delete: if isAdminOrAbove();
+    }
+    
+    match /trainingEnrollments/{enrollmentId} {
+      // Read: Own enrollments OR admin/super-admin
+      allow read: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        isAdminOrAbove()
+      );
+      
+      // Create: Any user can enroll
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      
+      // Update: Admin or super admin (for marking attendance, issuing certificates)
+      allow update: if isAdminOrAbove();
+      
+      // Delete: Own enrollment if not completed OR admin/super-admin
+      allow delete: if (
+        (resource.data.userId == request.auth.uid && resource.data.enrollmentStatus != 'completed') ||
+        isAdminOrAbove()
+      );
+    }
+    
+    // ========================================
+    // PROJECTS COLLECTION
+    // ========================================
+    match /projects/{projectId} {
+      // Read: Any authenticated user (simplified for now)
+      allow read: if isSignedIn();
+      
+      // Create: Admin or super admin
+      allow create: if isAdminOrAbove();
+      
+      // Update: Project lead OR admin/super-admin
+      allow update: if isAdminOrAbove();
+      
+      // Delete: Only super admin
+      allow delete: if isSuperAdmin();
     }
     
     // ========================================
@@ -279,6 +328,23 @@ service cloud.firestore {
     // ========================================
     // NOTIFICATIONS COLLECTION
     // ========================================
+    // Support both flat structure and nested structure
+    match /notifications/{notificationId} {
+      // Read: Owner only
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      
+      // Create: System (Cloud Functions) or admin/super-admin
+      allow create: if isSignedIn();
+      
+      // Update: Owner can mark as read
+      allow update: if isSignedIn() && 
+        resource.data.userId == request.auth.uid &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'isRead', 'readAt']);
+      
+      // Delete: Owner or super admin
+      allow delete: if (resource.data.userId == request.auth.uid) || isSuperAdmin();
+    }
+    
     match /notifications/{userId}/messages/{notificationId} {
       // Read: Owner only
       allow read: if isOwner(userId);

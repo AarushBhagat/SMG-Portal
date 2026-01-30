@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { Ticket, Plus, Minus, Send, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { useApp } from '../context/AppContextEnhanced';
+import { useAuth } from '../context/AuthContext';
 
 export const CanteenPage = () => {
+  const { canteenOrders, addRequest } = useApp();
+  const { user } = useAuth();
   const [coupons, setCoupons] = useState(1);
   const COUPON_PRICE = 200;
   const MAX_COUPONS = 30;
@@ -18,10 +22,30 @@ export const CanteenPage = () => {
     }
   };
 
-  const handleRequestCoupons = () => {
-    alert(`Request submitted for ${coupons} coupon(s) - Total: ₹${coupons * COUPON_PRICE}`);
-    // Reset after request
-    setCoupons(1);
+  const handleRequestCoupons = async () => {
+    if (!user) return;
+    
+    try {
+      await addRequest({
+        requestType: 'canteen',
+        status: 'pending',
+        requestData: {
+          coupons,
+          amount: total,
+          subtotal,
+          gst,
+          couponPrice: COUPON_PRICE
+        },
+        userId: user.id,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+      alert(`Request submitted for ${coupons} coupon(s) - Total: ₹${total.toFixed(2)}`);
+      setCoupons(1);
+    } catch (error) {
+      console.error('Error submitting canteen request:', error);
+      alert('Failed to submit request. Please try again.');
+    }
   };
 
   const subtotal = coupons * COUPON_PRICE;
@@ -137,37 +161,47 @@ export const CanteenPage = () => {
           <Clock size={20} /> Recent Coupon Requests
         </h3>
         <div className="space-y-3">
-          {[
-            { id: 'REQ001', coupons: 10, amount: 2000, date: 'Dec 12, 2024', status: 'Approved' },
-            { id: 'REQ002', coupons: 15, amount: 3000, date: 'Dec 08, 2024', status: 'Approved' },
-            { id: 'REQ003', coupons: 5, amount: 1000, date: 'Dec 05, 2024', status: 'Disapproved' },
-            { id: 'REQ004', coupons: 20, amount: 4000, date: 'Dec 01, 2024', status: 'Approved' },
-          ].map(request => (
-            <div key={request.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-              <div className="flex-1">
-                <p className="font-bold text-[#1B254B] text-sm">{request.id}</p>
-                <p className="text-sm text-[#A3AED0]">{request.coupons} Coupons Requested</p>
-                <p className="text-xs text-[#A3AED0] mt-1">{request.date}</p>
-              </div>
-              <div className="text-right">
-                <p className="font-bold text-[#1B254B] mb-2">₹{request.amount}</p>
-                <span className={`text-xs font-bold px-3 py-1 rounded-lg ${request.status === 'Approved'
-                    ? 'text-[#05CD99] bg-green-50'
-                    : 'text-[#EE5D50] bg-red-50'
-                  }`}>
-                  {request.status === 'Approved' ? (
-                    <span className="flex items-center gap-1">
-                      <CheckCircle size={14} /> Approved
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1">
-                      <XCircle size={14} /> Disapproved
-                    </span>
-                  )}
-                </span>
-              </div>
+          {canteenOrders.length === 0 ? (
+            <div className="text-center py-8 text-[#A3AED0]">
+              <p>No coupon requests found</p>
             </div>
-          ))}
+          ) : (
+            canteenOrders.slice(0, 5).map(request => (
+              <div key={request.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                <div className="flex-1">
+                  <p className="font-bold text-[#1B254B] text-sm">{request.id?.substring(0, 8) || 'N/A'}</p>
+                  <p className="text-sm text-[#A3AED0]">{request.requestData?.coupons || 0} Coupons Requested</p>
+                  <p className="text-xs text-[#A3AED0] mt-1">
+                    {request.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-[#1B254B] mb-2">₹{request.requestData?.amount || 0}</p>
+                  <span className={`text-xs font-bold px-3 py-1 rounded-lg ${
+                    request.status === 'approved'
+                      ? 'text-[#05CD99] bg-green-50'
+                      : request.status === 'rejected'
+                      ? 'text-[#EE5D50] bg-red-50'
+                      : 'text-yellow-600 bg-yellow-50'
+                  }`}>
+                    {request.status === 'approved' ? (
+                      <span className="flex items-center gap-1">
+                        <CheckCircle size={14} /> Approved
+                      </span>
+                    ) : request.status === 'rejected' ? (
+                      <span className="flex items-center gap-1">
+                        <XCircle size={14} /> Rejected
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        <Clock size={14} /> Pending
+                      </span>
+                    )}
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

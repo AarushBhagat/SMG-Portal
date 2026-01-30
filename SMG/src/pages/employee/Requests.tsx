@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { RequestsTable } from '../../components/RequestsTable';
-import { recentRequests } from '../../mock/mockData';
+import { useApp } from '../../context/AppContextEnhanced';
 import { Plus, Filter } from 'lucide-react';
 
 export function Requests() {
+  const { requests } = useApp();
   const [filterStatus, setFilterStatus] = useState('All');
   const [showNewRequestModal, setShowNewRequestModal] = useState(false);
 
   const filteredRequests =
     filterStatus === 'All'
-      ? recentRequests
-      : recentRequests.filter((req) => req.status === filterStatus);
+      ? requests
+      : requests.filter((req) => req.status === filterStatus);
 
   return (
     <div className="p-4 lg:p-6 space-y-6">
