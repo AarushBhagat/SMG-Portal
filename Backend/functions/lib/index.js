@@ -66,8 +66,18 @@ exports.createUser = (0, https_1.onCall)(async (request) => {
             role: userData.role,
             department: userData.department,
         });
+        // Generate custom employee ID if not provided
+        let employeeId = userData.employeeId;
+        if (!employeeId) {
+            // Get department code (first 3 letters, uppercase)
+            const deptCode = (userData.department || 'GEN').substring(0, 3).toUpperCase();
+            // Get current timestamp for uniqueness
+            const timestamp = Date.now().toString().slice(-6);
+            employeeId = `SMG-${deptCode}-${timestamp}`;
+        }
         // Create user document in Firestore
-        await db.collection('users').doc(userRecord.uid).set(Object.assign(Object.assign({ uid: userRecord.uid, email }, userData), { isActive: true, createdAt: admin.firestore.FieldValue.serverTimestamp(), updatedAt: admin.firestore.FieldValue.serverTimestamp() }));
+        await db.collection('users').doc(userRecord.uid).set(Object.assign(Object.assign({ uid: userRecord.uid, employeeId,
+            email }, userData), { isActive: true, createdAt: admin.firestore.FieldValue.serverTimestamp(), updatedAt: admin.firestore.FieldValue.serverTimestamp() }));
         // Send notification
         await createNotification({
             userId: userRecord.uid,

@@ -10,6 +10,7 @@ import { auth, db } from '../config/firebase';
 
 interface User {
   id: string;
+  employeeId?: string;
   name: string;
   email: string;
   phone: string;
@@ -88,6 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 });
                 const user: User = {
                   id: firebaseUser.uid,
+                  employeeId: userData.employeeId || firebaseUser.uid,
                   name: userData.name || firebaseUser.displayName || '',
                   email: firebaseUser.email || '',
                   phone: userData.phone || '',

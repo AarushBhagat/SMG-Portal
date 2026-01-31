@@ -1,16 +1,40 @@
+import { useMemo } from 'react';
 import { ClipboardCheck, Calendar, Clock, PartyPopper, TrendingUp, Users, AlertCircle, CheckCircle } from 'lucide-react';
+import { useApp } from '../../../context/AppContextEnhanced';
 
 interface TimeOfficeDashboardProps {
   onNavigate: (page: string) => void;
 }
 
 export const TimeOfficeDashboard = ({ onNavigate }: TimeOfficeDashboardProps) => {
-  const stats = [
-    { label: 'Pending Approvals', value: '15', icon: AlertCircle, color: 'bg-orange-500', change: '+3 today' },
-    { label: 'Total Employees', value: '450', icon: Users, color: 'bg-blue-500', change: 'Active' },
-    { label: 'Present Today', value: '428', icon: CheckCircle, color: 'bg-green-500', change: '95.1%' },
-    { label: 'Upcoming Events', value: '3', icon: PartyPopper, color: 'bg-purple-500', change: 'This month' }
-  ];
+  const { requests = [], users = [], attendanceRecords = [] } = useApp();
+
+  // Calculate real stats from Firebase data
+  const stats = useMemo(() => {
+    const pendingLeaveRequests = requests.filter(r => 
+      (r.requestType === 'leave' || r.requestType === 'gatepass') && 
+      r.status === 'pending'
+    ).length;
+
+    const totalEmployees = users.filter(u => u.role === 'employee').length;
+
+    const today = new Date().toISOString().split('T')[0];
+    const presentToday = attendanceRecords.filter(record => {
+      const recordDate = record.date?.toDate?.()?.toISOString()?.split('T')[0] || '';
+      return recordDate === today && record.status === 'present';
+    }).length;
+
+    const attendancePercentage = totalEmployees > 0 
+      ? ((presentToday / totalEmployees) * 100).toFixed(1) 
+      : '0.0';
+
+    return [
+      { label: 'Pending Approvals', value: pendingLeaveRequests.toString(), icon: AlertCircle, color: 'bg-orange-500', change: 'Leaves/Gatepasses' },
+      { label: 'Total Employees', value: totalEmployees.toString(), icon: Users, color: 'bg-blue-500', change: 'Active' },
+      { label: 'Present Today', value: presentToday.toString(), icon: CheckCircle, color: 'bg-green-500', change: `${attendancePercentage}%` },
+      { label: 'Total Requests', value: requests.length.toString(), icon: PartyPopper, color: 'bg-purple-500', change: 'All time' }
+    ];
+  }, [requests, users, attendanceRecords]);
 
   const quickActions = [
     { title: 'Leave & Gate Pass', desc: 'Final approval of requests', icon: ClipboardCheck, page: 'leave-gatepass', color: 'from-[#042A5B] to-[#0B4DA2]' },
@@ -19,12 +43,44 @@ export const TimeOfficeDashboard = ({ onNavigate }: TimeOfficeDashboardProps) =>
     { title: 'Events Management', desc: 'Share event details', icon: PartyPopper, page: 'events', color: 'from-[#042A5B] to-[#0B4DA2]' }
   ];
 
-  const recentActivity = [
-    { type: 'Leave Approved', employee: 'Amit Sharma', detail: 'Casual Leave - 2 days', time: '10 mins ago', status: 'success' },
-    { type: 'Gate Pass Pending', employee: 'Priya Singh', detail: 'Medical Appointment', time: '25 mins ago', status: 'warning' },
-    { type: 'Attendance Updated', employee: 'Rahul Verma', detail: 'December 2025', time: '1 hour ago', status: 'info' },
-    { type: 'Event Posted', employee: 'System', detail: 'Annual Day 2025', time: '2 hours ago', status: 'success' }
-  ];
+  // Helper function to calculate time ago
+  const getTimeAgo = (date: Date): string => {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 60) return `${diffMins} mins ago`;
+    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+  };
+
+  // Recent activity from real Firebase data
+  const recentActivity = useMemo(() => {
+    return requests
+      .filter(r => r.requestType === 'leave' || r.requestType === 'gatepass')
+      .sort((a, b) => {
+        const aTime = a.createdAt?.toDate?.()?.getTime() || 0;
+        const bTime = b.createdAt?.toDate?.()?.getTime() || 0;
+        return bTime - aTime;
+      })
+      .slice(0, 4)
+      .map(req => {
+        const createdTime = req.createdAt?.toDate?.();
+        const timeAgo = createdTime 
+          ? getTimeAgo(createdTime)
+          : 'Recently';
+
+        return {
+          type: req.status === 'approved' ? 'Leave Approved' : req.status === 'rejected' ? 'Leave Rejected' : 'Pending Approval',
+          employee: req.employeeName || req.userName || 'Employee',
+          detail: `${req.requestType === 'leave' ? 'Leave' : 'Gate Pass'} - ${req.description || 'N/A'}`,
+          time: timeAgo,
+          status: req.status === 'approved' ? 'success' as const : req.status === 'rejected' ? 'warning' as const : 'info' as const
+        };
+      });
+  }, [requests]);
 
   return (
     <div className="p-6 space-y-6">

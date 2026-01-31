@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Calendar, Plus, Clock, CheckCircle, XCircle, AlertCircle, User, FileText, Upload, Phone, Mail, MapPin, Briefcase } from 'lucide-react';
 import { collection, addDoc, query, where, orderBy, getDocs, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../config/firebase';
 import { useAuth } from '../context/AuthContext';
+import { useApp } from '../context/AppContextEnhanced';
 
 interface UserData {
   name: string;
@@ -20,6 +21,7 @@ interface UserData {
 
 export const LeavesPage = () => {
   const { user } = useAuth();
+  const { addRequest, requests = [] } = useApp();
   const [showNewLeaveForm, setShowNewLeaveForm] = useState(false);
   const [leaveType, setLeaveType] = useState<'medical' | 'wfh'>('medical');
   const [fromDate, setFromDate] = useState('');
@@ -30,7 +32,6 @@ export const LeavesPage = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [emailAccess, setEmailAccess] = useState<'yes' | 'no' | ''>('');
   const [confirmDeclaration, setConfirmDeclaration] = useState(false);
-  const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Employee data
@@ -77,34 +78,18 @@ export const LeavesPage = () => {
       return;
     }
 
-    // Validate user has required fields
-    const userId = user.uid || user.id;
-    if (!userId) {
-      console.error('User object:', user);
-      alert('User ID not found. Please log out and log in again.');
-      return;
-    }
-
     setLoading(true);
     try {
-      // File upload temporarily disabled
-      const documentUrl = '';
-
       // Calculate days
       const start = new Date(fromDate);
       const end = new Date(toDate);
       const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
 
-      // Create leave request in Firestore
-      const leaveData = {
+      // Use addRequest from context for proper approval routing
+      await addRequest({
         requestType: 'leave',
         title: `${leaveType === 'medical' ? 'Medical Leave' : 'Work From Home'} Request`,
         description: reason,
-        userId: userId,
-        employeeId: user.employeeId || user.empId || 'N/A',
-        employeeName: user.name || user.fullName || user.email,
-        department: user.department || user.dept || 'N/A',
-        status: 'pending',
         priority: 'medium',
         requestData: {
           leaveType: leaveType === 'medical' ? 'sick' : 'wfh',
@@ -114,21 +99,13 @@ export const LeavesPage = () => {
           reason: reason,
           phoneNumber: phoneNumber || user.phone || '',
           emailAccess: emailAccess,
-          documentUrl: documentUrl
-        },
-        attachments: [],
-        approvers: [],
-        submittedAt: serverTimestamp(),
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      };
-
-      await addDoc(collection(db, 'requests'), leaveData);
+          documentUrl: ''
+        }
+      });
       
       alert('✅ Leave application submitted successfully!');
       handleCancel();
       fetchLeaveRequests(); // Refresh the list
-    } catch (error) {
       console.error('Error submitting leave:', error);
       alert('❌ Failed to submit leave application. Please try again.');
     } finally {
@@ -154,45 +131,23 @@ export const LeavesPage = () => {
     { type: 'Casual Leave', total: 8, used: 3, remaining: 5, color: '#FFB547' },
   ];
 
-  // Fetch leave requests from Firebase
-  const fetchLeaveRequests = async () => {
-    if (!user || !user.uid) {
-      console.log('⚠️ User not available yet, skipping fetch');
-      return;
-    }
+  // Get leave requests from real-time context data
+  const leaveRequests = useMemo(() => {
+    if (!user) return [];
     
-    try {
-      const q = query(
-        collection(db, 'requests'),
-        where('userId', '==', user.uid),
-        where('requestType', '==', 'leave'),
-        orderBy('createdAt', 'desc')
-      );
-      
-      const querySnapshot = await getDocs(q);
-      const requests = querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          type: data.requestData?.leaveType === 'sick' ? 'Medical Leave' : data.requestData?.leaveType === 'wfh' ? 'Work From Home' : 'Leave',
-          from: data.requestData?.startDate?.toDate?.()?.toISOString().split('T')[0] || '',
-          to: data.requestData?.endDate?.toDate?.()?.toISOString().split('T')[0] || '',
-          days: data.requestData?.totalDays || 0,
-          reason: data.description || '',
-          status: data.status.charAt(0).toUpperCase() + data.status.slice(1),
-          approver: data.approvers?.[0]?.name || 'Pending Assignment'
-        };
-      });
-      
-      setLeaveRequests(requests);
-    } catch (error) {
-      console.error('Error fetching leave requests:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchLeaveRequests();
-  }, [user]);
+    return requests
+      .filter(req => req.userId === user.id && req.requestType === 'leave')
+      .map(req => ({
+        id: req.id,
+        type: req.requestData?.leaveType === 'sick' ? 'Medical Leave' : req.requestData?.leaveType === 'wfh' ? 'Work From Home' : 'Leave',
+        from: req.requestData?.startDate?.toDate?.()?.toISOString().split('T')[0] || '',
+        to: req.requestData?.endDate?.toDate?.()?.toISOString().split('T')[0] || '',
+        days: req.requestData?.totalDays || 0,
+        reason: req.description || '',
+        status: req.status.charAt(0).toUpperCase() + req.status.slice(1),
+        approver: req.approvers?.[0]?.name || 'Pending Assignment'
+      }));
+  }, [user, requests]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {

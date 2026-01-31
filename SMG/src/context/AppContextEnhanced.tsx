@@ -13,7 +13,8 @@ import {
   deleteDoc,
   Timestamp,
   setDoc,
-  limit
+  limit,
+  getDoc
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
 
@@ -139,9 +140,61 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   // Sync with Firebase Auth user
   useEffect(() => {
     if (authUser) {
+      // Auto-generate employeeId if missing (runs immediately)
+      const generateEmployeeId = async () => {
+        console.log('🔍 Checking employeeId for user:', authUser.name);
+        console.log('   Current employeeId:', authUser.employeeId);
+        console.log('   User ID:', authUser.id);
+        console.log('   User Role:', authUser.role);
+        
+        if (!authUser.employeeId && authUser.id) {
+          try {
+            const rolePrefix = {
+              'super_admin': 'SA',
+              'admin': 'AD',
+              'employee': 'EMP'
+            };
+            const prefix = rolePrefix[authUser.role] || 'EMP';
+            const timestamp = Date.now().toString().slice(-4);
+            const newEmployeeId = `${prefix}-${timestamp}`;
+            
+            console.log('🔧 Auto-generating employee ID for user:', authUser.name);
+            console.log('   New Employee ID:', newEmployeeId);
+            console.log('   Updating Firestore document:', authUser.id);
+            
+            // Update in Firestore
+            const userRef = doc(db, 'users', authUser.id);
+            await updateDoc(userRef, {
+              employeeId: newEmployeeId,
+              updatedAt: serverTimestamp()
+            });
+            
+            console.log('✅ Successfully saved employee ID to Firestore');
+            console.log('   Waiting for real-time listener to sync...');
+            
+            // Force a refresh after a short delay
+            setTimeout(async () => {
+              const updatedDoc = await getDoc(userRef);
+              const updatedData = updatedDoc.data();
+              console.log('🔄 Verified employeeId in Firestore:', updatedData?.employeeId);
+            }, 2000);
+          } catch (error) {
+            console.error('❌ Error generating employee ID:', error);
+            console.error('   Error details:', error.message);
+          }
+        } else if (authUser.employeeId) {
+          console.log('✅ Employee ID already exists:', authUser.employeeId);
+        } else {
+          console.warn('⚠️ No user ID available to generate employeeId');
+        }
+      };
+      
+      // Run immediately when component mounts
+      generateEmployeeId();
+      
       setCurrentUser({
         id: authUser.id,
-        empId: authUser.id,
+        empId: authUser.employeeId || authUser.id,
         name: authUser.name,
         email: authUser.email,
         phone: authUser.phone || '',
@@ -628,21 +681,109 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     if (!authUser) return;
     
     try {
-      await addDoc(collection(db, 'requests'), {
-        requestType: request.requestType || 'general',
+      // Fetch latest user data to get current employeeId
+      const userDoc = await getDoc(doc(db, 'users', authUser.id));
+      const userData = userDoc.exists() ? userDoc.data() : {};
+      const currentEmployeeId = userData.employeeId || authUser.employeeId || authUser.id;
+      
+      console.log('📝 Creating request with Employee ID:', currentEmployeeId);
+      console.log('   User Name:', authUser.name);
+      console.log('   Request Type:', request.requestType);
+      
+      const requestType = request.requestType || request.type || 'general';
+      const titleMap = {
+        'leave': 'Leave Request',
+        'document': 'Document Request',
+        'asset': 'Asset Request',
+        'sim': 'SIM Card Request',
+        'transport': 'Transport Request',
+        'uniform': 'Uniform Request',
+        'canteen': 'Canteen Request',
+        'guesthouse': 'Guest House Booking',
+        'welfare': 'Welfare Request',
+        'general': 'General Request'
+      };
+      
+      // Generate custom request ID: REQ-YYYYMMDD-XXX
+      const now = new Date();
+      const dateStr = now.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
+      const randomSuffix = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+      const customRequestId = `REQ-${dateStr}-${randomSuffix}`;
+      
+      // Define approval routing based on request type
+      const approvalRouting = {
+        'asset': { department: 'Finance', role: 'Finance Admin' },
+        'document': { department: 'HR', role: 'HR Admin' },
+        'transport': { department: 'Admin', role: 'Admin Manager' },
+        'uniform': { department: 'Admin', role: 'Admin Manager' },
+        'canteen': { department: 'Admin', role: 'Admin Manager' },
+        'guesthouse': { department: 'Admin', role: 'Admin Manager' },
+        'sim': { department: 'IT', role: 'IT Admin' },
+        'leave': { department: authUser.department, role: 'Department Admin', multiLevel: true },
+        'gatepass': { department: authUser.department, role: 'Department Admin', multiLevel: true },
+        'welfare': { department: 'HR', role: 'HR Admin' },
+        'general': { department: authUser.department, role: 'Department Admin' }
+      };
+      
+      const routing = approvalRouting[requestType] || { department: 'Admin', role: 'Admin' };
+      
+      // Build approvers array - multi-level for leave/gatepass
+      let approvers = [];
+      if (routing.multiLevel) {
+        // Level 1: Department HOD
+        approvers.push({
+          level: 1,
+          department: routing.department,
+          role: routing.role,
+          name: 'Department HOD',
+          status: 'pending',
+          comments: '',
+          actionDate: null
+        });
+        // Level 2: Time Office
+        approvers.push({
+          level: 2,
+          department: 'Time Office',
+          role: 'Time Office Admin',
+          name: 'Time Office Admin',
+          status: 'pending',
+          comments: '',
+          actionDate: null
+        });
+      } else {
+        // Single level approval
+        approvers.push({
+          level: 1,
+          department: routing.department,
+          role: routing.role,
+          status: 'pending',
+          comments: '',
+          actionDate: null
+        });
+      }
+      
+      await setDoc(doc(db, 'requests', customRequestId), {
+        id: customRequestId,
+        requestType: requestType,
         userId: authUser.id,
         userName: authUser.name,
-        employeeId: authUser.id,
+        employeeId: currentEmployeeId,
         employeeName: authUser.name,
         department: authUser.department,
-        title: request.title || request.type,
-        description: request.reason || request.description,
+        title: request.title || titleMap[requestType] || 'Request',
+        description: request.reason || request.description || '',
         requestData: request.requestData || request,
         status: 'pending',
         priority: request.priority || 'medium',
+        approvers: approvers,
+        currentApprover: routing.department,
+        currentLevel: 1,
+        submittedAt: serverTimestamp(),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
+      
+      console.log('✅ Request created successfully with ID:', customRequestId);
       
       addNotification({
         title: 'Request Submitted',
@@ -688,14 +829,91 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   };
   
   const approveRequest = async (id) => {
-    await updateRequest(id, { status: 'approved' });
+    try {
+      // Get the request to check if it needs multi-level approval
+      const requestDoc = await getDoc(doc(db, 'requests', id));
+      if (!requestDoc.exists()) return;
+      
+      const requestData = requestDoc.data();
+      const approvers = requestData.approvers || [];
+      const currentLevel = requestData.currentLevel || 1;
+      
+      // Update current level approver status
+      const updatedApprovers = approvers.map((approver, index) => 
+        approver.level === currentLevel 
+          ? { ...approver, status: 'approved', actionDate: Timestamp.fromDate(new Date()) }
+          : approver
+      );
+      
+      // Check if there are more levels
+      const nextLevel = currentLevel + 1;
+      const hasNextLevel = approvers.some(a => a.level === nextLevel);
+      
+      if (hasNextLevel) {
+        // Move to next approval level
+        const nextApprover = approvers.find(a => a.level === nextLevel);
+        await updateDoc(doc(db, 'requests', id), {
+          approvers: updatedApprovers,
+          currentLevel: nextLevel,
+          currentApprover: nextApprover?.department || 'Time Office',
+          updatedAt: serverTimestamp()
+        });
+        
+        addNotification({
+          title: 'Request Approved - Level ' + currentLevel,
+          message: `Request moved to ${nextApprover?.department || 'next level'} for approval`,
+          type: 'success',
+        });
+      } else {
+        // Final approval - mark request as approved
+        await updateDoc(doc(db, 'requests', id), {
+          approvers: updatedApprovers,
+          status: 'approved',
+          updatedAt: serverTimestamp()
+        });
+        
+        addNotification({
+          title: 'Request Approved',
+          message: 'Request has been fully approved',
+          type: 'success',
+        });
+      }
+    } catch (error) {
+      console.error('❌ Error approving request:', error);
+    }
   };
   
   const rejectRequest = async (id, reason) => {
-    await updateRequest(id, { 
-      status: 'rejected',
-      rejectionReason: reason
-    });
+    try {
+      const requestDoc = await getDoc(doc(db, 'requests', id));
+      if (!requestDoc.exists()) return;
+      
+      const requestData = requestDoc.data();
+      const currentLevel = requestData.currentLevel || 1;
+      const approvers = requestData.approvers || [];
+      
+      // Update current level approver status to rejected
+      const updatedApprovers = approvers.map((approver, index) => 
+        approver.level === currentLevel 
+          ? { ...approver, status: 'rejected', comments: reason, actionDate: Timestamp.fromDate(new Date()) }
+          : approver
+      );
+      
+      await updateDoc(doc(db, 'requests', id), { 
+        status: 'rejected',
+        rejectionReason: reason,
+        approvers: updatedApprovers,
+        updatedAt: serverTimestamp()
+      });
+      
+      addNotification({
+        title: 'Request Rejected',
+        message: reason || 'Your request has been rejected',
+        type: 'error',
+      });
+    } catch (error) {
+      console.error('❌ Error rejecting request:', error);
+    }
   };
   
   // Notification Handlers

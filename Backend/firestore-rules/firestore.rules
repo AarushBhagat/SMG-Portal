@@ -56,8 +56,11 @@ service cloud.firestore {
     // USERS COLLECTION
     // ========================================
     match /users/{userId} {
-      // Read: Own profile OR admin/super-admin
-      allow read: if isSignedIn() && (
+      // List: Allow admins and super admins to list users
+      allow list: if isSignedIn() && isAdminOrAbove();
+      
+      // Get: Own profile OR admin/super-admin
+      allow get: if isSignedIn() && (
         isOwner(userId) || 
         isSuperAdmin() || 
         (isAdmin() && managesDepartment(resource.data.department))

@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Package, Search, CheckCircle, XCircle, Eye, X } from 'lucide-react';
+import { useApp } from '../../../context/AppContextEnhanced';
 
 interface AssetRequest {
-  id: number;
+  id: string;
   empName: string;
   empId: string;
   dept: string;
@@ -13,102 +14,82 @@ interface AssetRequest {
   urgency: string;
   purpose: string;
   requestDate: string;
-  status: 'Pending' | 'Approved' | 'Rejected';
+  status: 'pending' | 'approved' | 'rejected';
+  title?: string;
+  description?: string;
+  priority?: string;
+  requestData?: any;
 }
 
 export const AssetRequestApproval = () => {
+  const { requests = [], approveRequest, rejectRequest } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<AssetRequest | null>(null);
   
-  const [requests, setRequests] = useState<AssetRequest[]>([
-    {
-      id: 1,
-      empName: 'Rahul Kumar',
-      empId: 'SMG-2024-189',
-      dept: 'IT',
-      assetType: 'Laptop',
-      assetName: 'Dell Latitude 5420',
-      specifications: 'i7 11th Gen, 16GB RAM, 512GB SSD',
-      quantity: 1,
-      urgency: 'High',
-      purpose: 'Development Work',
-      requestDate: '2024-12-20',
-      status: 'Pending'
-    },
-    {
-      id: 2,
-      empName: 'Priya Sharma',
-      empId: 'SMG-2024-245',
-      dept: 'Sales',
-      assetType: 'Mobile Phone',
-      assetName: 'iPhone 14',
-      specifications: '128GB, 5G',
-      quantity: 1,
-      urgency: 'Medium',
-      purpose: 'Client Communication',
-      requestDate: '2024-12-22',
-      status: 'Pending'
-    },
-    {
-      id: 3,
-      empName: 'Amit Patel',
-      empId: 'SMG-2024-167',
-      dept: 'Production',
-      assetType: 'Tools',
-      assetName: 'Precision Measuring Kit',
-      specifications: 'Digital Vernier Caliper, Micrometer Set',
-      quantity: 2,
-      urgency: 'High',
-      purpose: 'Quality Control',
-      requestDate: '2024-12-18',
-      status: 'Approved'
-    },
-    {
-      id: 4,
-      empName: 'Neha Singh',
-      empId: 'SMG-2024-201',
-      dept: 'Marketing',
-      assetType: 'Camera',
-      assetName: 'Canon EOS 90D',
-      specifications: '32.5MP, 4K Video',
-      quantity: 1,
-      urgency: 'Low',
-      purpose: 'Product Photography',
-      requestDate: '2024-12-15',
-      status: 'Rejected'
-    }
-  ]);
+  // Filter and transform Firebase requests to asset requests
+  const assetRequests = useMemo(() => {
+    return requests
+      .filter(req => req.requestType === 'asset')
+      .map(req => ({
+        id: req.id,
+        empName: req.employeeName || req.userName || 'N/A',
+        empId: req.employeeId || 'N/A',
+        dept: req.department || 'N/A',
+        assetType: req.requestData?.assetType || 'N/A',
+        assetName: req.requestData?.assetType || req.title || 'N/A',
+        specifications: req.requestData?.specifications || req.description || 'N/A',
+        quantity: req.requestData?.quantity || 1,
+        urgency: req.priority || 'medium',
+        purpose: req.requestData?.justification || req.requestData?.purpose || req.description || 'N/A',
+        requestDate: req.createdAt?.toDate?.()?.toISOString() || new Date().toISOString(),
+        status: req.status || 'pending',
+        title: req.title,
+        description: req.description,
+        priority: req.priority,
+        requestData: req.requestData
+      }));
+  }, [requests]);
 
-  const filteredRequests = requests.filter(req =>
+  const filteredRequests = assetRequests.filter(req =>
     req.empName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     req.empId.toLowerCase().includes(searchQuery.toLowerCase()) ||
     req.assetName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const pendingRequests = requests.filter(r => r.status === 'Pending');
-  const approvedRequests = requests.filter(r => r.status === 'Approved');
-  const rejectedRequests = requests.filter(r => r.status === 'Rejected');
+  const pendingRequests = assetRequests.filter(r => r.status === 'pending');
+  const approvedRequests = assetRequests.filter(r => r.status === 'approved');
+  const rejectedRequests = assetRequests.filter(r => r.status === 'rejected');
 
-  const handleAction = (action: 'approve' | 'reject') => {
+  const handleAction = async (action: 'approve' | 'reject') => {
     if (selectedRequest) {
-      setRequests(requests.map(req =>
-        req.id === selectedRequest.id
-          ? { ...req, status: action === 'approve' ? 'Approved' : 'Rejected' }
-          : req
-      ));
-      setShowModal(false);
-      setSelectedRequest(null);
+      try {
+        if (action === 'approve') {
+          await approveRequest(selectedRequest.id);
+        } else {
+          await rejectRequest(selectedRequest.id, 'Rejected by Finance Admin');
+        }
+        setShowModal(false);
+        setSelectedRequest(null);
+      } catch (error) {
+        console.error('Error processing request:', error);
+        alert('Failed to process request. Please try again.');
+      }
     }
   };
 
   const getUrgencyBadge = (urgency: string) => {
     const colors = {
-      High: 'bg-red-500',
-      Medium: 'bg-orange-500',
-      Low: 'bg-green-500'
+      high: 'bg-red-500',
+      urgent: 'bg-red-500',
+      medium: 'bg-orange-500',
+      low: 'bg-green-500'
     };
-    return colors[urgency as keyof typeof colors] || 'bg-gray-500';
+    return colors[urgency?.toLowerCase() as keyof typeof colors] || 'bg-gray-500';
+  };
+
+  const capitalizeFirst = (str: string) => {
+    return str.charAt(0).toUpperCase() + str.slice(1);
   };
 
   return (
@@ -162,7 +143,7 @@ export const AssetRequestApproval = () => {
               <Package className="text-blue-500" size={24} />
             </div>
             <div>
-              <p className="text-2xl font-bold text-[#1B254B]">{requests.length}</p>
+              <p className="text-2xl font-bold text-[#1B254B]">{assetRequests.length}</p>
               <p className="text-sm text-gray-500">Total Requests</p>
             </div>
           </div>
@@ -189,76 +170,88 @@ export const AssetRequestApproval = () => {
           <Package className="text-purple-500" size={24} />
           Pending Asset Requests ({pendingRequests.length})
         </h2>
-        <div className="space-y-3">
-          {filteredRequests.filter(r => r.status === 'Pending').map((request) => (
-            <div key={request.id} className="p-5 bg-purple-50 rounded-xl border border-purple-200 hover:shadow-md transition-all">
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="flex items-start gap-3 mb-3">
-                    <h3 className="font-bold text-[#1B254B] text-lg">{request.empName}</h3>
-                    <span className="px-3 py-1 bg-purple-500 text-white text-xs font-bold rounded-full">Pending</span>
-                    <span className={`px-3 py-1 ${getUrgencyBadge(request.urgency)} text-white text-xs font-bold rounded-full`}>
-                      {request.urgency} Priority
-                    </span>
+        {pendingRequests.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-400">No pending asset requests</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {filteredRequests.filter(r => r.status === 'pending').map((request) => (
+              <div key={request.id} className="p-5 bg-purple-50 rounded-xl border border-purple-200 hover:shadow-md transition-all">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-start gap-3 mb-3">
+                      <h3 className="font-bold text-[#1B254B] text-lg">{request.empName}</h3>
+                      <span className="px-3 py-1 bg-purple-500 text-white text-xs font-bold rounded-full">Pending</span>
+                      <span className={`px-3 py-1 ${getUrgencyBadge(request.urgency)} text-white text-xs font-bold rounded-full`}>
+                        {capitalizeFirst(request.urgency)} Priority
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                      <div>
+                        <p className="text-xs font-semibold text-gray-500">Employee ID</p>
+                        <p className="font-semibold text-[#1B254B]">{request.empId} • {request.dept}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-gray-500">Asset Type</p>
+                        <p className="font-semibold text-[#1B254B]">{request.assetType}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-gray-500">Asset Name</p>
+                        <p className="font-bold text-purple-600">{request.assetName}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-gray-500">Quantity</p>
+                        <p className="font-semibold text-[#1B254B]">{request.quantity} Unit(s)</p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-xs font-semibold text-gray-500">Specifications</p>
+                        <p className="font-semibold text-[#1B254B]">{request.specifications}</p>
+                      </div>
+                      <div className="col-span-2">
+                        <p className="text-xs font-semibold text-gray-500">Purpose</p>
+                        <p className="font-semibold text-[#1B254B]">{request.purpose}</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                    <div>
-                      <p className="text-xs font-semibold text-gray-500">Employee ID</p>
-                      <p className="font-semibold text-[#1B254B]">{request.empId} • {request.dept}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-gray-500">Asset Type</p>
-                      <p className="font-semibold text-[#1B254B]">{request.assetType}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-gray-500">Asset Name</p>
-                      <p className="font-bold text-purple-600">{request.assetName}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold text-gray-500">Quantity</p>
-                      <p className="font-semibold text-[#1B254B]">{request.quantity} Unit(s)</p>
-                    </div>
-                    <div className="col-span-2">
-                      <p className="text-xs font-semibold text-gray-500">Specifications</p>
-                      <p className="font-semibold text-[#1B254B]">{request.specifications}</p>
-                    </div>
-                    <div className="col-span-2">
-                      <p className="text-xs font-semibold text-gray-500">Purpose</p>
-                      <p className="font-semibold text-[#1B254B]">{request.purpose}</p>
-                    </div>
-                  </div>
+                  <button
+                    onClick={() => { setSelectedRequest(request); setShowModal(true); }}
+                    className="px-4 py-2 bg-gradient-to-br from-[#042A5B] to-[#0B4DA2] text-white rounded-xl hover:shadow-lg transition-all flex items-center gap-2 font-semibold"
+                  >
+                    <Eye size={18} />
+                    Review
+                  </button>
                 </div>
-                <button
-                  onClick={() => { setSelectedRequest(request); setShowModal(true); }}
-                  className="px-4 py-2 bg-gradient-to-br from-[#042A5B] to-[#0B4DA2] text-white rounded-xl hover:shadow-lg transition-all flex items-center gap-2 font-semibold"
-                >
-                  <Eye size={18} />
-                  Review
-                </button>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Processed Requests */}
       <div className="bg-white rounded-2xl p-6 shadow-sm">
         <h2 className="text-xl font-bold text-[#1B254B] mb-4">Processed Requests</h2>
-        <div className="space-y-2">
-          {filteredRequests.filter(r => r.status !== 'Pending').map((request) => (
-            <div key={request.id} className={`p-4 rounded-xl border-2 ${request.status === 'Approved' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-semibold text-[#1B254B]">{request.empName} • {request.assetName}</p>
-                  <p className="text-sm text-gray-500">{request.empId} • {request.assetType} • Qty: {request.quantity}</p>
+        {(approvedRequests.length + rejectedRequests.length) === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-400">No processed requests yet</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {filteredRequests.filter(r => r.status !== 'pending').map((request) => (
+              <div key={request.id} className={`p-4 rounded-xl border-2 ${request.status === 'approved' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-[#1B254B]">{request.empName} • {request.assetName}</p>
+                    <p className="text-sm text-gray-500">{request.empId} • {request.assetType} • Qty: {request.quantity}</p>
+                  </div>
+                  <span className={`px-3 py-1 ${request.status === 'approved' ? 'bg-green-500' : 'bg-red-500'} text-white text-xs font-bold rounded-full`}>
+                    {capitalizeFirst(request.status)}
+                  </span>
                 </div>
-                <span className={`px-3 py-1 ${request.status === 'Approved' ? 'bg-green-500' : 'bg-red-500'} text-white text-xs font-bold rounded-full`}>
-                  {request.status}
-                </span>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Review Modal */}

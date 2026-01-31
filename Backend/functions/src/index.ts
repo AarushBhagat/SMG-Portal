@@ -38,9 +38,20 @@ export const createUser = onCall(async (request) => {
             department: userData.department,
         });
 
+        // Generate custom employee ID if not provided
+        let employeeId = userData.employeeId;
+        if (!employeeId) {
+            // Get department code (first 3 letters, uppercase)
+            const deptCode = (userData.department || 'GEN').substring(0, 3).toUpperCase();
+            // Get current timestamp for uniqueness
+            const timestamp = Date.now().toString().slice(-6);
+            employeeId = `SMG-${deptCode}-${timestamp}`;
+        }
+
         // Create user document in Firestore
         await db.collection('users').doc(userRecord.uid).set({
             uid: userRecord.uid,
+            employeeId,
             email,
             ...userData,
             isActive: true,

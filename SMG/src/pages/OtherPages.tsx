@@ -635,40 +635,100 @@ export const SIMAllocationPage = () => {
   );
 };
 
-export const AssetRequestsPage = () => (
-  <SimplePage icon={Package} title="Asset Requests" description="Request IT and office assets">
-    <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
-      <h3 className="text-[#1B254B] mb-4">Request New Asset</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="text-sm text-[#A3AED0] mb-2 block">Asset Type</label>
-          <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none">
-            <option>Laptop</option>
-            <option>Monitor</option>
-            <option>Keyboard</option>
-            <option>Mouse</option>
-            <option>Headset</option>
-          </select>
+export const AssetRequestsPage = () => {
+  const { addRequest } = useApp();
+  const [assetType, setAssetType] = useState('Laptop');
+  const [priority, setPriority] = useState('Medium');
+  const [justification, setJustification] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    if (!justification.trim()) {
+      alert('Please provide justification for the asset request');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await addRequest({
+        requestType: 'asset',
+        title: `Asset Request: ${assetType}`,
+        description: justification,
+        priority: priority.toLowerCase(),
+        requestData: {
+          assetType,
+          priority,
+          justification,
+          requestDate: new Date().toISOString()
+        }
+      });
+
+      // Reset form
+      setAssetType('Laptop');
+      setPriority('Medium');
+      setJustification('');
+      alert('Asset request submitted successfully!');
+    } catch (error) {
+      console.error('Error submitting asset request:', error);
+      alert('Failed to submit request. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <SimplePage icon={Package} title="Asset Requests" description="Request IT and office assets">
+      <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100">
+        <h3 className="text-[#1B254B] mb-4">Request New Asset</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="text-sm text-[#A3AED0] mb-2 block">Asset Type</label>
+            <select 
+              value={assetType}
+              onChange={(e) => setAssetType(e.target.value)}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none"
+            >
+              <option>Laptop</option>
+              <option>Monitor</option>
+              <option>Keyboard</option>
+              <option>Mouse</option>
+              <option>Headset</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-sm text-[#A3AED0] mb-2 block">Priority</label>
+            <select 
+              value={priority}
+              onChange={(e) => setPriority(e.target.value)}
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none"
+            >
+              <option>High</option>
+              <option>Medium</option>
+              <option>Low</option>
+            </select>
+          </div>
+          <div className="md:col-span-2">
+            <label className="text-sm text-[#A3AED0] mb-2 block">Justification</label>
+            <textarea 
+              value={justification}
+              onChange={(e) => setJustification(e.target.value)}
+              rows={3} 
+              className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none" 
+              placeholder="Explain why you need this asset..."
+            />
+          </div>
         </div>
-        <div>
-          <label className="text-sm text-[#A3AED0] mb-2 block">Priority</label>
-          <select className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none">
-            <option>High</option>
-            <option>Medium</option>
-            <option>Low</option>
-          </select>
-        </div>
-        <div className="md:col-span-2">
-          <label className="text-sm text-[#A3AED0] mb-2 block">Justification</label>
-          <textarea rows={3} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none" placeholder="Explain why you need this asset..."></textarea>
-        </div>
+        <button 
+          onClick={handleSubmit}
+          disabled={submitting}
+          className="mt-4 bg-[#0B4DA2] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#042A5B] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {submitting ? 'Submitting...' : 'Submit Request'}
+        </button>
       </div>
-      <button className="mt-4 bg-[#0B4DA2] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#042A5B] transition-colors">
-        Submit Request
-      </button>
-    </div>
-  </SimplePage>
-);
+    </SimplePage>
+  );
+};
 
 export const GeneralRequestsPage = () => (
   <SimplePage icon={FileText} title="General Requests" description="Submit general workplace requests">

@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Search, Filter, Check, X, Eye, Calendar, Clock, User, FileText, AlertCircle } from 'lucide-react';
+import { useApp } from '../../../context/AppContextEnhanced';
 
 interface Request {
   id: string;
@@ -18,93 +19,66 @@ interface Request {
 }
 
 export const LeaveGatePassApproval = () => {
+  const { requests = [], approveRequest, rejectRequest } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'All' | 'Leave' | 'Gate Pass'>('All');
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
 
-  const [requests, setRequests] = useState<Request[]>([
-    {
-      id: 'REQ001',
-      empId: 'SMG-EMP-245',
-      empName: 'Amit Sharma',
-      type: 'Leave',
-      category: 'Casual Leave',
-      reason: 'Family function',
-      from: '28 Dec 2025',
-      to: '30 Dec 2025',
-      duration: '3 days',
-      appliedOn: '20 Dec 2025',
-      hodStatus: 'Approved',
-      hodApprover: 'Rajesh Kumar (HOD - IT)',
-      status: 'Pending'
-    },
-    {
-      id: 'REQ002',
-      empId: 'SMG-EMP-189',
-      empName: 'Priya Singh',
-      type: 'Gate Pass',
-      reason: 'Medical appointment',
-      from: '26 Dec 2025 2:00 PM',
-      to: '26 Dec 2025 4:30 PM',
-      duration: '2.5 hours',
-      appliedOn: '26 Dec 2025',
-      hodStatus: 'Approved',
-      hodApprover: 'Meera Gupta (HOD - HR)',
-      status: 'Pending'
-    },
-    {
-      id: 'REQ003',
-      empId: 'SMG-EMP-312',
-      empName: 'Rahul Verma',
-      type: 'Leave',
-      category: 'Medical Leave',
-      reason: 'Health checkup',
-      from: '2 Jan 2026',
-      to: '3 Jan 2026',
-      duration: '2 days',
-      appliedOn: '25 Dec 2025',
-      hodStatus: 'Approved',
-      hodApprover: 'Suresh Reddy (HOD - Production)',
-      status: 'Pending'
-    },
-    {
-      id: 'REQ004',
-      empId: 'SMG-EMP-278',
-      empName: 'Sneha Patel',
-      type: 'Gate Pass',
-      reason: 'Bank work',
-      from: '27 Dec 2025 11:00 AM',
-      to: '27 Dec 2025 1:00 PM',
-      duration: '2 hours',
-      appliedOn: '26 Dec 2025',
-      hodStatus: 'Approved',
-      hodApprover: 'Vikram Singh (HOD - Finance)',
-      status: 'Pending'
+  // Transform Firebase requests to component format
+  const leaveAndGatePassRequests = useMemo(() => {
+    return requests
+      .filter(req => req.requestType === 'leave' || req.requestType === 'gatepass')
+      .map(req => {
+        const isLeave = req.requestType === 'leave';
+        const requestData = req.requestData || {};
+        const approvers = req.approvers || [];
+        
+        return {
+          id: req.id,
+          empId: req.employeeId || 'N/A',
+          empName: req.employeeName || req.userName || 'N/A',
+          type: (isLeave ? 'Leave' : 'Gate Pass') as 'Leave' | 'Gate Pass',
+          category: requestData.leaveType || requestData.type || '',
+          reason: req.description || requestData.reason || 'N/A',
+          from: requestData.startDate?.toDate?.()?.toLocaleDateString() || requestData.from || 'N/A',
+          to: requestData.endDate?.toDate?.()?.toLocaleDateString() || requestData.to || 'N/A',
+          duration: requestData.totalDays ? `${requestData.totalDays} days` : requestData.duration || 'N/A',
+          appliedOn: req.createdAt?.toDate?.()?.toLocaleDateString() || new Date().toLocaleDateString(),
+          hodStatus: (approvers[0]?.status === 'approved' ? 'Approved' : 'Pending') as 'Approved' | 'Pending',
+          hodApprover: approvers[0]?.name || req.department || 'N/A',
+          status: (req.status === 'approved' ? 'Approved' : req.status === 'rejected' ? 'Rejected' : 'Pending') as 'Pending' | 'Approved' | 'Rejected'
+        };
+      });
+  }, [requests]);
+
+  const handleApprove = async (id: string) => {
+    try {
+      await approveRequest(id);
+      setSelectedRequest(null);
+    } catch (error) {
+      console.error('Error approving request:', error);
+      alert('Failed to approve request');
     }
-  ]);
-
-  const handleApprove = (id: string) => {
-    setRequests(requests.map(req => 
-      req.id === id ? { ...req, status: 'Approved' as const } : req
-    ));
-    setSelectedRequest(null);
   };
 
-  const handleReject = (id: string) => {
-    setRequests(requests.map(req => 
-      req.id === id ? { ...req, status: 'Rejected' as const } : req
-    ));
-    setSelectedRequest(null);
+  const handleReject = async (id: string) => {
+    try {
+      await rejectRequest(id, 'Rejected by Time Office Admin');
+      setSelectedRequest(null);
+    } catch (error) {
+      console.error('Error rejecting request:', error);
+      alert('Failed to reject request');
+    }
   };
 
-  const filteredRequests = requests.filter(req => {
+  const filteredRequests = leaveAndGatePassRequests.filter(req => {
     const matchesSearch = req.empName.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          req.empId.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterType === 'All' || req.type === filterType;
     return matchesSearch && matchesFilter;
   });
 
-  const pendingCount = requests.filter(r => r.status === 'Pending').length;
+  const pendingCount = leaveAndGatePassRequests.filter(r => r.status === 'Pending').length;
 
   return (
     <div className="p-6 space-y-6">

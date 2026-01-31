@@ -20,6 +20,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "firebase": "^12.8.0",
     "firebase-admin": "^13.6.0",
     "firebase-functions": "^7.0.1"
   },
