@@ -1,24 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PartyPopper, Calendar, Users, MapPin, Plus, Edit, Trash2, X, Save, Image as ImageIcon } from 'lucide-react';
 import { FileUpload } from '../../../components/FileUpload';
-
-interface Event {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  time: string;
-  venue: string;
-  organizer: string;
-  participants: number;
-  category: 'Company' | 'Department' | 'Social' | 'Training';
-  image: string;
-  status: 'Upcoming' | 'Ongoing' | 'Completed';
-}
+import { useAuth } from '../../../context/AuthContext';
+import { 
+  addEvent, 
+  updateEvent, 
+  deleteEvent, 
+  subscribeToEvents,
+  uploadEventImage,
+  Event 
+} from '../../../services/eventsService';
 
 export const EventsManagement = () => {
+  const { user, firebaseUser, loading: authLoading } = useAuth();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -27,68 +26,47 @@ export const EventsManagement = () => {
     venue: '',
     organizer: '',
     category: 'Company' as Event['category'],
-    image: ''
+    image: '',
+    capacity: 0
   });
   const [selectedImage, setSelectedImage] = useState<File[]>([]);
 
-  const [events, setEvents] = useState<Event[]>([
-    {
-      id: 'EVT001',
-      title: 'Annual Day 2025',
-      description: 'Celebration of company achievements and employee recognition',
-      date: '15 Jan 2026',
-      time: '6:00 PM - 10:00 PM',
-      venue: 'Main Auditorium',
-      organizer: 'HR Department',
-      participants: 500,
-      category: 'Company',
-      image: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=400',
-      status: 'Upcoming'
-    },
-    {
-      id: 'EVT002',
-      title: 'Safety Training Workshop',
-      description: 'Comprehensive workplace safety and emergency procedures training',
-      date: '5 Jan 2026',
-      time: '10:00 AM - 2:00 PM',
-      venue: 'Training Hall',
-      organizer: 'Safety Department',
-      participants: 150,
-      category: 'Training',
-      image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400',
-      status: 'Upcoming'
-    },
-    {
-      id: 'EVT003',
-      title: 'Sports Day',
-      description: 'Inter-department sports competition and team building activities',
-      date: '28 Dec 2025',
-      time: '8:00 AM - 5:00 PM',
-      venue: 'Sports Ground',
-      organizer: 'Sports Committee',
-      participants: 300,
-      category: 'Social',
-      image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=400',
-      status: 'Ongoing'
-    },
-    {
-      id: 'EVT004',
-      title: 'New Year Celebration',
-      description: 'Welcome 2026 with music, food and entertainment',
-      date: '31 Dec 2025',
-      time: '7:00 PM - 11:00 PM',
-      venue: 'Company Lawn',
-      organizer: 'Event Committee',
-      participants: 450,
-      category: 'Company',
-      image: 'https://images.unsplash.com/photo-1467810563316-b5476525c0f9?w=400',
-      status: 'Upcoming'
+  // Subscribe to real-time events updates
+  // Only subscribe when user is authenticated
+  useEffect(() => {
+    if (authLoading) {
+      console.log('Waiting for auth to complete...');
+      return;
     }
-  ]);
 
-  const handleDelete = (id: string) => {
+    if (!firebaseUser) {
+      console.log('No authenticated user - skipping events subscription');
+      setLoading(false);
+      return;
+    }
+
+    console.log('Setting up events subscription for admin:', firebaseUser.email);
+    const unsubscribe = subscribeToEvents((fetchedEvents) => {
+      console.log('Received events from Firebase:', fetchedEvents.length);
+      setEvents(fetchedEvents);
+      setLoading(false);
+    });
+
+    return () => {
+      console.log('Cleaning up events subscription');
+      unsubscribe();
+    };
+  }, [firebaseUser, authLoading]);
+
+  const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this event?')) {
-      setEvents(events.filter(event => event.id !== id));
+      try {
+        await deleteEvent(id);
+        // Events will be updated automatically via subscription
+      } catch (error) {
+        console.error('Error deleting event:', error);
+        alert('Failed to delete event. Please try again.');
+      }
     }
   };
 
@@ -102,39 +80,82 @@ export const EventsManagement = () => {
       venue: event.venue,
       organizer: event.organizer,
       category: event.category,
-      image: event.image
+      image: event.image,
+      capacity: event.capacity || 0
     });
     setShowAddModal(true);
   };
 
-  const handleSave = () => {
-    if (editingEvent) {
-      setEvents(events.map(event =>
-        event.id === editingEvent.id
-          ? { ...event, ...formData }
-          : event
-      ));
-    } else {
-      const newEvent: Event = {
-        id: `EVT${(events.length + 1).toString().padStart(3, '0')}`,
-        ...formData,
-        participants: 0,
-        status: 'Upcoming'
-      };
-      setEvents([...events, newEvent]);
+  const handleSave = async () => {
+    if (!user) {
+      alert('User not authenticated');
+      return;
     }
-    setShowAddModal(false);
-    setEditingEvent(null);
-    setFormData({
-      title: '',
-      description: '',
-      date: '',
-      time: '',
-      venue: '',
-      organizer: '',
-      category: 'Company',
-      image: ''
-    });
+
+    // Validation
+    if (!formData.title || !formData.description || !formData.date || !formData.time || !formData.venue) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      let imageUrl = formData.image;
+
+      // Upload image if a new file was selected
+      if (selectedImage.length > 0) {
+        imageUrl = await uploadEventImage(selectedImage[0], editingEvent?.id);
+      }
+
+      if (editingEvent) {
+        // Update existing event
+        await updateEvent(editingEvent.id, {
+          ...formData,
+          image: imageUrl,
+          venue: formData.venue,
+          capacity: formData.capacity || 0,
+          registered: editingEvent.registered || 0
+        });
+      } else {
+        // Create new event
+        await addEvent({
+          ...formData,
+          image: imageUrl,
+          venue: formData.venue,
+          location: formData.venue,
+          status: 'upcoming',
+          capacity: formData.capacity || 0,
+          registered: 0,
+          participants: 0,
+          registeredUsers: [],
+          createdBy: user.uid || user.id,
+          createdByName: user.name || user.fullName || 'Unknown',
+          isActive: true
+        });
+      }
+
+      // Reset form
+      setShowAddModal(false);
+      setEditingEvent(null);
+      setFormData({
+        title: '',
+        description: '',
+        date: '',
+        time: '',
+        venue: '',
+        organizer: '',
+        category: 'Company',
+        image: '',
+        capacity: 0
+      });
+      setSelectedImage([]);
+    } catch (error) {
+      console.error('Error saving event:', error);
+      alert('Failed to save event. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const categoryColors = {
@@ -143,6 +164,17 @@ export const EventsManagement = () => {
     Social: 'from-pink-500 to-pink-600',
     Training: 'from-green-500 to-green-600'
   };
+
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#0B4DA2] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading events...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -324,10 +356,9 @@ export const EventsManagement = () => {
                 <div>
                   <label className="block text-sm font-bold text-[#1B254B] mb-2">Date</label>
                   <input
-                    type="text"
+                    type="date"
                     value={formData.date}
                     onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    placeholder="e.g., 15 Jan 2026"
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -344,15 +375,28 @@ export const EventsManagement = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-bold text-[#1B254B] mb-2">Venue</label>
-                <input
-                  type="text"
-                  value={formData.venue}
-                  onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-                  placeholder="e.g., Main Auditorium"
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-[#1B254B] mb-2">Venue</label>
+                  <input
+                    type="text"
+                    value={formData.venue}
+                    onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                    placeholder="e.g., Main Auditorium"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-bold text-[#1B254B] mb-2">Capacity (Optional)</label>
+                  <input
+                    type="number"
+                    value={formData.capacity || ''}
+                    onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) || 0 })}
+                    placeholder="e.g., 500"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
               </div>
 
               <div>
@@ -401,14 +445,29 @@ export const EventsManagement = () => {
               <div className="flex gap-3 pt-4 border-t border-gray-200">
                 <button
                   onClick={handleSave}
-                  className="flex-1 bg-gradient-to-br from-[#042A5B] to-[#0B4DA2] text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                  disabled={saving}
+                  className="flex-1 bg-gradient-to-br from-[#042A5B] to-[#0B4DA2] text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Save size={20} />
-                  {editingEvent ? 'Update Event' : 'Add Event'}
+                  {saving ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      {editingEvent ? 'Updating...' : 'Adding...'}
+                    </>
+                  ) : (
+                    <>
+                      <Save size={20} />
+                      {editingEvent ? 'Update Event' : 'Add Event'}
+                    </>
+                  )}
                 </button>
                 <button
-                  onClick={() => setShowAddModal(false)}
-                  className="px-6 py-3 bg-gray-100 text-gray-600 rounded-xl font-bold hover:bg-gray-200 transition-all"
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setEditingEvent(null);
+                    setSelectedImage([]);
+                  }}
+                  disabled={saving}
+                  className="px-6 py-3 bg-gray-100 text-gray-600 rounded-xl font-bold hover:bg-gray-200 transition-all disabled:opacity-50"
                 >
                   Cancel
                 </button>

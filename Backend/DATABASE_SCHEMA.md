@@ -751,6 +751,65 @@ announcements/{announcementId} {
 
 ---
 
+### **12. EVENTS COLLECTION** (`events/`)
+Company events, workshops, celebrations, and activities
+
+```javascript
+events/{eventId} {
+  id: string,
+  title: string,
+  description: string,
+  
+  // Event Details
+  date: string, // "2026-03-15" (ISO date format)
+  time: string, // "6:00 PM - 10:00 PM"
+  venue: string,
+  location: string, // Same as venue (for compatibility)
+  
+  // Categorization
+  category: "Company" | "Department" | "Social" | "Training" | "Company Event" | "Workshop" | "Sports" | "CSR",
+  status: "upcoming" | "ongoing" | "completed" | "Upcoming" | "Ongoing" | "Completed",
+  
+  // Organization
+  organizer: string, // "Events Department", "HR Department"
+  organizerId: string, // userId of organizer
+  organizerName: string,
+  
+  // Capacity & Registration
+  capacity: number,
+  registered: number,
+  participants: number, // Same as registered (for compatibility)
+  registeredUsers: string[], // Array of userIds who registered
+  
+  // Media
+  image: string, // Image URL (can be uploaded to Firebase Storage)
+  imageUrl: string, // Same as image (for compatibility)
+  
+  // Metadata
+  createdBy: string, // userId
+  createdByName: string,
+  createdAt: timestamp,
+  updatedAt: timestamp,
+  
+  isActive: boolean,
+  isPinned: boolean
+}
+
+// Event Registrations Sub-collection
+events/{eventId}/registrations/{userId} {
+  userId: string,
+  employeeId: string,
+  employeeName: string,
+  email: string,
+  department: string,
+  registeredAt: timestamp,
+  status: "registered" | "attended" | "cancelled",
+  notes: string
+}
+```
+
+---
+
 ## 🔐 **SECURITY & ACCESS LEVELS**
 
 ### **Employee Access**
@@ -786,6 +845,7 @@ requests: [userId, status], [status, createdAt], [requestType, status]
 training/sessions: [status, startDate], [isMandatory, startDate]
 training/enrollments: [userId, enrollmentStatus], [sessionId, enrollmentStatus]
 assets: [status, category], [assignedTo, status]
+events: [status, createdAt], [category, createdAt], [createdAt]
 ```
 
 ---

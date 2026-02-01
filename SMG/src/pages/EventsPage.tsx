@@ -1,144 +1,47 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar, MapPin, Clock, Users, Filter, Search, Tag, CheckCircle, Image as ImageIcon } from 'lucide-react';
 import { useApp } from '../context/AppContextEnhanced';
-
-interface Event {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  time: string;
-  location: string;
-  category: string;
-  organizer: string;
-  capacity?: number;
-  registered?: number;
-  imageUrl?: string;
-  status: 'upcoming' | 'ongoing' | 'completed';
-}
+import { useAuth } from '../context/AuthContext';
+import { subscribeToEvents, Event as EventType } from '../services/eventsService';
 
 export const EventsPage = () => {
   const { addRequest, currentUser } = useApp();
+  const { firebaseUser, loading: authLoading } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
   const [registeredEvents, setRegisteredEvents] = useState<string[]>([]);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [successEventTitle, setSuccessEventTitle] = useState('');
+  const [events, setEvents] = useState<EventType[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock events data - will be replaced with backend data
-  const events: Event[] = [
-    {
-      id: '1',
-      title: 'Annual Day Celebration 2026',
-      description: 'Join us for the grand annual day celebration with cultural performances, awards ceremony, and gala dinner.',
-      date: '2026-03-15',
-      time: '5:00 PM',
-      location: 'SMG Auditorium, Main Campus',
-      category: 'Company Event',
-      organizer: 'Events Department',
-      capacity: 500,
-      registered: 324,
-      imageUrl: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&auto=format&fit=crop',
-      status: 'upcoming'
-    },
-    {
-      id: '2',
-      title: 'Technical Workshop: Industry 4.0',
-      description: 'Learn about the latest trends in manufacturing automation and smart factory technologies.',
-      date: '2026-02-10',
-      time: '10:00 AM',
-      location: 'Training Hall A',
-      category: 'Workshop',
-      organizer: 'Events Department',
-      capacity: 100,
-      registered: 78,
-      imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&auto=format&fit=crop',
-      status: 'upcoming'
-    },
-    {
-      id: '3',
-      title: 'Sports Day 2026',
-      description: 'Annual inter-department sports competition featuring cricket, badminton, table tennis and more.',
-      date: '2026-02-25',
-      time: '8:00 AM',
-      location: 'SMG Sports Complex',
-      category: 'Sports',
-      organizer: 'Events Department',
-      capacity: 300,
-      registered: 245,
-      imageUrl: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=800&auto=format&fit=crop',
-      status: 'upcoming'
-    },
-    {
-      id: '4',
-      title: 'Blood Donation Camp',
-      description: 'Organized in partnership with local blood bank. Help save lives by donating blood.',
-      date: '2026-02-05',
-      time: '9:00 AM',
-      location: 'Medical Center',
-      category: 'CSR',
-      organizer: 'Events Department',
-      capacity: 150,
-      registered: 89,
-      imageUrl: 'https://images.unsplash.com/photo-1615461066841-6116e61058f4?w=800&auto=format&fit=crop',
-      status: 'upcoming'
-    },
-    {
-      id: '5',
-      title: 'New Year Celebration',
-      description: 'Kick-started 2026 with music, dance, and celebrations with the SMG family.',
-      date: '2026-01-01',
-      time: '7:00 PM',
-      location: 'SMG Auditorium',
-      category: 'Company Event',
-      organizer: 'Events Department',
-      imageUrl: 'https://images.unsplash.com/photo-1467810563316-b5476525c0f9?w=800&auto=format&fit=crop',
-      status: 'completed'
-    },
-    {
-      id: '6',
-      title: 'Quality Excellence Summit',
-      description: 'Learn best practices in quality management and Six Sigma methodologies.',
-      date: '2026-03-20',
-      time: '11:00 AM',
-      location: 'Conference Hall',
-      category: 'Workshop',
-      organizer: 'Events Department',
-      capacity: 80,
-      registered: 65,
-      imageUrl: 'https://images.unsplash.com/photo-1591115765373-5207764f72e7?w=800&auto=format&fit=crop',
-      status: 'upcoming'
-    },
-    {
-      id: '7',
-      title: 'Women\'s Day Celebration',
-      description: 'Celebrating the achievements and contributions of women employees at SMG.',
-      date: '2026-03-08',
-      time: '2:00 PM',
-      location: 'Main Cafeteria',
-      category: 'Company Event',
-      organizer: 'Events Department',
-      capacity: 200,
-      registered: 156,
-      imageUrl: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?w=800&auto=format&fit=crop',
-      status: 'upcoming'
-    },
-    {
-      id: '8',
-      title: 'Environmental Awareness Drive',
-      description: 'Tree plantation drive and awareness session on sustainability practices.',
-      date: '2026-02-15',
-      time: '8:00 AM',
-      location: 'Campus Grounds',
-      category: 'CSR',
-      organizer: 'Events Department',
-      capacity: 100,
-      registered: 67,
-      imageUrl: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&auto=format&fit=crop',
-      status: 'upcoming'
+  // Subscribe to real-time events updates from Firebase
+  // Only subscribe when user is authenticated
+  useEffect(() => {
+    if (authLoading) {
+      console.log('Waiting for auth to complete...');
+      return;
     }
-  ];
+
+    if (!firebaseUser) {
+      console.log('No authenticated user - skipping events subscription');
+      setLoading(false);
+      return;
+    }
+
+    console.log('Setting up events subscription for user:', firebaseUser.email);
+    const unsubscribe = subscribeToEvents((fetchedEvents) => {
+      console.log('Received events from Firebase:', fetchedEvents.length);
+      setEvents(fetchedEvents);
+      setLoading(false);
+    });
+
+    return () => {
+      console.log('Cleaning up events subscription');
+      unsubscribe();
+    };
+  }, [firebaseUser, authLoading]);
 
   const categories = ['All', 'Company Event', 'Workshop', 'Sports', 'CSR'];
   const statuses = ['All', 'upcoming', 'ongoing', 'completed'];
@@ -187,8 +90,18 @@ export const EventsPage = () => {
   const filteredEvents = events.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          event.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = filterCategory === 'All' || event.category === filterCategory;
-    const matchesStatus = filterStatus === 'All' || event.status === filterStatus;
+    
+    // Normalize category for comparison
+    const normalizeCategory = (cat: string) => cat.toLowerCase().replace(/\s+/g, '');
+    const eventCategory = normalizeCategory(event.category);
+    const filterCat = normalizeCategory(filterCategory);
+    const matchesCategory = filterCategory === 'All' || eventCategory === filterCat;
+    
+    // Normalize status for comparison (handle both cases)
+    const normalizeStatus = (status: string) => status.toLowerCase();
+    const eventStatus = normalizeStatus(event.status);
+    const filterStat = normalizeStatus(filterStatus);
+    const matchesStatus = filterStatus === 'All' || eventStatus === filterStat;
     
     return matchesSearch && matchesCategory && matchesStatus;
   });
@@ -211,13 +124,36 @@ export const EventsPage = () => {
   };
 
   const getStatusBadge = (status: string) => {
+    const statusLower = status.toLowerCase();
     const badges: { [key: string]: string } = {
       upcoming: 'bg-blue-100 text-blue-700',
       ongoing: 'bg-green-100 text-green-700',
       completed: 'bg-gray-100 text-gray-700'
     };
-    return badges[status] || badges.upcoming;
+    return badges[statusLower] || badges.upcoming;
   };
+
+  if (loading || authLoading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#0B4DA2] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading events...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!firebaseUser) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Calendar className="mx-auto text-gray-300 mb-4" size={48} />
+          <p className="text-gray-500 text-lg">Please log in to view events</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -347,10 +283,10 @@ export const EventsPage = () => {
           sortedEvents.map(event => (
             <div key={event.id} className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-shadow flex flex-col">
               {/* Event Poster/Image */}
-              {event.imageUrl ? (
+              {event.imageUrl || event.image ? (
                 <div className="relative h-48 overflow-hidden">
                   <img 
-                    src={event.imageUrl} 
+                    src={event.imageUrl || event.image} 
                     alt={event.title}
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -370,7 +306,7 @@ export const EventsPage = () => {
                   />
                   <div className="absolute top-3 left-3 right-3 flex items-start justify-between gap-2">
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${getStatusBadge(event.status)}`}>
-                      {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                      {event.status.charAt(0).toUpperCase() + event.status.slice(1).toLowerCase()}
                     </span>
                     <span className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-semibold text-[#0B4DA2]">
                       {event.category}
@@ -410,7 +346,7 @@ export const EventsPage = () => {
                 <div className="flex items-start gap-2">
                   <MapPin className="text-[#0B4DA2] shrink-0 mt-0.5" size={16} />
                   <div>
-                    <p className="text-xs font-semibold text-[#1B254B] line-clamp-1">{event.location}</p>
+                    <p className="text-xs font-semibold text-[#1B254B] line-clamp-1">{event.location || event.venue}</p>
                     <p className="text-[10px] text-[#A3AED0]">Venue</p>
                   </div>
                 </div>
@@ -439,7 +375,7 @@ export const EventsPage = () => {
               </div>
 
               {/* Action Button */}
-              {event.status === 'upcoming' && (
+              {event.status.toLowerCase() === 'upcoming' && (
                 <div className="p-4 pt-0">
                   <button 
                     onClick={() => handleRegisterEvent(event)}
