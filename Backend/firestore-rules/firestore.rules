@@ -396,5 +396,43 @@ service cloud.firestore {
         isSuperAdmin()
       );
     }
+    
+    // ========================================
+    // EVENTS COLLECTION
+    // ========================================
+    match /events/{eventId} {
+      // Read: Everyone can view events
+      allow read: if isSignedIn();
+      
+      // Create: Admin or super admin only
+      allow create: if isAdminOrAbove();
+      
+      // Update: Creator, admin, or super admin
+      allow update: if (
+        resource.data.createdBy == request.auth.uid ||
+        isAdminOrAbove()
+      );
+      
+      // Delete: Creator, admin, or super admin
+      allow delete: if (
+        resource.data.createdBy == request.auth.uid ||
+        isAdminOrAbove()
+      );
+      
+      // Event Registrations Sub-collection
+      match /registrations/{userId} {
+        // Read: Own registration or admin/super-admin
+        allow read: if isOwner(userId) || isAdminOrAbove();
+        
+        // Create: Employee can register themselves
+        allow create: if isOwner(userId);
+        
+        // Update: Can update own registration status
+        allow update: if isOwner(userId) || isAdminOrAbove();
+        
+        // Delete: Can cancel own registration
+        allow delete: if isOwner(userId) || isAdminOrAbove();
+      }
+    }
   }
 }
