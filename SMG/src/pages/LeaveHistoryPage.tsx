@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { collection, query, where, orderBy, getDocs } from 'firebase/firestore';
 import { db } from '../config/firebase';
 import { useAuth } from '../context/AuthContext';
+import { useApp } from '../context/AppContextEnhanced';
 
 interface LeaveHistoryPageProps {
     user?: {
@@ -14,6 +15,7 @@ interface LeaveHistoryPageProps {
 
 export const LeaveHistoryPage = ({ user: propUser, onNavigate }: LeaveHistoryPageProps) => {
     const { user: authUser } = useAuth();
+    const { currentUser } = useApp();
     const user = propUser || authUser;
     const [leaveHistory, setLeaveHistory] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -119,7 +121,7 @@ export const LeaveHistoryPage = ({ user: propUser, onNavigate }: LeaveHistoryPag
                         </div>
                         <div>
                             <h1 className="text-3xl font-bold">Leave History</h1>
-                            <p className="text-blue-100 text-sm">{user?.name || 'Employee'} • {user?.empId || 'EMP-XXXX'}</p>
+                            <p className="text-blue-100 text-sm">{currentUser?.name || user?.name || 'Employee'}</p>
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">

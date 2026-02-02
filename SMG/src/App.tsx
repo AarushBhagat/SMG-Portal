@@ -495,9 +495,9 @@ function AppContent({ userRole, activePage, setActivePage, mobileMenuOpen, setMo
 
       // Attendance Sub-items
       case 'leaves': return <LeavesPage />;
-      case 'leave-history': return <LeaveHistoryPage user={INITIAL_DATA.user} onNavigate={setActivePage} />;
+      case 'leave-history': return <LeaveHistoryPage onNavigate={setActivePage} />;
       case 'gate-pass': return <GatePassPage />;
-      case 'resignation': return <ResignationPage user={INITIAL_DATA.user} />;
+      case 'resignation': return <ResignationPage />;
       case 'my-attendance': return <AttendancePage />;
 
       // Work & Pay Pages

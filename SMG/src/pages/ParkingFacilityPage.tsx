@@ -193,14 +193,6 @@ export const ParkingFacilityPage = () => {
                   className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-500"
                 />
               </div>
-              <div>
-                <label className="text-sm text-[#A3AED0] mb-2 block">Employee ID</label>
-                <input
-                  disabled
-                  value={currentUser?.empId || currentUser?.id || ''}
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-500"
-                />
-              </div>
             </div>
 
             <div className="border-t pt-4">

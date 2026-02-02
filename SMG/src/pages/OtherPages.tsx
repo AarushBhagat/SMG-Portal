@@ -100,14 +100,6 @@ export const UniformPage = () => {
               />
             </div>
             <div>
-              <label className="text-sm text-[#A3AED0] mb-2 block">Employee ID</label>
-              <input
-                disabled
-                value={currentUser?.empId || currentUser?.id || ''}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-500"
-              />
-            </div>
-            <div>
               <label className="text-sm text-[#A3AED0] mb-2 block">Department</label>
               <input
                 disabled
@@ -457,14 +449,6 @@ export const SIMAllocationPage = () => {
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-[#0B4DA2] outline-none"
                 value={form.expectedBy}
                 onChange={(e) => setForm({ ...form, expectedBy: e.target.value })}
-              />
-            </div>
-            <div>
-              <label className="text-sm text-[#A3AED0] mb-2 block">Employee ID</label>
-              <input
-                disabled
-                value={currentUser?.empId || currentUser?.id || ''}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-500"
               />
             </div>
           </div>

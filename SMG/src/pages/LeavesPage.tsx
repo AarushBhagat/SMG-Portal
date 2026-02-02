@@ -21,7 +21,7 @@ interface UserData {
 
 export const LeavesPage = () => {
   const { user } = useAuth();
-  const { addRequest, requests = [] } = useApp();
+  const { addRequest, requests = [], currentUser } = useApp();
   const [showNewLeaveForm, setShowNewLeaveForm] = useState(false);
   const [leaveType, setLeaveType] = useState<'medical' | 'wfh'>('medical');
   const [fromDate, setFromDate] = useState('');
@@ -34,18 +34,18 @@ export const LeavesPage = () => {
   const [confirmDeclaration, setConfirmDeclaration] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Employee data
+  // Employee data from currentUser
   const employee: UserData = {
-    name: "Pulkit Verma",
-    empId: "EMP-4721",
-    dept: "IT",
-    role: "Full-Time Intern",
-    phone: "+91 98765 43210",
-    email: "pulkit.verma@company.com",
-    dateOfJoining: "15 March 2024",
-    reportingTo: "Ms. Riya Sharma (IT Team Lead)",
-    workLocation: "Noida, Uttar Pradesh",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Pulkit&backgroundColor=b6e3f4"
+    name: currentUser?.name || "Employee",
+    empId: currentUser?.empId || "N/A",
+    dept: currentUser?.department || "N/A",
+    role: currentUser?.position || currentUser?.role || "N/A",
+    phone: currentUser?.phone || "N/A",
+    email: currentUser?.email || "N/A",
+    dateOfJoining: currentUser?.joiningDate || "N/A",
+    reportingTo: currentUser?.reportingTo || "N/A",
+    workLocation: currentUser?.location || "N/A",
+    avatar: currentUser?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.name || 'User'}&backgroundColor=b6e3f4`
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -208,10 +208,6 @@ export const LeavesPage = () => {
                 <div>
                   <label className="text-xs font-semibold text-gray-500">Employee Name</label>
                   <p className="text-gray-900 font-medium mt-1">{employee.name}</p>
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-gray-500">Employee ID</label>
-                  <p className="text-gray-900 font-medium mt-1">{employee.empId}</p>
                 </div>
                 <div>
                   <label className="text-xs font-semibold text-gray-500">Department</label>

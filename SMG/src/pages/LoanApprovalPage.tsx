@@ -248,15 +248,6 @@ export const LoanApprovalPage = () => {
                 className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-500"
               />
             </div>
-            <div>
-              <label className="text-sm text-[#A3AED0] mb-2 block font-semibold">Employee ID *</label>
-              <input
-                type="text"
-                disabled
-                value={currentUser?.empId || currentUser?.id || ''}
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl bg-gray-50 text-gray-500"
-              />
-            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Calendar, User, FileText, Clock, UserX } from 'lucide-react';
+import { useApp } from '../context/AppContextEnhanced';
 
 interface UserData {
     name: string;
@@ -16,21 +17,22 @@ interface ResignationPageProps {
 }
 
 export const ResignationPage = ({ user }: ResignationPageProps) => {
+    const { currentUser } = useApp();
     const [activeTab, setActiveTab] = useState<'details' | 'status'>('details');
     const [lastWorkingDay, setLastWorkingDay] = useState('');
     const [reason, setReason] = useState('');
     const [noticePeriodServed, setNoticePeriodServed] = useState<'yes' | 'no' | ''>('');
     const [confirmIntent, setConfirmIntent] = useState(false);
 
-    // Default employee data if no user prop is provided
+    // Use currentUser from context, fallback to prop user
     const employee = user || {
-        name: "Pulkit Verma",
-        empId: "EMP-4721",
-        dept: "IT",
-        reportingTo: "Priya Sharma",
-        dateOfJoining: "15 March 2024",
-        role: "Full-Time Intern",
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Pulkit&backgroundColor=b6e3f4"
+        name: currentUser?.name || "Employee",
+        empId: currentUser?.empId || "N/A",
+        dept: currentUser?.department || "N/A",
+        reportingTo: currentUser?.reportingTo || "N/A",
+        dateOfJoining: currentUser?.joiningDate || "N/A",
+        role: currentUser?.position || currentUser?.role || "N/A",
+        avatar: currentUser?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.name || 'User'}&backgroundColor=b6e3f4`
     };
 
     const resignationStatus = {
@@ -74,7 +76,7 @@ export const ResignationPage = ({ user }: ResignationPageProps) => {
                         </div>
                         <div>
                             <h1 className="text-3xl font-bold">Resignation</h1>
-                            <p className="text-blue-100 text-sm">{employee.name} • {employee.empId}</p>
+                            <p className="text-blue-100 text-sm">{employee.name}</p>
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
@@ -120,10 +122,6 @@ export const ResignationPage = ({ user }: ResignationPageProps) => {
                                 <div>
                                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Employee Name</label>
                                     <p className="text-gray-900 font-medium mt-1">{employee.name}</p>
-                                </div>
-                                <div>
-                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Employee ID</label>
-                                    <p className="text-gray-900 font-medium mt-1">{employee.empId}</p>
                                 </div>
 
                                 <div>

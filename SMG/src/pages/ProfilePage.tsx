@@ -50,7 +50,6 @@ export const ProfilePage = ({ userData }) => {
             <div>
               <h1 className="text-white mb-2">{user?.name || userData.name}</h1>
               <p className="text-[#87CEEB] opacity-90">{user?.designation || userData.role} • {user?.department || userData.dept}</p>
-              <p className="text-sm text-white/70 mt-1">Employee ID: {user?.employeeId || userData.empId || user?.id}</p>
             </div>
           </div>
           <button 
