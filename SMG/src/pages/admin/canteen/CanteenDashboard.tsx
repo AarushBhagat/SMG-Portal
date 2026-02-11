@@ -13,9 +13,10 @@ export const CanteenDashboard = ({ onNavigate }: CanteenDashboardProps) => {
   ];
 
   const quickActions = [
-    { id: 'sale-coupons', label: 'Sale New Coupons', icon: ShoppingCart, color: 'from-blue-500 to-blue-600', desc: 'Record coupon sales to employees' },
-    { id: 'issue-coupons', label: 'Issue Coupons', icon: FileCheck, color: 'from-green-500 to-green-600', desc: 'Issue coupons to employees' },
-    { id: 'approve-guest', label: 'Guest Requests', icon: UserCheck, color: 'from-orange-500 to-orange-600', desc: 'Approve guest coupon requests' }
+    { id: 'approve-requests', label: 'Employee Requests', icon: FileCheck, color: 'from-blue-500 to-blue-600', desc: 'Approve employee coupon requests' },
+    { id: 'approve-guest', label: 'Guest Requests', icon: UserCheck, color: 'from-orange-500 to-orange-600', desc: 'Approve guest coupon requests' },
+    { id: 'sale-coupons', label: 'Sale New Coupons', icon: ShoppingCart, color: 'from-green-500 to-green-600', desc: 'Record coupon sales to employees' },
+    { id: 'issue-coupons', label: 'Issue Coupons', icon: FileCheck, color: 'from-purple-500 to-purple-600', desc: 'Issue coupons to employees' }
   ];
 
   const recentSales = [
@@ -63,7 +64,7 @@ export const CanteenDashboard = ({ onNavigate }: CanteenDashboardProps) => {
       {/* Quick Actions */}
       <div className="bg-white rounded-2xl p-6 shadow-sm">
         <h2 className="text-xl font-bold text-[#1B254B] mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {quickActions.map((action) => (
             <button
               key={action.id}

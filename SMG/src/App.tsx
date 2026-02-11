@@ -35,11 +35,11 @@ import {
   CanteenPortal,
   EventsPortal,
   HODPortal,
+  TimeOfficePortal,
   TechnicianPortal,
   AssemblyPortal,
   MarketingPortal
 } from './pages/admin/DepartmentPortals';
-import TimeOfficePortal from './pages/time-office/TimeOfficePortal';
 import {
   UniformPage,
   SIMAllocationPage,
@@ -377,6 +377,12 @@ export default function App() {
       // Set initial page based on role
       if (role === 'super_admin') {
         setActivePage('super-admin-portal');
+      } else if (role === 'canteen_admin') {
+        setActivePage('admin-canteen');
+      } else if (role === 'time_office') {
+        setActivePage('admin-time-office');
+      } else if (role === 'hod') {
+        setActivePage('admin-hod');
       } else if (role === 'admin') {
         // Check for specific UID to route directly to portal
         const portalMapping: Record<string, string> = {
@@ -410,7 +416,7 @@ export default function App() {
     }
   }, [user]);
 
-  const handleLogin = (role: 'employee' | 'admin' | 'super_admin') => {
+  const handleLogin = (role: 'employee' | 'admin' | 'super_admin' | 'canteen_admin' | 'time_office' | 'hod') => {
     console.log('🔑 Handle login called with role:', role);
     setUserRole(role);
     
@@ -532,7 +538,7 @@ function AppContent({ userRole, activePage, setActivePage, mobileMenuOpen, setMo
       case 'admin-reception': return <ReceptionPortal onBack={handleLogout} />;
       case 'admin-hr': return <HRPortal onBack={handleLogout} />;
       case 'admin-finance': return <FinancePortal onBack={handleLogout} />;
-      case 'admin-time-office': return <TimeOfficePortal />;
+      case 'admin-time-office': return <TimeOfficePortal onBack={handleLogout} />;
       case 'admin-canteen': return <CanteenPortal onBack={handleLogout} />;
       case 'admin-events': return <EventsPortal onBack={handleLogout} />;
       case 'admin-hod': return <HODPortal onBack={handleLogout} />;

@@ -19,7 +19,7 @@ users/{userId} {
   // Basic Info
   uid: string,
   email: string,
-  role: "employee" | "admin" | "super_admin" | "time_office" | "hod",
+  role: "employee" | "admin" | "super_admin" | "time_office" | "hod" | "canteen_admin",
   employeeId: string, // SMG-2024-042
   
   // Personal Details

@@ -42,6 +42,7 @@ interface AppContextType {
   requests: any[];
   addRequest: (request: any) => void;
   updateRequest: (id: string, updates: any) => void;
+  updateRequestStatus: (id: string, updates: any) => void;
   deleteRequest: (id: string) => void;
   approveRequest: (id: string) => void;
   rejectRequest: (id: string, reason: string) => void;
@@ -723,7 +724,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         'document': { department: 'HR', role: 'HR Admin' },
         'transport': { department: 'Admin', role: 'Admin Manager' },
         'uniform': { department: 'Admin', role: 'Admin Manager' },
-        'canteen': { department: 'Admin', role: 'Admin Manager' },
+        'canteen': { department: 'Canteen', role: 'canteen_admin' },
         'guesthouse': { department: 'Admin', role: 'Admin Manager' },
         'sim': { department: 'IT', role: 'IT Admin' },
         'welfare': { department: 'HR', role: 'HR Admin' },
@@ -838,6 +839,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     } catch (error) {
       console.error('❌ Error updating request:', error);
     }
+  };
+
+  const updateRequestStatus = async (id: string, updates: any) => {
+    return updateRequest(id, updates);
   };
   
   const deleteRequest = async (id) => {
@@ -1311,6 +1316,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     requests,
     addRequest,
     updateRequest,
+    updateRequestStatus,
     deleteRequest,
     approveRequest,
     rejectRequest,

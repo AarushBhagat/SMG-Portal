@@ -20,7 +20,7 @@ const TimeOfficePortal = () => {
   const renderContent = () => {
     switch (activePage) {
       case 'dashboard':
-        return <TimeOfficeDashboard />;
+        return <TimeOfficeDashboard onNavigate={setActivePage} />;
       case 'attendance':
         return <AttendanceManagement />;
       case 'shifts':

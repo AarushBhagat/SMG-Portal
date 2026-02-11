@@ -5,6 +5,7 @@ import { CanteenDashboard } from './canteen/CanteenDashboard';
 import { SaleCoupons } from './canteen/SaleCoupons';
 import { IssueCoupons } from './canteen/IssueCoupons';
 import { ApproveGuestCoupons } from './canteen/ApproveGuestCoupons';
+import { ApproveEmployeeRequests } from './canteen/ApproveEmployeeRequests';
 import {
   LayoutDashboard,
   LogOut,
@@ -64,6 +65,7 @@ export const CanteenAdminPortal = ({ onBack }: CanteenAdminPortalProps) => {
       case 'sale-coupons': return <SaleCoupons />;
       case 'issue-coupons': return <IssueCoupons />;
       case 'approve-guest': return <ApproveGuestCoupons />;
+      case 'approve-requests': return <ApproveEmployeeRequests />;
       default: return <CanteenDashboard onNavigate={setActivePage} />;
     }
   };
@@ -150,9 +152,10 @@ export const CanteenAdminPortal = ({ onBack }: CanteenAdminPortalProps) => {
               <div className="space-y-1">
                 {[
                   { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+                  { id: 'approve-requests', icon: FileCheck, label: 'Employee Requests' },
+                  { id: 'approve-guest', icon: UserCheck, label: 'Guest Requests' },
                   { id: 'sale-coupons', icon: ShoppingCart, label: 'Sale Coupons' },
-                  { id: 'issue-coupons', icon: FileCheck, label: 'Issue Coupons' },
-                  { id: 'approve-guest', icon: UserCheck, label: 'Guest Requests' }
+                  { id: 'issue-coupons', icon: FileCheck, label: 'Issue Coupons' }
                 ].map((item) => (
                   <button
                     key={item.id}

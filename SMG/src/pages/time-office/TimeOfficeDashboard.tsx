@@ -1,11 +1,13 @@
 import { useState, useMemo } from 'react';
 import { Calendar, Clock, Users, CheckCircle, XCircle, AlertTriangle, TrendingUp, FileText, ArrowRight } from 'lucide-react';
 import { useApp } from '../../context/AppContextEnhanced';
-import { useNavigate } from 'react-router-dom';
 
-const TimeOfficeDashboard = () => {
+interface TimeOfficeDashboardProps {
+  onNavigate?: (page: string) => void;
+}
+
+const TimeOfficeDashboard = ({ onNavigate }: TimeOfficeDashboardProps = {}) => {
   const { allUsers, requests } = useApp();
-  const navigate = useNavigate();
   const today = new Date().toISOString().split('T')[0];
 
   // Calculate statistics
@@ -58,28 +60,28 @@ const TimeOfficeDashboard = () => {
       description: 'Mark and update daily attendance',
       icon: CheckCircle,
       color: 'from-emerald-600 to-emerald-800',
-      route: '/time-office/attendance'
+      id: 'attendance'
     },
     {
       title: 'Shift Management',
       description: 'Manage employee shifts and schedules',
       icon: Clock,
       color: 'from-indigo-600 to-indigo-800',
-      route: '/time-office/shifts'
+      id: 'shifts'
     },
     {
       title: 'Leave Approvals',
       description: 'Review pending leave requests',
       icon: FileText,
       color: 'from-blue-600 to-blue-800',
-      route: '/time-office/leave-approvals'
+      id: 'approvals'
     },
     {
       title: 'Gate Pass Approvals',
       description: 'Process gate pass requests',
       icon: Users,
       color: 'from-purple-600 to-purple-800',
-      route: '/time-office/gatepass-approvals'
+      id: 'approvals'
     }
   ];
 
@@ -253,7 +255,7 @@ const TimeOfficeDashboard = () => {
           {quickActions.map((action, index) => (
             <button
               key={index}
-              onClick={() => navigate(action.route)}
+              onClick={() => onNavigate?.(action.id)}
               className="group relative p-6 bg-gradient-to-br hover:shadow-xl transition-all rounded-xl text-white overflow-hidden"
               style={{ background: `linear-gradient(to bottom right, var(--tw-gradient-stops))` }}
             >
@@ -317,7 +319,7 @@ const TimeOfficeDashboard = () => {
                     </td>
                     <td className="px-6 py-4">
                       <button
-                        onClick={() => navigate(`/time-office/approvals/${request.id}`)}
+                        onClick={() => onNavigate?.('approvals')}
                         className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-semibold hover:bg-indigo-700 transition-colors"
                       >
                         Review

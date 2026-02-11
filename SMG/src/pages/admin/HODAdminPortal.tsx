@@ -5,7 +5,7 @@ import { HODDashboard } from './hod/HODDashboard';
 import { SMGImagineApproval } from './hod/SMGImagineApproval';
 import { LeaveGatePassResignationApproval } from './hod/LeaveGatePassResignationApproval';
 import { ResignationAcceptance } from './hod/ResignationAcceptance';
-import EmployeeRating from '../EmployeeRating';
+import EmployeeRating from './EmployeeRating';
 import {
   LayoutDashboard,
   LogOut,
