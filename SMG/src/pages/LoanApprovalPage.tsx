@@ -3,38 +3,28 @@ import { Wallet, Plus, CheckCircle, Clock, XCircle, AlertCircle, IndianRupee, Ca
 import { useApp } from '../context/AppContextEnhanced';
 
 export const LoanApprovalPage = () => {
-  const { currentUser } = useApp();
+  const { currentUser, requests, addRequest } = useApp();
   const [showLoanForm, setShowLoanForm] = useState(false);
-  const [loanApplications, setLoanApplications] = useState<any[]>([
-    {
-      id: 'LOAN-2024-001',
-      type: 'Personal Loan',
-      amount: 200000,
-      purpose: 'Home Renovation',
-      requestedDate: '2024-12-15',
-      status: 'Approved',
-      approvalDate: '2024-12-18',
-      tenure: 24,
-      interestRate: 8.5,
-      emi: 9242,
-      approvedBy: 'Finance Manager',
-      disbursementDate: '2024-12-20'
-    },
-    {
-      id: 'LOAN-2024-002',
-      type: 'Emergency Loan',
-      amount: 50000,
-      purpose: 'Medical Emergency',
-      requestedDate: '2024-11-10',
-      status: 'Disbursed',
-      approvalDate: '2024-11-12',
-      tenure: 12,
-      interestRate: 7.0,
-      emi: 4349,
-      approvedBy: 'Finance Manager',
-      disbursementDate: '2024-11-15'
-    }
-  ]);
+  
+  // Filter loan requests from Firebase
+  const loanApplications = useMemo(() => {
+    return requests
+      .filter(req => req.requestType === 'loan')
+      .map(req => ({
+        id: req.id,
+        type: req.requestData?.loanType || 'Personal Loan',
+        amount: req.requestData?.amount || 0,
+        purpose: req.requestData?.purpose || req.description || '',
+        requestedDate: req.createdAt?.toDate?.()?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+        status: req.status === 'approved' ? 'Approved' : req.status === 'rejected' ? 'Rejected' : 'Under Review',
+        approvalDate: req.updatedAt?.toDate?.()?.toISOString().split('T')[0] || '',
+        tenure: req.requestData?.tenure || 0,
+        interestRate: req.requestData?.interestRate || 0,
+        emi: req.requestData?.emi || 0,
+        approvedBy: req.approvers?.[0]?.name || 'Finance Manager',
+        disbursementDate: ''
+      }));
+  }, [requests]);
 
   const [loanForm, setLoanForm] = useState({
     type: '',
@@ -69,37 +59,44 @@ export const LoanApprovalPage = () => {
     ? calculateEMI(parseInt(loanForm.amount), selectedLoanType.interestRate, parseInt(loanForm.tenure))
     : 0;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
 
-    const newApplication = {
-      id: `LOAN-${Date.now()}`,
-      type: loanForm.type,
-      amount: parseInt(loanForm.amount),
-      purpose: loanForm.purpose,
-      requestedDate: new Date().toISOString().split('T')[0],
-      status: 'Under Review',
-      tenure: parseInt(loanForm.tenure),
-      interestRate: selectedLoanType?.interestRate || 0,
-      emi: estimatedEMI,
-      approvedBy: '',
-      disbursementDate: ''
-    };
+    try {
+      await addRequest({
+        requestType: 'loan',
+        title: `${loanForm.type} - ₹${parseInt(loanForm.amount).toLocaleString('en-IN')}`,
+        description: loanForm.purpose,
+        priority: 'high',
+        requestData: {
+          loanType: loanForm.type,
+          amount: parseInt(loanForm.amount),
+          purpose: loanForm.purpose,
+          tenure: parseInt(loanForm.tenure),
+          interestRate: selectedLoanType?.interestRate || 0,
+          emi: estimatedEMI,
+          documents: loanForm.documents
+        }
+      });
 
-    setLoanApplications([newApplication, ...loanApplications]);
-    setShowSuccess(true);
-    setShowLoanForm(false);
-    setLoanForm({ type: '', amount: '', purpose: '', tenure: '', documents: '' });
+      setShowSuccess(true);
+      setShowLoanForm(false);
+      setLoanForm({ type: '', amount: '', purpose: '', tenure: '', documents: '' });
 
-    setTimeout(() => {
-      setShowSuccess(false);
+      setTimeout(() => {
+        setShowSuccess(false);
+        setSubmitting(false);
+      }, 3000);
+    } catch (error) {
+      console.error('Error submitting loan request:', error);
+      alert('Failed to submit loan request. Please try again.');
       setSubmitting(false);
-    }, 3000);
+    }
   };
 
   const sortedApplications = useMemo(() => {
-    return loanApplications.sort((a, b) => 
+    return [...loanApplications].sort((a, b) => 
       new Date(b.requestedDate).getTime() - new Date(a.requestedDate).getTime()
     );
   }, [loanApplications]);

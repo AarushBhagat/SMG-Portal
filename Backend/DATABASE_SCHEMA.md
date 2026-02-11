@@ -19,7 +19,7 @@ users/{userId} {
   // Basic Info
   uid: string,
   email: string,
-  role: "employee" | "admin" | "super_admin",
+  role: "employee" | "admin" | "super_admin" | "time_office" | "hod",
   employeeId: string, // SMG-2024-042
   
   // Personal Details
@@ -71,6 +71,47 @@ users/{userId} {
   // Admin/Super Admin specific
   permissions: string[], // ["manage_users", "approve_requests", "view_reports"]
   adminDepartments: string[], // Departments they manage (for admins)
+  
+  // Employee Ratings (managed by HOD)
+  ratings: [
+    {
+      ratingId: string,
+      score: number, // 1-5
+      feedback: string,
+      remarks: string,
+      evaluationDate: timestamp,
+      evaluatedBy: string, // HOD userId
+      evaluatedByName: string,
+      quarter: string, // "Q1-2024"
+      category: "Performance" | "Behavior" | "Skills" | "Overall",
+      createdAt: timestamp
+    }
+  ],
+  
+  // Shift Information (managed by Time Office)
+  shift: {
+    shiftId: string,
+    shiftName: string, // "Morning", "Evening", "Night"
+    startTime: string, // "09:00"
+    endTime: string, // "18:00"
+    assignedBy: string, // Time Office userId
+    assignedDate: timestamp,
+    effectiveFrom: timestamp
+  },
+  
+  // Shift History
+  shiftHistory: [
+    {
+      shiftId: string,
+      shiftName: string,
+      startTime: string,
+      endTime: string,
+      assignedBy: string,
+      assignedDate: timestamp,
+      effectiveFrom: timestamp,
+      effectiveTo: timestamp
+    }
+  ]
 }
 ```
 
@@ -83,13 +124,22 @@ attendance/{userId}/records/{recordId} {
   userId: string,
   employeeId: string,
   employeeName: string,
+  department: string,
   date: timestamp,
   checkIn: timestamp,
   checkOut: timestamp,
   duration: string, // "8h 30m"
-  status: "present" | "absent" | "half_day" | "leave" | "overtime",
+  status: "present" | "absent" | "half_day" | "leave" | "late" | "overtime",
   workHours: number,
   overtimeHours: number,
+  
+  // Time Office Management
+  enteredBy: string, // Time Office user who entered/updated
+  enteredByName: string,
+  manualEntry: boolean, // true if entered by Time Office
+  manualEntryReason: string,
+  approvedBy: string, // Time Office supervisor
+  approvalTimestamp: timestamp,
   breaks: [
     {
       start: timestamp,
@@ -131,7 +181,7 @@ All types of requests (leave, reimbursement, assets, certificates, etc.)
 ```javascript
 requests/{requestId} {
   id: string,
-  requestType: "leave" | "reimbursement" | "asset" | "certificate" | "uniform" | "transport" | "canteen" | "sim_card" | "guest_house" | "welfare",
+  requestType: "leave" | "gate_pass" | "resignation" | "reimbursement" | "asset" | "certificate" | "uniform" | "transport" | "canteen" | "sim_card" | "guest_house" | "welfare" | "loan" | "mrf" | "jf" | "interview",
   
   // Request Details
   title: string,
@@ -147,26 +197,46 @@ requests/{requestId} {
   status: "pending" | "approved" | "rejected" | "in_progress" | "completed" | "cancelled",
   priority: "low" | "medium" | "high" | "urgent",
   
-  // Approval Flow
+  // Approval Flow (Multi-level for Leave/GatePass/Resignation)
   approvers: [
     {
+      level: number, // 1, 2, 3 for multi-level approvals
       userId: string,
       name: string,
-      role: string,
+      role: string, // "Time Office", "HOD", "HR"
+      department: string,
       status: "pending" | "approved" | "rejected",
       comments: string,
       actionDate: timestamp
     }
   ],
   currentApprover: string,
+  currentLevel: number, // Current approval level
   
   // Type-specific data
   requestData: {
-    // For Leave Requests
+    // For Leave Requests (Time Office → HOD → Final)
     leaveType?: "annual" | "sick" | "casual" | "maternity" | "paternity",
     startDate?: timestamp,
     endDate?: timestamp,
     totalDays?: number,
+    reason?: string,
+    contactDuringLeave?: string,
+    
+    // For Gate Pass Requests (Time Office → HOD → Final)
+    gatePassType?: "Personal" | "Medical" | "Official" | "Emergency",
+    exitTime?: string,
+    expectedReturnTime?: string,
+    destination?: string,
+    vehicleNumber?: string,
+    
+    // For Resignation Requests (HOD → HR → Final)
+    resignationType?: "Voluntary" | "Retirement" | "Termination",
+    lastWorkingDate?: timestamp,
+    noticePeriod?: number, // days
+    reasonForLeaving?: string,
+    feedbackToCompany?: string,
+    exitInterviewCompleted?: boolean,
     
     // For Reimbursement
     amount?: number,
@@ -187,6 +257,50 @@ requests/{requestId} {
     // For Uniform
     size?: string,
     items?: string[],
+    
+    // For Loan Requests
+    loanType?: "Personal Loan" | "Emergency Loan" | "Education Loan" | "Vehicle Loan" | "Home Loan Assistance",
+    amount?: number,
+    purpose?: string,
+    tenure?: number, // in months
+    interestRate?: number,
+    emi?: number,
+    documents?: string,
+    
+    // For MRF (Manpower Requisition Form) Requests
+    position?: string,
+    numberOfPositions?: number,
+    employmentType?: "Full-time" | "Part-time" | "Contract" | "Temporary" | "Intern",
+    urgency?: "Normal" | "High" | "Urgent",
+    justification?: string,
+    requiredSkills?: string,
+    experienceRequired?: string,
+    budgetRange?: string,
+    reportingTo?: string,
+    
+    // For JF (Job Form) Requests
+    jobTitle?: string,
+    jobType?: "Full-time" | "Part-time" | "Contract" | "Temporary" | "Intern",
+    location?: string,
+    salaryRange?: string,
+    jobDescription?: string,
+    keyResponsibilities?: string,
+    requiredQualifications?: string,
+    preferredQualifications?: string,
+    numberOfOpenings?: number,
+    reportingManager?: string,
+    
+    // For Interview Requests
+    candidateName?: string,
+    interviewDate?: string,
+    interviewTime?: string,
+    interviewType?: "Technical" | "HR" | "Managerial" | "Final",
+    interviewMode?: "In-person" | "Video Call" | "Phone",
+    interviewers?: string,
+    contactNumber?: string,
+    email?: string,
+    resumeLink?: string,
+    notes?: string,
     
     // ... other type-specific fields
   },
@@ -383,7 +497,72 @@ assets/{assetId} {
 
 ---
 
-### **6. DOCUMENTS COLLECTION** (`documents/`)
+### **6. SHIFTS COLLECTION** (`shifts/`)
+Managed by Time Office for employee shift assignments and tracking
+
+```javascript
+shifts/{shiftId} {
+  id: string,
+  shiftName: string, // "Morning Shift", "Evening Shift", "Night Shift", "General Shift"
+  shiftCode: string, // "MS", "ES", "NS", "GS"
+  
+  // Timing
+  startTime: string, // "09:00"
+  endTime: string, // "18:00"
+  duration: number, // hours
+  breakDuration: number, // minutes
+  
+  // Configuration
+  workdays: string[], // ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+  isActive: boolean,
+  description: string,
+  
+  // Grace Period
+  gracePeriod: number, // minutes for late arrival
+  
+  // Metadata
+  createdBy: string, // Time Office userId
+  createdByName: string,
+  createdAt: timestamp,
+  updatedAt: timestamp
+}
+
+// Shift Assignments
+shifts/assignments/{assignmentId} {
+  id: string,
+  
+  // Employee Info
+  userId: string,
+  employeeId: string,
+  employeeName: string,
+  department: string,
+  
+  // Shift Info
+  shiftId: string,
+  shiftName: string,
+  shiftCode: string,
+  startTime: string,
+  endTime: string,
+  
+  // Assignment Details
+  assignedBy: string, // Time Office userId
+  assignedByName: string,
+  assignedDate: timestamp,
+  effectiveFrom: timestamp,
+  effectiveTo: timestamp, // null for current assignment
+  
+  // Status
+  status: "active" | "expired" | "cancelled",
+  reason: string, // Reason for assignment
+  
+  createdAt: timestamp,
+  updatedAt: timestamp
+}
+```
+
+---
+
+### **7. DOCUMENTS COLLECTION** (`documents/`)
 
 ```javascript
 documents/{userId}/files/{documentId} {
@@ -426,7 +605,7 @@ documents/{userId}/files/{documentId} {
 
 ---
 
-### **7. PAYROLL COLLECTION** (`payroll/`)
+### **8. PAYROLL COLLECTION** (`payroll/`)
 
 ```javascript
 payroll/{userId}/records/{month-year} {

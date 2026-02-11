@@ -263,7 +263,7 @@ export const DashboardPageOld = ({ data, onNavigate }) => {
                 <h2 className="text-3xl font-bold mb-2 animate-in slide-in-from-left duration-500">
                   {greeting},<br />
                   <span className="text-4xl bg-gradient-to-r from-white to-[#87CEEB] bg-clip-text text-transparent">
-                    {user.name?.split(' ')[0]}!
+                    {user.name?.startsWith('Mr ') ? user.name.split(' ')[1] : user.name?.split(' ')[0]}!
                   </span>
                 </h2>
                 <div className="flex items-center gap-2 mb-4 animate-in slide-in-from-left duration-700">

@@ -8,7 +8,7 @@ export const FinanceDashboard = () => {
         <p className="text-gray-500 mt-1">Manage salaries, insurance, loans, and asset requests</p>
       </div>
 
-      {/* Stats Overview */}
+      {/* Stats Overview - Real data from Mr Praphull Chandra's compensation */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-2xl p-6 shadow-md hover:shadow-xl transition-all border border-gray-200">
           <div className="flex items-center gap-4">
@@ -16,7 +16,7 @@ export const FinanceDashboard = () => {
               <IndianRupee className="text-blue-500" size={24} />
             </div>
             <div>
-              <p className="text-2xl font-bold text-[#1B254B]">245</p>
+              <p className="text-2xl font-bold text-[#1B254B]">1</p>
               <p className="text-sm text-gray-500">Salaries Processed</p>
             </div>
           </div>
@@ -28,7 +28,7 @@ export const FinanceDashboard = () => {
               <Shield className="text-green-500" size={24} />
             </div>
             <div>
-              <p className="text-2xl font-bold text-[#1B254B]">189</p>
+              <p className="text-2xl font-bold text-[#1B254B]">0</p>
               <p className="text-sm text-gray-500">Active Insurance</p>
             </div>
           </div>
@@ -40,7 +40,7 @@ export const FinanceDashboard = () => {
               <TrendingUp className="text-orange-500" size={24} />
             </div>
             <div>
-              <p className="text-2xl font-bold text-[#1B254B]">12</p>
+              <p className="text-2xl font-bold text-[#1B254B]">0</p>
               <p className="text-sm text-gray-500">Pending Loans</p>
             </div>
           </div>
@@ -52,7 +52,7 @@ export const FinanceDashboard = () => {
               <Package className="text-purple-500" size={24} />
             </div>
             <div>
-              <p className="text-2xl font-bold text-[#1B254B]">8</p>
+              <p className="text-2xl font-bold text-[#1B254B]">0</p>
               <p className="text-sm text-gray-500">Asset Requests</p>
             </div>
           </div>
@@ -68,15 +68,13 @@ export const FinanceDashboard = () => {
           </div>
           <div className="space-y-3">
             {[
-              { name: 'Amit Kumar', empId: 'SMG-2024-042', amount: '₹45,000', date: '2024-12-25' },
-              { name: 'Priya Sharma', empId: 'SMG-2024-089', amount: '₹52,000', date: '2024-12-25' },
-              { name: 'Rajesh Patel', empId: 'SMG-2024-123', amount: '₹38,000', date: '2024-12-24' }
+              { name: 'Mr Praphull Chandra', empId: 'EMP-IT-001', amount: '₹32,172', date: '2024-12-25' }
             ].map((item, idx) => (
               <div key={idx} className="p-3 bg-blue-50 rounded-xl border border-blue-100">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-bold text-[#1B254B]">{item.name}</p>
-                    <p className="text-sm text-gray-500">{item.empId}</p>
+                    <p className="text-sm text-gray-500">{item.empId} • IT Department</p>
                   </div>
                   <div className="text-right">
                     <p className="font-bold text-blue-600">{item.amount}</p>
@@ -94,29 +92,15 @@ export const FinanceDashboard = () => {
             <h2 className="text-xl font-bold text-[#1B254B]">Pending Approvals</h2>
           </div>
           <div className="space-y-3">
-            {[
-              { type: 'Loan Request', name: 'Vikram Singh', amount: '₹2,00,000', status: 'Pending' },
-              { type: 'Asset Request', name: 'Anjali Verma', amount: 'Laptop', status: 'Pending' },
-              { type: 'Loan Request', name: 'Sunil Patel', amount: '₹1,50,000', status: 'Pending' }
-            ].map((item, idx) => (
-              <div key={idx} className="p-3 bg-orange-50 rounded-xl border border-orange-100">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-bold text-[#1B254B]">{item.type}</p>
-                    <p className="text-sm text-gray-500">{item.name}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-orange-600">{item.amount}</p>
-                    <span className="text-xs px-2 py-1 bg-orange-500 text-white rounded-full">{item.status}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+            {/* Mock data removed - ready for Firebase integration */}
+            <div className="text-center py-8 text-gray-500">
+              <p>No pending approvals</p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Monthly Summary */}
+      {/* Monthly Summary - Real data from compensation package */}
       <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
         <h2 className="text-xl font-bold text-[#1B254B] mb-4 flex items-center gap-2">
           <Users className="text-green-500" size={24} />
@@ -125,17 +109,17 @@ export const FinanceDashboard = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="p-4 bg-green-50 rounded-xl border border-green-200">
             <p className="text-sm text-gray-500 mb-1">Total Salary Disbursed</p>
-            <p className="text-3xl font-bold text-green-600">₹1.2 Cr</p>
-            <p className="text-xs text-gray-500 mt-1">December 2024</p>
+            <p className="text-3xl font-bold text-green-600">₹32,172</p>
+            <p className="text-xs text-gray-500 mt-1">December 2024 (Net)</p>
           </div>
           <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
             <p className="text-sm text-gray-500 mb-1">Insurance Premium</p>
-            <p className="text-3xl font-bold text-blue-600">₹8.5 L</p>
+            <p className="text-3xl font-bold text-blue-600">₹0</p>
             <p className="text-xs text-gray-500 mt-1">This Month</p>
           </div>
           <div className="p-4 bg-purple-50 rounded-xl border border-purple-200">
             <p className="text-sm text-gray-500 mb-1">Loans Approved</p>
-            <p className="text-3xl font-bold text-purple-600">₹15 L</p>
+            <p className="text-3xl font-bold text-purple-600">₹0</p>
             <p className="text-xs text-gray-500 mt-1">This Month</p>
           </div>
         </div>

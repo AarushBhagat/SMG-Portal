@@ -7,6 +7,10 @@ import { InterviewManagement } from './hr/InterviewManagement';
 import { JoiningForms } from './hr/JoiningForms';
 import { TrainingDevelopment } from './hr/TrainingDevelopment';
 import { EmployeeWelfare } from './hr/EmployeeWelfare';
+import { MRFManagement } from './hr/MRFManagement';
+import { JFManagement } from './hr/JFManagement';
+import { TrainingHistory } from './hr/TrainingHistory';
+import { GrievancePolicyManagement } from './hr/GrievancePolicyManagement';
 import {
   LayoutDashboard,
   LogOut,
@@ -66,10 +70,14 @@ export const HRAdminPortal = ({ onBack }: HRAdminPortalProps) => {
     switch (activePage) {
       case 'dashboard': return <HRDashboard onNavigate={setActivePage} />;
       case 'mrf-approval': return <MRFApproval />;
+      case 'mrf-management': return <MRFManagement />;
+      case 'jf-management': return <JFManagement />;
       case 'interview-management': return <InterviewManagement />;
       case 'joining-forms': return <JoiningForms />;
       case 'training-development': return <TrainingDevelopment />;
+      case 'training-history': return <TrainingHistory />;
       case 'employee-welfare': return <EmployeeWelfare />;
+      case 'grievance-policy': return <GrievancePolicyManagement />;
       default: return <HRDashboard onNavigate={setActivePage} />;
     }
   };
@@ -118,11 +126,11 @@ export const HRAdminPortal = ({ onBack }: HRAdminPortalProps) => {
                   <nav className="p-3 space-y-1">
                     {[
                       { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-                      { id: 'mrf-approval', icon: FileText, label: 'MRF & JD Approval' },
-                      { id: 'interview-management', icon: ClipboardList, label: 'Interview Management' },
-                      { id: 'joining-forms', icon: UserPlus, label: 'Joining Forms' },
-                      { id: 'training-development', icon: GraduationCap, label: 'Training & Development' },
-                      { id: 'employee-welfare', icon: Heart, label: 'Employee Welfare' },
+                      { id: 'mrf-management', icon: FileText, label: 'MRF Management' },
+                      { id: 'jf-management', icon: Briefcase, label: 'JF Management' },
+                      { id: 'interview-management', icon: ClipboardList, label: 'Interviews' },
+                      { id: 'training-history', icon: GraduationCap, label: 'Training History' },
+                      { id: 'grievance-policy', icon: Heart, label: 'Grievance & Policy' },
                     ].map((item) => (
                       <button
                         key={item.id}
@@ -192,11 +200,11 @@ export const HRAdminPortal = ({ onBack }: HRAdminPortalProps) => {
               <div className="space-y-1">
                 {[
                   { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-                  { id: 'mrf-approval', icon: FileText, label: 'MRF & JD Approval' },
-                  { id: 'interview-management', icon: ClipboardList, label: 'Interview Management' },
-                  { id: 'joining-forms', icon: UserPlus, label: 'Joining Forms' },
-                  { id: 'training-development', icon: GraduationCap, label: 'Training & Development' },
-                  { id: 'employee-welfare', icon: Heart, label: 'Employee Welfare' },
+                  { id: 'mrf-management', icon: FileText, label: 'MRF Management' },
+                  { id: 'jf-management', icon: Briefcase, label: 'JF Management' },
+                  { id: 'interview-management', icon: ClipboardList, label: 'Interviews' },
+                  { id: 'training-history', icon: GraduationCap, label: 'Training History' },
+                  { id: 'grievance-policy', icon: Heart, label: 'Grievance & Policy' },
                 ].map((item) => (
                   <button
                     key={item.id}

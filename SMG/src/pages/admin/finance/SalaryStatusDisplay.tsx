@@ -20,61 +20,20 @@ export const SalaryStatusDisplay = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'All' | 'Paid' | 'Pending' | 'Processing'>('All');
   
+  // Real salary data for employee@smg.com - Mr Praphull Chandra (IT DEPARTMENT)
   const [salaryRecords] = useState<SalaryRecord[]>([
     {
       id: 1,
-      empName: 'Amit Kumar',
-      empId: 'SMG-2024-042',
-      dept: 'Assembly',
-      designation: 'Senior Technician',
-      basicSalary: 35000,
-      allowances: 10000,
-      deductions: 3500,
-      netSalary: 41500,
+      empName: 'Mr Praphull Chandra',
+      empId: 'EMP-IT-001',
+      dept: 'IT Department',
+      designation: 'IT Employee',
+      basicSalary: 17894,
+      allowances: 17893, // HRA(5368) + Special Allowance(9525) + Conveyance(1600) + Bonus(1400)
+      deductions: 3615, // EPF Employee(2147) + ESI Employee(268) + PT(200) + Tax(1000)
+      netSalary: 32172, // Total: 38,897 Monthly CTC includes employer contributions
       paymentDate: '2024-12-25',
       status: 'Paid',
-      month: 'December 2024'
-    },
-    {
-      id: 2,
-      empName: 'Priya Sharma',
-      empId: 'SMG-2024-089',
-      dept: 'HR',
-      designation: 'HR Manager',
-      basicSalary: 45000,
-      allowances: 12000,
-      deductions: 4200,
-      netSalary: 52800,
-      paymentDate: '2024-12-25',
-      status: 'Paid',
-      month: 'December 2024'
-    },
-    {
-      id: 3,
-      empName: 'Rajesh Patel',
-      empId: 'SMG-2024-123',
-      dept: 'Finance',
-      designation: 'Accountant',
-      basicSalary: 32000,
-      allowances: 8000,
-      deductions: 2800,
-      netSalary: 37200,
-      paymentDate: 'Pending',
-      status: 'Processing',
-      month: 'December 2024'
-    },
-    {
-      id: 4,
-      empName: 'Vikram Singh',
-      empId: 'SMG-2024-156',
-      dept: 'Production',
-      designation: 'Supervisor',
-      basicSalary: 38000,
-      allowances: 9500,
-      deductions: 3300,
-      netSalary: 44200,
-      paymentDate: 'Pending',
-      status: 'Pending',
       month: 'December 2024'
     }
   ]);

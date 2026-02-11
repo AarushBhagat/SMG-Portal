@@ -21,53 +21,8 @@ export const InsuranceDetailsDisplay = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'All' | 'Health' | 'Life' | 'Accident'>('All');
   
-  const [insuranceRecords] = useState<InsuranceRecord[]>([
-    {
-      id: 1,
-      empName: 'Amit Kumar',
-      empId: 'SMG-2024-042',
-      dept: 'Assembly',
-      policyNumber: 'HDFC-HEALTH-2024-042',
-      policyType: 'Health Insurance',
-      provider: 'HDFC ERGO',
-      coverageAmount: 500000,
-      premium: 12000,
-      startDate: '2024-01-01',
-      endDate: '2024-12-31',
-      status: 'Active',
-      nominee: 'Sunita Kumar'
-    },
-    {
-      id: 2,
-      empName: 'Priya Sharma',
-      empId: 'SMG-2024-089',
-      dept: 'HR',
-      policyNumber: 'LIC-LIFE-2024-089',
-      policyType: 'Life Insurance',
-      provider: 'LIC',
-      coverageAmount: 1000000,
-      premium: 18000,
-      startDate: '2024-01-01',
-      endDate: '2024-12-31',
-      status: 'Active',
-      nominee: 'Raj Sharma'
-    },
-    {
-      id: 3,
-      empName: 'Rajesh Patel',
-      empId: 'SMG-2024-123',
-      dept: 'Finance',
-      policyNumber: 'ICICI-ACC-2024-123',
-      policyType: 'Accident Insurance',
-      provider: 'ICICI Lombard',
-      coverageAmount: 300000,
-      premium: 5000,
-      startDate: '2024-01-01',
-      endDate: '2024-12-31',
-      status: 'Active',
-      nominee: 'Meera Patel'
-    }
-  ]);
+  // Mock data removed - ready for Firebase integration
+  const [insuranceRecords] = useState<InsuranceRecord[]>([]);
 
   const filteredRecords = insuranceRecords.filter(record => {
     const matchesSearch = record.empName.toLowerCase().includes(searchQuery.toLowerCase()) ||

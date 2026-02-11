@@ -42,7 +42,7 @@ const SUPER_ADMIN_DATA = {
   email: 'aarushbhagat093@gmail.com',
   password: 'Aarush@11',
   userData: {
-    name: 'Aarush Bhagat',
+    name: 'Mr Praphull Chandra',
     email: 'aarushbhagat093@gmail.com',
     phone: '+91 98765 00000',
     designation: 'Super Administrator',

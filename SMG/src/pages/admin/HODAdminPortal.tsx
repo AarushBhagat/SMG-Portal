@@ -5,7 +5,7 @@ import { HODDashboard } from './hod/HODDashboard';
 import { SMGImagineApproval } from './hod/SMGImagineApproval';
 import { LeaveGatePassResignationApproval } from './hod/LeaveGatePassResignationApproval';
 import { ResignationAcceptance } from './hod/ResignationAcceptance';
-import { EmployeeRatings } from './hod/EmployeeRatings';
+import EmployeeRating from '../EmployeeRating';
 import {
   LayoutDashboard,
   LogOut,
@@ -64,7 +64,7 @@ export const HODAdminPortal = ({ onBack }: HODAdminPortalProps) => {
       case 'smg-imagine': return <SMGImagineApproval />;
       case 'leave-gatepass': return <LeaveGatePassResignationApproval />;
       case 'resignation': return <ResignationAcceptance />;
-      case 'ratings': return <EmployeeRatings />;
+      case 'ratings': return <EmployeeRating />;
       default: return <HODDashboard onNavigate={setActivePage} />;
     }
   };

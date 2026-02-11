@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { TrendingUp, Search, CheckCircle, XCircle, Eye, X } from 'lucide-react';
+import { useApp } from '../../../context/AppContextEnhanced';
 
 interface LoanRequest {
   id: number;
@@ -16,51 +17,29 @@ interface LoanRequest {
 }
 
 export const LoanApproval = () => {
+  const { requests: allRequests, approveRequest, rejectRequest } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<LoanRequest | null>(null);
   
-  const [requests, setRequests] = useState<LoanRequest[]>([
-    {
-      id: 1,
-      empName: 'Vikram Singh',
-      empId: 'SMG-2024-156',
-      dept: 'Production',
-      loanType: 'Personal Loan',
-      amount: 200000,
-      purpose: 'Medical Emergency',
-      requestDate: '2024-12-20',
-      tenure: 24,
-      monthlyEMI: 9250,
-      status: 'Pending'
-    },
-    {
-      id: 2,
-      empName: 'Anjali Verma',
-      empId: 'SMG-2024-234',
-      dept: 'Marketing',
-      loanType: 'Home Loan',
-      amount: 500000,
-      purpose: 'House Purchase',
-      requestDate: '2024-12-22',
-      tenure: 60,
-      monthlyEMI: 10500,
-      status: 'Pending'
-    },
-    {
-      id: 3,
-      empName: 'Sunil Patel',
-      empId: 'SMG-2024-178',
-      dept: 'Finance',
-      loanType: 'Education Loan',
-      amount: 150000,
-      purpose: 'Children Education',
-      requestDate: '2024-12-18',
-      tenure: 36,
-      monthlyEMI: 4800,
-      status: 'Approved'
-    }
-  ]);
+  // Filter and transform loan requests from Firebase
+  const requests = useMemo(() => {
+    return allRequests
+      .filter(req => req.requestType === 'loan')
+      .map(req => ({
+        id: req.id,
+        empName: req.employeeName || req.userName || 'N/A',
+        empId: req.employeeId || 'N/A',
+        dept: req.department || 'N/A',
+        loanType: req.requestData?.loanType || 'Personal Loan',
+        amount: req.requestData?.amount || 0,
+        purpose: req.requestData?.purpose || req.description || 'N/A',
+        requestDate: req.createdAt?.toDate?.()?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+        tenure: req.requestData?.tenure || 0,
+        monthlyEMI: req.requestData?.emi || 0,
+        status: req.status === 'approved' ? 'Approved' : req.status === 'rejected' ? 'Rejected' : 'Pending'
+      }));
+  }, [allRequests]);
 
   const filteredRequests = requests.filter(req =>
     req.empName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -71,15 +50,20 @@ export const LoanApproval = () => {
   const approvedRequests = requests.filter(r => r.status === 'Approved');
   const totalLoanAmount = requests.filter(r => r.status === 'Approved').reduce((sum, r) => sum + r.amount, 0);
 
-  const handleAction = (action: 'approve' | 'reject') => {
+  const handleAction = async (action: 'approve' | 'reject') => {
     if (selectedRequest) {
-      setRequests(requests.map(req =>
-        req.id === selectedRequest.id
-          ? { ...req, status: action === 'approve' ? 'Approved' : 'Rejected' }
-          : req
-      ));
-      setShowModal(false);
-      setSelectedRequest(null);
+      try {
+        if (action === 'approve') {
+          await approveRequest(selectedRequest.id);
+        } else {
+          await rejectRequest(selectedRequest.id, 'Rejected by Finance Admin');
+        }
+        setShowModal(false);
+        setSelectedRequest(null);
+      } catch (error) {
+        console.error('Error processing loan request:', error);
+        alert('Failed to process request. Please try again.');
+      }
     }
   };
 

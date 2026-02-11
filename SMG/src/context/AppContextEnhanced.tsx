@@ -693,6 +693,8 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       const requestType = request.requestType || request.type || 'general';
       const titleMap = {
         'leave': 'Leave Request',
+        'gate_pass': 'Gate Pass Request',
+        'resignation': 'Resignation Request',
         'document': 'Document Request',
         'asset': 'Asset Request',
         'sim': 'SIM Card Request',
@@ -701,6 +703,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         'canteen': 'Canteen Request',
         'guesthouse': 'Guest House Booking',
         'welfare': 'Welfare Request',
+        'loan': 'Loan Request',
+        'mrf': 'Manpower Requisition Form',
+        'jf': 'Job Form',
+        'interview': 'Interview Sheet',
         'general': 'General Request'
       };
       
@@ -713,53 +719,73 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       // Define approval routing based on request type
       const approvalRouting = {
         'asset': { department: 'Finance', role: 'Finance Admin' },
+        'loan': { department: 'Finance', role: 'Finance Admin' },
         'document': { department: 'HR', role: 'HR Admin' },
         'transport': { department: 'Admin', role: 'Admin Manager' },
         'uniform': { department: 'Admin', role: 'Admin Manager' },
         'canteen': { department: 'Admin', role: 'Admin Manager' },
         'guesthouse': { department: 'Admin', role: 'Admin Manager' },
         'sim': { department: 'IT', role: 'IT Admin' },
-        'leave': { department: authUser.department, role: 'Department Admin', multiLevel: true },
-        'gatepass': { department: authUser.department, role: 'Department Admin', multiLevel: true },
         'welfare': { department: 'HR', role: 'HR Admin' },
-        'general': { department: authUser.department, role: 'Department Admin' }
+        'mrf': { department: 'Super Admin', role: 'Super Admin', requiresSuperAdmin: true },
+        'jf': { department: 'Super Admin', role: 'Super Admin', requiresSuperAdmin: true },
+        'interview': { department: 'Reception', role: 'Reception Staff' },
+        'general': { department: authUser.department, role: 'Department Admin' },
+        
+        // New Multi-level Approval Flows
+        'leave': { 
+          multiLevel: true,
+          levels: [
+            { level: 1, department: 'Time Office', role: 'Time Office', name: 'Time Office' },
+            { level: 2, department: authUser.department, role: 'HOD', name: 'Head of Department' }
+          ]
+        },
+        'gate_pass': { 
+          multiLevel: true,
+          levels: [
+            { level: 1, department: 'Time Office', role: 'Time Office', name: 'Time Office' },
+            { level: 2, department: authUser.department, role: 'HOD', name: 'Head of Department' }
+          ]
+        },
+        'resignation': {
+          multiLevel: true,
+          levels: [
+            { level: 1, department: authUser.department, role: 'HOD', name: 'Head of Department' },
+            { level: 2, department: 'HR', role: 'HR Admin', name: 'HR Department' }
+          ]
+        }
       };
       
       const routing = approvalRouting[requestType] || { department: 'Admin', role: 'Admin' };
       
-      // Build approvers array - multi-level for leave/gatepass
+      // Build approvers array based on routing configuration
       let approvers = [];
-      if (routing.multiLevel) {
-        // Level 1: Department HOD
-        approvers.push({
-          level: 1,
-          department: routing.department,
-          role: routing.role,
-          name: 'Department HOD',
+      let initialDepartment = '';
+      
+      if (routing.multiLevel && routing.levels) {
+        // Multi-level approval with defined levels
+        approvers = routing.levels.map(level => ({
+          level: level.level,
+          department: level.department,
+          role: level.role,
+          name: level.name,
           status: 'pending',
           comments: '',
           actionDate: null
-        });
-        // Level 2: Time Office
-        approvers.push({
-          level: 2,
-          department: 'Time Office',
-          role: 'Time Office Admin',
-          name: 'Time Office Admin',
-          status: 'pending',
-          comments: '',
-          actionDate: null
-        });
+        }));
+        initialDepartment = routing.levels[0].department;
       } else {
         // Single level approval
         approvers.push({
           level: 1,
           department: routing.department,
           role: routing.role,
+          name: routing.role,
           status: 'pending',
           comments: '',
           actionDate: null
         });
+        initialDepartment = routing.department;
       }
       
       await setDoc(doc(db, 'requests', customRequestId), {
@@ -776,7 +802,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         status: 'pending',
         priority: request.priority || 'medium',
         approvers: approvers,
-        currentApprover: routing.department,
+        currentApprover: initialDepartment,
         currentLevel: 1,
         submittedAt: serverTimestamp(),
         createdAt: serverTimestamp(),

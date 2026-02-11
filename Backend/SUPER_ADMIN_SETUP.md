@@ -1,6 +1,7 @@
 # Super Admin Setup Instructions
 
 ## Super Admin Credentials
+- **Name**: Mr Praphull Chandra
 - **Email**: aarushbhagat093@gmail.com
 - **Password**: Aarush@11
 - **UID**: Qo0hfHS7m6eQpQElylhe54HPDRG2
@@ -29,6 +30,7 @@ After running the script, you should see output like:
 🎉 SUCCESS! Super Admin setup complete!
 
 📝 Login Credentials:
+   Name: Mr Praphull Chandra
    Email: aarushbhagat093@gmail.com
    Password: Aarush@11
    Role: Super Admin

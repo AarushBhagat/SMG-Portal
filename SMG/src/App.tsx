@@ -32,7 +32,6 @@ import {
   ReceptionPortal,
   HRPortal,
   FinancePortal,
-  TimeOfficePortal,
   CanteenPortal,
   EventsPortal,
   HODPortal,
@@ -40,6 +39,7 @@ import {
   AssemblyPortal,
   MarketingPortal
 } from './pages/admin/DepartmentPortals';
+import TimeOfficePortal from './pages/time-office/TimeOfficePortal';
 import {
   UniformPage,
   SIMAllocationPage,
@@ -475,6 +475,16 @@ interface AppContentProps {
 }
 
 function AppContent({ userRole, activePage, setActivePage, mobileMenuOpen, setMobileMenuOpen, handleLogout }: AppContentProps) {
+  const { user: firebaseUser } = useAuth();
+  
+  // Create user object with Firebase data, fallback to INITIAL_DATA
+  const currentUser = {
+    ...INITIAL_DATA.user,
+    email: firebaseUser?.email || INITIAL_DATA.user.email,
+    name: firebaseUser?.name || INITIAL_DATA.user.name,
+    empId: firebaseUser?.employeeId || INITIAL_DATA.user.empId,
+  };
+  
   const renderContent = () => {
     switch (activePage) {
       // Main Pages
@@ -501,7 +511,7 @@ function AppContent({ userRole, activePage, setActivePage, mobileMenuOpen, setMo
       case 'my-attendance': return <AttendancePage />;
 
       // Work & Pay Pages
-      case 'payroll': return <PayrollPageOld user={INITIAL_DATA.user} />;
+      case 'payroll': return <PayrollPageOld user={currentUser} />;
       case 'insurance-policy': return <InsurancePolicyPage />;
       case 'loan-approval': return <LoanApprovalPage />;
       case 'training': return <TrainingPage />;
@@ -522,7 +532,7 @@ function AppContent({ userRole, activePage, setActivePage, mobileMenuOpen, setMo
       case 'admin-reception': return <ReceptionPortal onBack={handleLogout} />;
       case 'admin-hr': return <HRPortal onBack={handleLogout} />;
       case 'admin-finance': return <FinancePortal onBack={handleLogout} />;
-      case 'admin-time-office': return <TimeOfficePortal onBack={handleLogout} />;
+      case 'admin-time-office': return <TimeOfficePortal />;
       case 'admin-canteen': return <CanteenPortal onBack={handleLogout} />;
       case 'admin-events': return <EventsPortal onBack={handleLogout} />;
       case 'admin-hod': return <HODPortal onBack={handleLogout} />;

@@ -48,12 +48,12 @@ interface SuperAdminPortalProps {
 }
 
 const SUPER_ADMIN_USER = {
-  name: "Aarush Sharma",
+  name: "Mr Praphull Chandra",
   role: "Super Administrator",
   empId: "SMG-SA-001",
   dept: "IT & Administration",
   avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=SuperAdmin&backgroundColor=4338ca",
-  email: "aarush.sharma@smg-scooters.com",
+  email: "employee@smg.com",
   phone: "+91 98765 00001",
   dateOfJoining: "01 January 2019",
   dateOfBirth: "15 May 1982",

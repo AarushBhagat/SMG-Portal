@@ -13,11 +13,11 @@ export const HRDashboard = ({ onNavigate }: HRDashboardProps) => {
   ];
 
   const quickActions = [
-    { label: 'MRF & JD Approval', icon: FileText, page: 'mrf-approval', color: 'bg-blue-50 text-blue-600 hover:bg-blue-100' },
-    { label: 'Interview Management', icon: ClipboardList, page: 'interview-management', color: 'bg-purple-50 text-purple-600 hover:bg-purple-100' },
-    { label: 'Joining Forms', icon: UserPlus, page: 'joining-forms', color: 'bg-green-50 text-green-600 hover:bg-green-100' },
-    { label: 'Training & Development', icon: GraduationCap, page: 'training-development', color: 'bg-orange-50 text-orange-600 hover:bg-orange-100' },
-    { label: 'Employee Welfare', icon: Heart, page: 'employee-welfare', color: 'bg-pink-50 text-pink-600 hover:bg-pink-100' },
+    { label: 'MRF Management', icon: FileText, page: 'mrf-management', color: 'bg-blue-50 text-blue-600 hover:bg-blue-100' },
+    { label: 'JF Management', icon: ClipboardList, page: 'jf-management', color: 'bg-purple-50 text-purple-600 hover:bg-purple-100' },
+    { label: 'Interview Scheduling', icon: ClipboardList, page: 'interview-management', color: 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100' },
+    { label: 'Training History', icon: GraduationCap, page: 'training-history', color: 'bg-orange-50 text-orange-600 hover:bg-orange-100' },
+    { label: 'Grievance & Policy', icon: Heart, page: 'grievance-policy', color: 'bg-teal-50 text-teal-600 hover:bg-teal-100' },
   ];
 
   const recentActivities = [

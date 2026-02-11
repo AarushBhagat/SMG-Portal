@@ -20,7 +20,7 @@ interface User {
   joinDate: string;
   avatar: string;
   reportingManager: string;
-  role: 'employee' | 'admin' | 'super_admin';
+  role: 'employee' | 'admin' | 'super_admin' | 'time_office' | 'hod';
   adminDepartments?: string[];
 }
 
