@@ -178,17 +178,17 @@ export const TimeOfficeAdminPortal = ({ onBack }: TimeOfficeAdminPortalProps) =>
                 <span className="whitespace-nowrap text-sm font-bold flex-1 text-left">Shift Information</span>
               </button>
             </div>
-          </nav>
 
-          <div className="p-3 border-t border-[#0B4DA2]/30">
-            <button
-              onClick={onBack}
-              className="w-full flex items-center gap-3 px-3 py-2.5 bg-[#EE5D50]/10 text-[#EE5D50] rounded-xl font-bold hover:bg-[#EE5D50]/20 transition-all"
-            >
-              <LogOut size={20} className="shrink-0" />
-              <span className="whitespace-nowrap">Sign Out</span>
-            </button>
-          </div>
+            <div className="mt-6 pt-4 border-t border-white/10">
+              <button
+                onClick={onBack}
+                className="w-full flex items-center gap-3 px-3 py-2.5 bg-[#EE5D50]/10 text-[#EE5D50] rounded-xl font-bold hover:bg-[#EE5D50]/20 transition-all"
+              >
+                <LogOut size={20} className="shrink-0" />
+                <span className="whitespace-nowrap">Sign Out</span>
+              </button>
+            </div>
+          </nav>
         </aside>
 
         {/* Main Content */}

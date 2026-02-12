@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import {
   Briefcase,
   Clock,
@@ -24,6 +25,7 @@ import {
 } from 'lucide-react';
 
 export const ProjectsPage = () => {
+  const { user: currentUser } = useAuth();
   const [filterStatus, setFilterStatus] = useState('all');
   const [selectedProject, setSelectedProject] = useState(null);
 
@@ -43,10 +45,10 @@ export const ProjectsPage = () => {
       department: 'Assembly',
       budget: '₹15,00,000',
       spent: '₹9,75,000',
-      myRole: 'Senior Technician',
+      myRole: currentUser?.designation || 'Senior Technician',
       teamMembers: [
         { name: 'Priya Sharma', role: 'Project Manager', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Priya', email: 'priya.sharma@smg.com', phone: '+91 98765 43211' },
-        { name: 'Rohit Sharma', role: 'Senior Technician', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Rohit', email: 'rohit.sharma@smg.com', phone: '+91 98765 43210' },
+        { name: currentUser?.name || 'Employee', role: currentUser?.designation || 'Senior Technician', avatar: currentUser?.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=User', email: currentUser?.email || 'employee@smg.com', phone: currentUser?.phone || '+91 98765 43210' },
         { name: 'Amit Patel', role: 'Lead Engineer', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Amit', email: 'amit.patel@smg.com', phone: '+91 98765 43212' },
         { name: 'Vikram Singh', role: 'Quality Analyst', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Vikram', email: 'vikram.singh@smg.com', phone: '+91 98765 43214' }
       ],
@@ -64,7 +66,7 @@ export const ProjectsPage = () => {
       ],
       recentUpdates: [
         { date: '2024-12-11', update: 'Line 3 optimization completed ahead of schedule', author: 'Priya Sharma' },
-        { date: '2024-12-09', update: 'Training session conducted for assembly team', author: 'Rohit Sharma' },
+        { date: '2024-12-09', update: 'Training session conducted for assembly team', author: currentUser?.name || 'Employee' },
         { date: '2024-12-07', update: 'New workflow documentation finalized', author: 'Amit Patel' }
       ]
     },

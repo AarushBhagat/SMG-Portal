@@ -5,7 +5,7 @@ import { HODDashboard } from './hod/HODDashboard';
 import { SMGImagineApproval } from './hod/SMGImagineApproval';
 import { LeaveGatePassResignationApproval } from './hod/LeaveGatePassResignationApproval';
 import { ResignationAcceptance } from './hod/ResignationAcceptance';
-import EmployeeRating from './EmployeeRating';
+import { EmployeeRatings } from './hod/EmployeeRatings';
 import {
   LayoutDashboard,
   LogOut,
@@ -64,7 +64,7 @@ export const HODAdminPortal = ({ onBack }: HODAdminPortalProps) => {
       case 'smg-imagine': return <SMGImagineApproval />;
       case 'leave-gatepass': return <LeaveGatePassResignationApproval />;
       case 'resignation': return <ResignationAcceptance />;
-      case 'ratings': return <EmployeeRating />;
+      case 'ratings': return <EmployeeRatings />;
       default: return <HODDashboard onNavigate={setActivePage} />;
     }
   };
@@ -147,25 +147,25 @@ export const HODAdminPortal = ({ onBack }: HODAdminPortalProps) => {
         <aside className="hidden lg:flex w-[240px] bg-[#042A5B] flex-col shadow-2xl">
           <nav className="px-3 py-6 space-y-1 flex-1 overflow-y-auto">
             <div className="mb-4">
-              <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">HOD Portal</p>
+              <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 whitespace-nowrap">HOD Portal</p>
               <button
                 onClick={() => setActivePage('dashboard')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activePage === 'dashboard' ? 'bg-[#0B4DA2] text-white shadow-lg' : 'text-white/70 hover:bg-white/10'}`}
               >
                 <LayoutDashboard size={20} className="shrink-0 text-white" />
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap font-medium text-white">Dashboard</span>
+                <span className="whitespace-nowrap font-medium text-white">Dashboard</span>
               </button>
             </div>
 
             <div className="space-y-1">
-              <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Approvals</p>
+              <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 whitespace-nowrap">Approvals</p>
               
               <button
                 onClick={() => setActivePage('smg-imagine')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activePage === 'smg-imagine' ? 'bg-[#0B4DA2] text-white shadow-lg' : 'text-white/70 hover:bg-white/10'}`}
               >
                 <Lightbulb size={20} className="shrink-0 text-white" />
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap font-medium text-white">SMG IMAGINE</span>
+                <span className="whitespace-nowrap font-medium text-white">SMG IMAGINE</span>
               </button>
 
               <button
@@ -173,7 +173,7 @@ export const HODAdminPortal = ({ onBack }: HODAdminPortalProps) => {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activePage === 'leave-gatepass' ? 'bg-[#0B4DA2] text-white shadow-lg' : 'text-white/70 hover:bg-white/10'}`}
               >
                 <ClipboardCheck size={20} className="shrink-0 text-white" />
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap font-medium text-white">Leave & Gate Pass</span>
+                <span className="whitespace-nowrap font-medium text-white">Leave & Gate Pass</span>
               </button>
 
               <button
@@ -181,19 +181,19 @@ export const HODAdminPortal = ({ onBack }: HODAdminPortalProps) => {
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activePage === 'resignation' ? 'bg-[#0B4DA2] text-white shadow-lg' : 'text-white/70 hover:bg-white/10'}`}
               >
                 <UserX size={20} className="shrink-0 text-white" />
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap font-medium text-white">Resignation</span>
+                <span className="whitespace-nowrap font-medium text-white">Resignation</span>
               </button>
             </div>
 
             <div className="space-y-1">
-              <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Performance</p>
+              <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 whitespace-nowrap">Performance</p>
               
               <button
                 onClick={() => setActivePage('ratings')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activePage === 'ratings' ? 'bg-[#0B4DA2] text-white shadow-lg' : 'text-white/70 hover:bg-white/10'}`}
               >
                 <Star size={20} className="shrink-0 text-white" />
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap font-medium text-white">Employee Ratings</span>
+                <span className="whitespace-nowrap font-medium text-white">Employee Ratings</span>
               </button>
             </div>
 
@@ -203,7 +203,7 @@ export const HODAdminPortal = ({ onBack }: HODAdminPortalProps) => {
                 className="w-full flex items-center gap-3 px-4 py-3 bg-[#EE5D50]/10 text-[#EE5D50] rounded-xl font-bold hover:bg-[#EE5D50]/20 transition-all"
               >
                 <LogOut size={20} className="shrink-0" />
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Sign Out</span>
+                <span className="whitespace-nowrap">Sign Out</span>
               </button>
             </div>
           </nav>

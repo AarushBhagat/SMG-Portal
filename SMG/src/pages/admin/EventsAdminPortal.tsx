@@ -139,37 +139,37 @@ export const EventsAdminPortal = ({ onBack }: EventsAdminPortalProps) => {
         <aside className="hidden lg:flex w-[240px] bg-[#042A5B] flex-col shadow-2xl">
           <nav className="px-3 py-6 space-y-1 flex-1 overflow-y-auto">
             <div className="mb-4">
-              <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Events Admin</p>
+              <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 whitespace-nowrap">Events Admin</p>
               <button
                 onClick={() => setActivePage('dashboard')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activePage === 'dashboard' ? 'bg-[#0B4DA2] text-white shadow-lg' : 'text-white/70 hover:bg-white/10'}`}
               >
                 <LayoutDashboard size={20} className="shrink-0 text-white" />
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap font-medium text-white">Dashboard</span>
+                <span className="whitespace-nowrap font-medium text-white">Dashboard</span>
               </button>
             </div>
 
             <div className="space-y-1">
-              <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Events</p>
+              <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 whitespace-nowrap">Events</p>
               <button
                 onClick={() => setActivePage('events')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activePage === 'events' ? 'bg-[#0B4DA2] text-white shadow-lg' : 'text-white/70 hover:bg-white/10'}`}
               >
                 <PartyPopper size={20} className="shrink-0 text-white" />
-                <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap font-medium text-white">Events Management</span>
+                <span className="whitespace-nowrap font-medium text-white">Events Management</span>
+              </button>
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-white/10">
+              <button
+                onClick={onBack}
+                className="w-full flex items-center gap-3 px-4 py-3 bg-[#EE5D50]/10 text-[#EE5D50] rounded-xl font-bold hover:bg-[#EE5D50]/20 transition-all"
+              >
+                <LogOut size={20} className="shrink-0" />
+                <span className="whitespace-nowrap">Sign Out</span>
               </button>
             </div>
           </nav>
-
-          <div className="mt-auto p-3">
-            <button
-              onClick={onBack}
-              className="w-full flex items-center gap-3 px-4 py-3 bg-[#EE5D50]/10 text-[#EE5D50] rounded-xl font-bold hover:bg-[#EE5D50]/20 transition-all"
-            >
-              <LogOut size={20} className="shrink-0" />
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Sign Out</span>
-            </button>
-          </div>
         </aside>
 
         {/* Main Content */}
