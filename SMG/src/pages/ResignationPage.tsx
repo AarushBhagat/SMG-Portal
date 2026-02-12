@@ -17,12 +17,13 @@ interface ResignationPageProps {
 }
 
 export const ResignationPage = ({ user }: ResignationPageProps) => {
-    const { currentUser } = useApp();
+    const { currentUser, addRequest, requests = [] } = useApp();
     const [activeTab, setActiveTab] = useState<'details' | 'status'>('details');
     const [lastWorkingDay, setLastWorkingDay] = useState('');
     const [reason, setReason] = useState('');
     const [noticePeriodServed, setNoticePeriodServed] = useState<'yes' | 'no' | ''>('');
     const [confirmIntent, setConfirmIntent] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Use currentUser from context, fallback to prop user
     const employee = user || {
@@ -35,27 +36,127 @@ export const ResignationPage = ({ user }: ResignationPageProps) => {
         avatar: currentUser?.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.name || 'User'}&backgroundColor=b6e3f4`
     };
 
-    const resignationStatus = {
-        dateApplied: "05 March 2026",
-        lastWorkingDay: "06 April 2026",
-        managerApproval: "Pending",
-        hrApproval: "Pending",
-        finalStatus: "In Process"
+    // Find user's most recent resignation request
+    const myResignationRequest = requests
+        .filter(req => req.requestType === 'resignation' && req.userId === currentUser?.id)
+        .sort((a, b) => (b.createdAt?.toDate?.()?.getTime() || 0) - (a.createdAt?.toDate?.()?.getTime() || 0))[0];
+
+    // Extract resignation status from the request
+    const resignationStatus = myResignationRequest ? (() => {
+        const approvers = myResignationRequest.approvers || [];
+        const hodApprover = approvers.find(a => a.role === 'HOD');
+        const hrApprover = approvers.find(a => a.role === 'HR Admin');
+        const requestData = myResignationRequest.requestData || {};
+        
+        // Determine HOD approval status
+        let hodStatus = 'Pending';
+        let hodColor = 'yellow';
+        if (hodApprover?.status === 'approved') {
+            hodStatus = 'Approved';
+            hodColor = 'green';
+        } else if (hodApprover?.status === 'rejected') {
+            hodStatus = 'Rejected';
+            hodColor = 'red';
+        }
+        
+        // Determine HR approval status
+        let hrStatus = 'Pending';
+        let hrColor = 'yellow';
+        if (hrApprover?.status === 'approved') {
+            hrStatus = 'Approved';
+            hrColor = 'green';
+        } else if (hrApprover?.status === 'rejected') {
+            hrStatus = 'Rejected';
+            hrColor = 'red';
+        }
+        
+        // Determine final status
+        let finalStatus = 'In Process';
+        let finalColor = 'indigo';
+        if (myResignationRequest.status === 'approved') {
+            finalStatus = 'Approved - Exit Process';
+            finalColor = 'green';
+        } else if (myResignationRequest.status === 'rejected') {
+            finalStatus = 'Rejected';
+            finalColor = 'red';
+        } else if (hodApprover?.status === 'approved' && hrApprover?.status === 'pending') {
+            finalStatus = 'Pending HR Approval';
+            finalColor = 'blue';
+        }
+        
+        // Format last working day to match dateApplied format
+        const lastWorkingDayFormatted = requestData.lastWorkingDate 
+            ? new Date(requestData.lastWorkingDate).toLocaleDateString()
+            : 'N/A';
+        
+        return {
+            dateApplied: myResignationRequest.createdAt?.toDate?.()?.toLocaleDateString() || 'N/A',
+            lastWorkingDay: lastWorkingDayFormatted,
+            managerApproval: hodStatus,
+            managerApprovalColor: hodColor,
+            hrApproval: hrStatus,
+            hrApprovalColor: hrColor,
+            finalStatus: finalStatus,
+            finalStatusColor: finalColor,
+            hodComments: hodApprover?.comments || '',
+            hrComments: hrApprover?.comments || ''
+        };
+    })() : {
+        dateApplied: "Not Submitted",
+        lastWorkingDay: "N/A",
+        managerApproval: "Not Submitted",
+        managerApprovalColor: "gray",
+        hrApproval: "Not Submitted",
+        hrApprovalColor: "gray",
+        finalStatus: "No Resignation Request",
+        finalStatusColor: "gray",
+        hodComments: '',
+        hrComments: ''
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!confirmIntent || !lastWorkingDay || !reason || !noticePeriodServed) {
             alert('Please fill all required fields');
             return;
         }
 
-        alert('Resignation submitted successfully!');
+        setIsSubmitting(true);
+        try {
+            // Calculate notice period in days
+            const lastWorkingDate = new Date(lastWorkingDay);
+            const today = new Date();
+            const noticePeriodDays = Math.ceil((lastWorkingDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
-        // Reset form after successful submission
-        setLastWorkingDay('');
-        setReason('');
-        setNoticePeriodServed('');
-        setConfirmIntent(false);
+            await addRequest({
+                requestType: 'resignation',
+                title: 'Resignation Request',
+                description: reason,
+                requestData: {
+                    resignationType: 'Voluntary',
+                    lastWorkingDate: lastWorkingDay,
+                    noticePeriod: noticePeriodDays > 0 ? noticePeriodDays : 30,
+                    reasonForLeaving: reason,
+                    noticePeriodServed: noticePeriodServed === 'yes',
+                    exitInterviewCompleted: false
+                }
+            });
+
+            alert('Resignation submitted successfully! Your HOD will review your request.');
+
+            // Reset form after successful submission
+            setLastWorkingDay('');
+            setReason('');
+            setNoticePeriodServed('');
+            setConfirmIntent(false);
+            
+            // Switch to status tab to show submitted request
+            setActiveTab('status');
+        } catch (error) {
+            console.error('Error submitting resignation:', error);
+            alert('Failed to submit resignation. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleCancel = () => {
@@ -249,16 +350,17 @@ export const ResignationPage = ({ user }: ResignationPageProps) => {
                             <div className="flex justify-end gap-4 pt-4">
                                 <button
                                     onClick={handleCancel}
-                                    className="px-8 py-2.5 bg-white border-2 border-gray-400 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-500 transition-all font-semibold shadow-md hover:shadow-lg active:scale-95"
+                                    disabled={isSubmitting}
+                                    className="px-8 py-2.5 bg-white border-2 border-gray-400 text-gray-700 rounded-lg hover:bg-gray-50 hover:border-gray-500 transition-all font-semibold shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleSubmit}
-                                    disabled={!confirmIntent || !lastWorkingDay || !reason || !noticePeriodServed}
+                                    disabled={!confirmIntent || !lastWorkingDay || !reason || !noticePeriodServed || isSubmitting}
                                     className="px-8 py-2.5 bg-gradient-to-br from-[#042A5B] to-[#0B4DA2] text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-all font-semibold shadow-md hover:shadow-lg disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none active:scale-95"
                                 >
-                                    Submit Resignation
+                                    {isSubmitting ? 'Submitting...' : 'Submit Resignation'}
                                 </button>
                             </div>
                         </div>
@@ -275,34 +377,94 @@ export const ResignationPage = ({ user }: ResignationPageProps) => {
                                     <p className="text-gray-900 font-semibold text-lg mt-2">{resignationStatus.lastWorkingDay}</p>
                                 </div>
 
-                                <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-5 rounded-lg border border-yellow-200">
-                                    <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Manager Approval</label>
+                                {/* HOD/Manager Approval */}
+                                <div className={
+                                    resignationStatus.managerApprovalColor === 'green' 
+                                        ? "bg-gradient-to-br from-green-50 to-green-100 p-5 rounded-lg border border-green-200"
+                                        : resignationStatus.managerApprovalColor === 'red'
+                                        ? "bg-gradient-to-br from-red-50 to-red-100 p-5 rounded-lg border border-red-200"
+                                        : "bg-gradient-to-br from-yellow-50 to-yellow-100 p-5 rounded-lg border border-yellow-200"
+                                }>
+                                    <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">HOD/Manager Approval</label>
                                     <p className="text-gray-900 font-semibold mt-2">
-                                        <span className="inline-block px-3 py-1 bg-yellow-200 text-yellow-800 rounded-full text-sm">
+                                        <span className={
+                                            resignationStatus.managerApprovalColor === 'green' 
+                                                ? "inline-block px-3 py-1 bg-green-200 text-green-800 rounded-full text-sm"
+                                                : resignationStatus.managerApprovalColor === 'red'
+                                                ? "inline-block px-3 py-1 bg-red-200 text-red-800 rounded-full text-sm"
+                                                : "inline-block px-3 py-1 bg-yellow-200 text-yellow-800 rounded-full text-sm"
+                                        }>
                                             {resignationStatus.managerApproval}
                                         </span>
                                     </p>
-                                    <p className="text-xs text-gray-600 mt-2">Pending / Approved / Rejected</p>
+                                    {resignationStatus.hodComments && (
+                                        <p className="text-xs text-gray-700 mt-2 italic">💬 "{resignationStatus.hodComments}"</p>
+                                    )}
                                 </div>
-                                <div className="bg-gradient-to-br from-green-50 to-green-100 p-5 rounded-lg border border-green-200">
+
+                                {/* HR Approval */}
+                                <div className={
+                                    resignationStatus.hrApprovalColor === 'green' 
+                                        ? "bg-gradient-to-br from-green-50 to-green-100 p-5 rounded-lg border border-green-200"
+                                        : resignationStatus.hrApprovalColor === 'red'
+                                        ? "bg-gradient-to-br from-red-50 to-red-100 p-5 rounded-lg border border-red-200"
+                                        : "bg-gradient-to-br from-yellow-50 to-yellow-100 p-5 rounded-lg border border-yellow-200"
+                                }>
                                     <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">HR Approval</label>
                                     <p className="text-gray-900 font-semibold mt-2">
-                                        <span className="inline-block px-3 py-1 bg-green-200 text-green-800 rounded-full text-sm">
+                                        <span className={
+                                            resignationStatus.hrApprovalColor === 'green' 
+                                                ? "inline-block px-3 py-1 bg-green-200 text-green-800 rounded-full text-sm"
+                                                : resignationStatus. hrApprovalColor === 'red'
+                                                ? "inline-block px-3 py-1 bg-red-200 text-red-800 rounded-full text-sm"
+                                                : "inline-block px-3 py-1 bg-yellow-200 text-yellow-800 rounded-full text-sm"
+                                        }>
                                             {resignationStatus.hrApproval}
                                         </span>
                                     </p>
-                                    <p className="text-xs text-gray-600 mt-2">Pending / Approved</p>
+                                    {resignationStatus.hrComments && (
+                                        <p className="text-xs text-gray-700 mt-2 italic">💬 "{resignationStatus.hrComments}"</p>
+                                    )}
                                 </div>
 
-                                <div className="col-span-2 bg-gradient-to-br from-indigo-50 to-indigo-100 p-5 rounded-lg border border-indigo-200">
+                                {/* Final Status */}
+                                <div className={
+                                    resignationStatus.finalStatusColor === 'green' 
+                                        ? "col-span-2 bg-gradient-to-br from-green-50 to-green-100 p-5 rounded-lg border border-green-200"
+                                        : resignationStatus.finalStatusColor === 'red'
+                                        ? "col-span-2 bg-gradient-to-br from-red-50 to-red-100 p-5 rounded-lg border border-red-200"
+                                        : resignationStatus.finalStatusColor === 'blue'
+                                        ? "col-span-2 bg-gradient-to-br from-blue-50 to-blue-100 p-5 rounded-lg border border-blue-200"
+                                        : "col-span-2 bg-gradient-to-br from-indigo-50 to-indigo-100 p-5 rounded-lg border border-indigo-200"
+                                }>
                                     <label className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Final Status</label>
                                     <p className="text-gray-900 font-bold text-xl mt-2">
-                                        <span className="inline-block px-4 py-2 bg-indigo-200 text-indigo-900 rounded-lg">
+                                        <span className={
+                                            resignationStatus.finalStatusColor === 'green' 
+                                                ? "inline-block px-4 py-2 bg-green-200 text-green-900 rounded-lg"
+                                                : resignationStatus.finalStatusColor === 'red'
+                                                ? "inline-block px-4 py-2 bg-red-200 text-red-900 rounded-lg"
+                                                : resignationStatus.finalStatusColor === 'blue'
+                                                ? "inline-block px-4 py-2 bg-blue-200 text-blue-900 rounded-lg"
+                                                : "inline-block px-4 py-2 bg-indigo-200 text-indigo-900 rounded-lg"
+                                        }>
                                             {resignationStatus.finalStatus}
                                         </span>
                                     </p>
                                 </div>
                             </div>
+                            
+                            {!myResignationRequest && (
+                                <div className="mt-6 p-4 bg-gray-100 rounded-lg text-center">
+                                    <p className="text-gray-600">You haven't submitted a resignation request yet.</p>
+                                    <button
+                                        onClick={() => setActiveTab('details')}
+                                        className="mt-3 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                    >
+                                        Submit Resignation
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

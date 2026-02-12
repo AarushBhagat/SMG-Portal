@@ -1,15 +1,64 @@
 import { Lightbulb, ClipboardCheck, UserX, Star, TrendingUp, Users, AlertCircle, CheckCircle } from 'lucide-react';
+import { useApp } from '../../../context/AppContextEnhanced';
+import { useAuth } from '../../../context/AuthContext';
+import { useMemo } from 'react';
 
 interface HODDashboardProps {
   onNavigate: (page: string) => void;
 }
 
 export const HODDashboard = ({ onNavigate }: HODDashboardProps) => {
+  const { requests = [], allUsers = [] } = useApp();
+  const { user: authUser } = useAuth();
+  
+  // Get current user's department for filtering
+  // If department is set to role name (like 'HOD'), try to get from localStorage or default
+  const rawDepartment = authUser?.department;
+  const isRoleName = rawDepartment === 'HOD' || rawDepartment === 'hod' || rawDepartment === 'admin';
+  
+  const currentDepartment = isRoleName 
+    ? (localStorage.getItem('hodDepartment') || 'Assembly')
+    : (rawDepartment || 'Information Technology');
+  
+  // Filter requests that need HOD approval from the current department
+  const hodRequests = useMemo(() => {
+    console.log('🏠 [HODDashboard] Filtering HOD requests');
+    console.log('   Current Department:', currentDepartment);
+    console.log('   Total requests:', requests.length);
+    
+    const filtered = requests.filter(req => {
+      const approvers = req.approvers || [];
+      const isFromDepartment = req.department === currentDepartment;
+      
+      // Find HOD approver for this department
+      const hodApprover = approvers.find(app => app.role === 'HOD');
+      const hodMatchesDept = hodApprover && hodApprover.department === currentDepartment;
+      
+      // Show if from department AND has HOD approver for this department
+      return isFromDepartment && hodMatchesDept;
+    });
+    
+    console.log('   Filtered HOD requests:', filtered.length);
+    console.log('   By type:', {
+      leave: filtered.filter(r => r.requestType === 'leave').length,
+      resignation: filtered.filter(r => r.requestType === 'resignation').length,
+      gatepass: filtered.filter(r => r.requestType === 'gatepass').length
+    });
+    
+    return filtered;
+  }, [requests, currentDepartment]);
+  
+  // Calculate stats from real data
+  const leaveRequests = hodRequests.filter(req => req.requestType === 'leave');
+  const resignationRequests = hodRequests.filter(req => req.requestType === 'resignation');
+  const imagineRequests = hodRequests.filter(req => req.requestType === 'imagine' || req.requestType === 'general');
+  const departmentUsers = allUsers.filter(user => user.department === currentDepartment || user.dept === currentDepartment);
+  
   const stats = [
-    { label: 'Pending IMAGINE Ideas', value: '5', icon: AlertCircle, color: 'bg-yellow-500', change: '+2 this week' },
-    { label: 'Leave Requests', value: '3', icon: ClipboardCheck, color: 'bg-blue-500', change: 'Pending approval' },
-    { label: 'Resignation Requests', value: '1', icon: UserX, color: 'bg-red-500', change: 'Requires action' },
-    { label: 'Team Members', value: '45', icon: Users, color: 'bg-green-500', change: 'Active employees' }
+    { label: 'Pending IMAGINE Ideas', value: imagineRequests.length.toString(), icon: AlertCircle, color: 'bg-yellow-500', change: 'Innovation ideas' },
+    { label: 'Leave Requests', value: leaveRequests.length.toString(), icon: ClipboardCheck, color: 'bg-blue-500', change: 'Pending approval' },
+    { label: 'Resignation Requests', value: resignationRequests.length.toString(), icon: UserX, color: 'bg-red-500', change: 'Requires action' },
+    { label: 'Team Members', value: departmentUsers.length.toString(), icon: Users, color: 'bg-green-500', change: 'Active employees' }
   ];
 
   const quickActions = [
@@ -19,12 +68,52 @@ export const HODDashboard = ({ onNavigate }: HODDashboardProps) => {
     { title: 'Employee Ratings', desc: 'Rate team performance', icon: Star, page: 'ratings', color: 'from-[#042A5B] to-[#0B4DA2]' }
   ];
 
-  const recentActivity = [
-    { type: 'IMAGINE Idea Submitted', employee: 'Amit Kumar', detail: 'Digital attendance tracking system', time: '15 mins ago', status: 'warning' },
-    { type: 'Leave Request', employee: 'Priya Singh', detail: 'Casual Leave - 2 days', time: '1 hour ago', status: 'info' },
-    { type: 'Resignation', employee: 'Rahul Verma', detail: 'Notice period - 30 days', time: '3 hours ago', status: 'warning' },
-    { type: 'Rating Reminder', employee: 'System', detail: 'Quarterly ratings due', time: '5 hours ago', status: 'info' }
-  ];
+  // Helper function to format time ago
+  const formatTimeAgo = (date: Date): string => {
+    const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} mins ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+    return `${Math.floor(seconds / 86400)} days ago`;
+  };
+
+  // Generate recent activity from real requests
+  const recentActivity = useMemo(() => {
+    const activities = hodRequests
+      .sort((a, b) => (b.createdAt?.toDate?.() || new Date()).getTime() - (a.createdAt?.toDate?.() || new Date()).getTime())
+      .slice(0, 4)
+      .map(req => {
+        const timeAgo = req.createdAt?.toDate?.() 
+          ? formatTimeAgo(req.createdAt.toDate()) 
+          : 'Just now';
+        
+        let typeLabel = req.requestType === 'leave' ? 'Leave Request' :
+                       req.requestType === 'resignation' ? 'Resignation' :
+                       req.requestType === 'gatepass' ? 'Gate Pass' :
+                       'Request';
+        
+        return {
+          type: typeLabel,
+          employee: req.employeeName || req.userName || 'Employee',
+          detail: req.title || req.description || `${typeLabel} submitted`,
+          time: timeAgo,
+          status: req.status === 'pending' ? 'warning' : req.status === 'approved' ? 'success' : 'info'
+        };
+      });
+    
+    // Add default activity if no requests
+    if (activities.length === 0) {
+      activities.push({
+        type: 'System',
+        employee: 'HOD Portal',
+        detail: 'Ready to review requests from your department',
+        time: 'Now',
+        status: 'info'
+      });
+    }
+    
+    return activities;
+  }, [hodRequests]);
 
   return (
     <div className="p-6 space-y-6">

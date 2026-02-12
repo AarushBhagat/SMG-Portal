@@ -339,35 +339,6 @@ export default function App() {
   });
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Force logout on page refresh
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      // Mark that page is being refreshed
-      sessionStorage.setItem('pageRefreshed', 'true');
-    };
-    
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    
-    // Check if page was refreshed and logout
-    if (sessionStorage.getItem('pageRefreshed') === 'true') {
-      sessionStorage.removeItem('pageRefreshed');
-      logout().catch(console.error);
-    }
-    
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [logout]);
-
-  // Handle browser back button - logout user
-  useEffect(() => {
-    const handlePopState = async () => {
-      // When user clicks browser back button, logout
-      await handleLogout();
-    };
-    
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
-
   // Initialize page when user logs in
   useEffect(() => {
     if (user?.role) {

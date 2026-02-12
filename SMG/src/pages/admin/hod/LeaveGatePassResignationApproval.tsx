@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Search, Eye, Check, X, Calendar, Clock, User, FileText } from 'lucide-react';
+import { useApp } from '../../../context/AppContextEnhanced';
+import { useAuth } from '../../../context/AuthContext';
 
 interface Request {
   id: string;
@@ -16,63 +18,73 @@ interface Request {
 }
 
 export const LeaveGatePassResignationApproval = () => {
+  const { requests: allRequests = [], approveRequest, rejectRequest } = useApp();
+  const { user: authUser } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'All' | 'Leave' | 'Gate Pass'>('All');
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
 
-  const [requests, setRequests] = useState<Request[]>([
-    {
-      id: 'REQ001',
-      empId: 'SMG-EMP-245',
-      empName: 'Amit Sharma',
-      type: 'Leave',
-      category: 'Casual Leave',
-      reason: 'Family function',
-      from: '28 Dec 2025',
-      to: '30 Dec 2025',
-      duration: '3 days',
-      appliedOn: '20 Dec 2025',
-      status: 'Pending'
-    },
-    {
-      id: 'REQ002',
-      empId: 'SMG-EMP-189',
-      empName: 'Priya Singh',
-      type: 'Gate Pass',
-      reason: 'Medical appointment',
-      from: '26 Dec 2025 2:00 PM',
-      to: '26 Dec 2025 4:30 PM',
-      duration: '2.5 hours',
-      appliedOn: '26 Dec 2025',
-      status: 'Pending'
-    },
-    {
-      id: 'REQ003',
-      empId: 'SMG-EMP-312',
-      empName: 'Rahul Verma',
-      type: 'Leave',
-      category: 'Medical Leave',
-      reason: 'Health checkup',
-      from: '2 Jan 2026',
-      to: '3 Jan 2026',
-      duration: '2 days',
-      appliedOn: '25 Dec 2025',
-      status: 'Approved'
-    }
-  ]);
+  // Get current user's department for filtering
+  // If department is set to role name (like 'HOD'), try to get from localStorage or default
+  const rawDepartment = authUser?.department;
+  const isRoleName = rawDepartment === 'HOD' || rawDepartment === 'hod' || rawDepartment === 'admin';
+  
+  const currentDepartment = isRoleName 
+    ? (localStorage.getItem('hodDepartment') || 'Assembly')
+    : (rawDepartment || 'Information Technology');
 
-  const handleApprove = (id: string) => {
-    setRequests(requests.map(req => 
-      req.id === id ? { ...req, status: 'Approved' as const } : req
-    ));
-    setSelectedRequest(null);
+  // Transform Firebase requests to component format
+  const requests = useMemo(() => {
+    return allRequests
+      .filter(req => {
+        // Filter leave and gate pass requests from current department that need HOD approval
+        const isLeaveOrGatePass = req.requestType === 'leave' || req.requestType === 'gatepass';
+        const isFromDepartment = req.department === currentDepartment;
+        const approvers = req.approvers || [];
+        const hodApprover = approvers.find(app => app.role === 'HOD' && app.department === currentDepartment);
+        
+        return isLeaveOrGatePass && isFromDepartment && hodApprover && hodApprover.status === 'pending';
+      })
+      .map(req => {
+        const isLeave = req.requestType === 'leave';
+        const requestData = req.requestData || {};
+        
+        return {
+          id: req.id,
+          empId: req.employeeId || 'N/A',
+          empName: req.employeeName || req.userName || 'N/A',
+          type: (isLeave ? 'Leave' : 'Gate Pass') as 'Leave' | 'Gate Pass',
+          category: requestData.leaveType || requestData.gatePassType || '',
+          reason: req.description || requestData.reason || 'N/A',
+          from: requestData.startDate?.toDate?.()?.toLocaleDateString() || 
+                requestData.exitTime || requestData.from || 'N/A',
+          to: requestData.endDate?.toDate?.()?.toLocaleDateString() || 
+              requestData.expectedReturnTime || requestData.to || 'N/A',
+          duration: requestData.totalDays ? `${requestData.totalDays} days` : 
+                   requestData.duration || 'N/A',
+          appliedOn: req.createdAt?.toDate?.()?.toLocaleDateString() || new Date().toLocaleDateString(),
+          status: (req.status === 'approved' ? 'Approved' : 
+                  req.status === 'rejected' ? 'Rejected' : 'Pending') as 'Pending' | 'Approved' | 'Rejected'
+        };
+      });
+  }, [allRequests, currentDepartment]);
+
+  const handleApprove = async (id: string) => {
+    try {
+      await approveRequest(id, 'HOD approved the request');
+      setSelectedRequest(null);
+    } catch (error) {
+      console.error('Error approving request:', error);
+    }
   };
 
-  const handleReject = (id: string) => {
-    setRequests(requests.map(req => 
-      req.id === id ? { ...req, status: 'Rejected' as const } : req
-    ));
-    setSelectedRequest(null);
+  const handleReject = async (id: string) => {
+    try {
+      await rejectRequest(id, 'HOD rejected the request');
+      setSelectedRequest(null);
+    } catch (error) {
+      console.error('Error rejecting request:', error);
+    }
   };
 
   const filteredRequests = requests.filter(req => {

@@ -44,8 +44,8 @@ interface AppContextType {
   updateRequest: (id: string, updates: any) => void;
   updateRequestStatus: (id: string, updates: any) => void;
   deleteRequest: (id: string) => void;
-  approveRequest: (id: string) => void;
-  rejectRequest: (id: string, reason: string) => void;
+  approveRequest: (id: string, comments?: string) => void;
+  rejectRequest: (id: string, reason?: string) => void;
   
   // Notifications
   notifications: any[];
@@ -689,6 +689,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       
       console.log('📝 Creating request with Employee ID:', currentEmployeeId);
       console.log('   User Name:', authUser.name);
+      console.log('   User Department:', authUser.department);
       console.log('   Request Type:', request.requestType);
       
       const requestType = request.requestType || request.type || 'general';
@@ -789,6 +790,18 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         initialDepartment = routing.department;
       }
       
+      // Log detailed info for resignation requests
+      if (requestType === 'resignation') {
+        console.log('🚪 [RESIGNATION] Request Details:', {
+          customRequestId,
+          employeeId: currentEmployeeId,
+          employeeName: authUser.name,
+          department: authUser.department,
+          approvers: approvers,
+          currentLevel: 1
+        });
+      }
+      
       await setDoc(doc(db, 'requests', customRequestId), {
         id: customRequestId,
         requestType: requestType,
@@ -859,7 +872,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
   
-  const approveRequest = async (id) => {
+  const approveRequest = async (id, comments = '') => {
     try {
       // Get the request to check if it needs multi-level approval
       const requestDoc = await getDoc(doc(db, 'requests', id));
@@ -872,7 +885,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       // Update current level approver status
       const updatedApprovers = approvers.map((approver, index) => 
         approver.level === currentLevel 
-          ? { ...approver, status: 'approved', actionDate: Timestamp.fromDate(new Date()) }
+          ? { ...approver, status: 'approved', comments: comments || 'Approved', actionDate: Timestamp.fromDate(new Date()) }
           : approver
       );
       
@@ -914,7 +927,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
   
-  const rejectRequest = async (id, reason) => {
+  const rejectRequest = async (id, reason = '') => {
     try {
       const requestDoc = await getDoc(doc(db, 'requests', id));
       if (!requestDoc.exists()) return;
@@ -926,7 +939,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       // Update current level approver status to rejected
       const updatedApprovers = approvers.map((approver, index) => 
         approver.level === currentLevel 
-          ? { ...approver, status: 'rejected', comments: reason, actionDate: Timestamp.fromDate(new Date()) }
+          ? { ...approver, status: 'rejected', comments: reason || 'Rejected', actionDate: Timestamp.fromDate(new Date()) }
           : approver
       );
       

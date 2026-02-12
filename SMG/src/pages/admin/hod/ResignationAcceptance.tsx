@@ -1,5 +1,7 @@
-import { useState } from 'react';
-import { Search, Eye, Check, X, UserX, Calendar, User, FileText, Briefcase } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Search, Eye, Check, X, UserX, Calendar, User, FileText, Briefcase, AlertCircle } from 'lucide-react';
+import { useApp } from '../../../context/AppContextEnhanced';
+import { useAuth } from '../../../context/AuthContext';
 
 interface Resignation {
   id: string;
@@ -17,53 +19,133 @@ interface Resignation {
 }
 
 export const ResignationAcceptance = () => {
+  const { requests = [], approveRequest, rejectRequest, allUsers = [] } = useApp();
+  const { user: authUser } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'All' | 'Pending' | 'Approved' | 'Rejected'>('All');
   const [selectedResignation, setSelectedResignation] = useState<Resignation | null>(null);
+  const [showDeptSelector, setShowDeptSelector] = useState(false);
+  const [selectedDept, setSelectedDept] = useState('');
+  
+  // Available departments
+  const departments = [
+    'Assembly',
+    'Information Technology',
+    'Production',
+    'Quality Control',
+    'HR',
+    'Finance',
+    'Admin',
+    'Marketing',
+    'Maintenance'
+  ];
 
-  const [resignations, setResignations] = useState<Resignation[]>([
-    {
-      id: 'RES001',
-      empId: 'SMG-EMP-456',
-      empName: 'Rahul Verma',
-      department: 'Information Technology',
-      designation: 'Software Engineer',
-      joiningDate: '15 Jan 2022',
-      resignationDate: '20 Dec 2025',
-      lastWorkingDate: '20 Jan 2026',
-      noticePeriod: '30 days',
-      reason: 'Higher studies abroad',
-      hrStatus: 'Approved',
-      hodStatus: 'Pending'
-    },
-    {
-      id: 'RES002',
-      empId: 'SMG-EMP-789',
-      empName: 'Sneha Patel',
-      department: 'Information Technology',
-      designation: 'QA Tester',
-      joiningDate: '10 March 2023',
-      resignationDate: '18 Dec 2025',
-      lastWorkingDate: '18 Jan 2026',
-      noticePeriod: '30 days',
-      reason: 'Personal reasons',
-      hrStatus: 'Approved',
-      hodStatus: 'Approved'
+  // Get current user's department for filtering
+  // If department is set to role name (like 'HOD'), try to get from designation or default
+  const rawDepartment = authUser?.department;
+  const isRoleName = rawDepartment === 'HOD' || rawDepartment === 'hod' || rawDepartment === 'admin';
+  
+  // Try multiple sources for department
+  const currentDepartment = isRoleName 
+    ? (localStorage.getItem('hodDepartment') || 'Assembly') // Use cached or default to Assembly
+    : (rawDepartment || 'Information Technology');
+  
+  console.log('🔍 [ResignationAcceptance] Current HOD Details:', {
+    name: authUser?.name,
+    rawDepartment: rawDepartment,
+    department: currentDepartment,
+    role: authUser?.role,
+    isRoleName: isRoleName
+  });
+
+  // Transform Firebase requests to component format
+  const resignations = useMemo(() => {
+    console.log('🔍 [ResignationAcceptance] Filtering resignations');
+    console.log('   Total requests:', requests.length);
+    console.log('   Current HOD Department:', currentDepartment);
+    console.log('   Current HOD Role:', authUser?.role);
+    
+    const filtered = requests.filter(req => {
+      // Filter resignation requests that need HOD approval
+      const isResignation = req.requestType === 'resignation';
+      
+      if (!isResignation) return false;
+      
+      const approvers = req.approvers || [];
+      const isFromDepartment = req.department === currentDepartment;
+      
+      // Find HOD approver - check both by department match and by role
+      const hodApprover = approvers.find(app => app.role === 'HOD');
+      const hodApproverMatchesDept = hodApprover && hodApprover.department === currentDepartment;
+      
+      console.log(`   📋 Resignation ${req.id}:`, {
+        employeeName: req.employeeName,
+        employeeDept: req.department,
+        isFromDepartment,
+        approvers: approvers.map(a => ({ 
+          level: a.level, 
+          role: a.role, 
+          dept: a.department, 
+          status: a.status 
+        })),
+        hodApprover: hodApprover ? { 
+          dept: hodApprover.department, 
+          status: hodApprover.status,
+          matchesDept: hodApproverMatchesDept 
+        } : null,
+        willShow: isFromDepartment && hodApproverMatchesDept
+      });
+      
+      // Show if: resignation from same department AND has HOD approver for this department
+      return isFromDepartment && hodApproverMatchesDept;
+    });
+    
+    console.log('   ✅ Filtered resignations count:', filtered.length);
+    
+    return filtered.map(req => {
+      const requestData = req.requestData || {};
+      const approvers = req.approvers || [];
+      const hodApprover = approvers.find(app => app.role === 'HOD' && app.department === currentDepartment);
+      const hrApprover = approvers.find(app => app.role === 'HR Admin');
+      
+      // Find user details
+      const userDetails = allUsers.find(user => user.id === req.userId || user.empId === req.employeeId);
+      
+      return {
+        id: req.id,
+        empId: req.employeeId || 'N/A',
+        empName: req.employeeName || req.userName || 'N/A',
+        department: req.department || currentDepartment,
+        designation: userDetails?.role || userDetails?.designation || 'Employee',
+        joiningDate: userDetails?.joinDate || userDetails?.joiningDate || 'N/A',
+        resignationDate: req.createdAt?.toDate?.()?.toLocaleDateString() || new Date().toLocaleDateString(),
+        lastWorkingDate: requestData.lastWorkingDate?.toDate?.()?.toLocaleDateString() || requestData.lastWorkingDate || 'N/A',
+        noticePeriod: requestData.noticePeriod ? `${requestData.noticePeriod} days` : '30 days',
+        reason: requestData.reasonForLeaving || req.description || 'Not specified',
+        hrStatus: (hrApprover?.status === 'approved' ? 'Approved' : 
+                 hrApprover?.status === 'rejected' ? 'Rejected' : 'Pending') as 'Pending' | 'Approved' | 'Rejected',
+        hodStatus: (hodApprover?.status === 'approved' ? 'Approved' : 
+                  hodApprover?.status === 'rejected' ? 'Rejected' : 'Pending') as 'Pending' | 'Approved' | 'Rejected'
+      };
+    });
+  }, [requests, currentDepartment, allUsers]);
+
+  const handleApprove = async (id: string) => {
+    try {
+      await approveRequest(id, 'HOD approved the resignation request');
+      setSelectedResignation(null);
+    } catch (error) {
+      console.error('Error approving resignation:', error);
     }
-  ]);
-
-  const handleApprove = (id: string) => {
-    setResignations(resignations.map(res => 
-      res.id === id ? { ...res, hodStatus: 'Approved' as const } : res
-    ));
-    setSelectedResignation(null);
   };
 
-  const handleReject = (id: string) => {
-    setResignations(resignations.map(res => 
-      res.id === id ? { ...res, hodStatus: 'Rejected' as const } : res
-    ));
-    setSelectedResignation(null);
+  const handleReject = async (id: string) => {
+    try {
+      await rejectRequest(id, 'HOD rejected the resignation request');
+      setSelectedResignation(null);
+    } catch (error) {
+      console.error('Error rejecting resignation:', error);
+    }
   };
 
   const filteredResignations = resignations.filter(res => {
@@ -74,9 +156,57 @@ export const ResignationAcceptance = () => {
   });
 
   const pendingCount = resignations.filter(r => r.hodStatus === 'Pending').length;
+  
+  console.log('📊 [ResignationAcceptance] Stats:', {
+    totalResignations: resignations.length,
+    filtered: filteredResignations.length,
+    pending: pendingCount
+  });
 
+  // Handle department change
+  const handleDepartmentChange = (dept: string) => {
+    setSelectedDept(dept);
+    localStorage.setItem('hodDepartment', dept);
+    setShowDeptSelector(false);
+    window.location.reload(); // Reload to apply filter
+  };
+  
   return (
     <div className="p-6 space-y-6">
+      {/* Department Selector Warning */}
+      {(authUser?.department === 'HOD' || authUser?.department === 'hod' || authUser?.department === 'admin') && (
+        <div className="bg-yellow-50 border-2 border-yellow-400 rounded-2xl p-6">
+          <div className="flex items-start gap-4">
+            <AlertCircle className="text-yellow-600 shrink-0" size={24} />
+            <div className="flex-1">
+              <h3 className="font-bold text-yellow-800 mb-2">⚠️ Department Not Set</h3>
+              <p className="text-yellow-700 mb-3">
+                Your account department is set to "{authUser?.department}" (role name). 
+                Please select your actual department to view requests.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {departments.map(dept => (
+                  <button
+                    key={dept}
+                    onClick={() => handleDepartmentChange(dept)}
+                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                      currentDepartment === dept
+                        ? 'bg-yellow-600 text-white'
+                        : 'bg-white text-yellow-800 hover:bg-yellow-100 border border-yellow-300'
+                    }`}
+                  >
+                    {dept}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-yellow-600 mt-3">
+                Currently viewing: <strong>{currentDepartment}</strong>
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Header */}
       <div className="bg-gradient-to-br from-[#042A5B] to-[#0B4DA2] rounded-3xl p-8 text-white shadow-xl">
         <div className="flex items-center justify-between">
@@ -91,8 +221,35 @@ export const ResignationAcceptance = () => {
         </div>
       </div>
 
+      {/* Debug Info - Show all resignations in system */}
+      {resignations.length === 0 && requests.filter(r => r.requestType === 'resignation').length > 0 && (
+        <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 mb-6">
+          <h3 className="font-bold text-orange-800 mb-3 flex items-center gap-2">
+            <AlertCircle size={20} />
+            Debug: Found {requests.filter(r => r.requestType === 'resignation').length} resignation(s) in system
+          </h3>
+          <div className="text-sm text-orange-700 space-y-2">
+            {requests.filter(r => r.requestType === 'resignation').slice(0, 3).map((req, idx) => (
+              <div key={idx} className="bg-white rounded p-3 border border-orange-200">
+                <p><strong>Employee:</strong> {req.employeeName} (Dept: {req.department})</p>
+                <p><strong>Your Dept:</strong> {currentDepartment}</p>
+                <p><strong>Match:</strong> {req.department === currentDepartment ? '✅ YES' : '❌ NO'}</p>
+                <p><strong>Approvers:</strong> {JSON.stringify(req.approvers?.map(a => ({ role: a.role, dept: a.department })))}</p>
+              </div>
+            ))}
+            <p className="text-xs mt-2">Check browser console (F12) for full details</p>
+          </div>
+        </div>
+      )}
+
       {/* Filters */}
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-sm text-gray-600">
+            Showing <span className="font-bold text-[#1B254B]">{filteredResignations.length}</span> resignation request(s)
+            {currentDepartment && <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">Department: {currentDepartment}</span>}
+          </div>
+        </div>
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
@@ -124,7 +281,28 @@ export const ResignationAcceptance = () => {
 
       {/* Resignations Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {filteredResignations.map((resignation) => (
+        {filteredResignations.length === 0 ? (
+          <div className="col-span-full bg-white rounded-2xl p-12 text-center border-2 border-dashed border-gray-200">
+            <UserX className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-gray-400 mb-2">No Resignation Requests</h3>
+            <p className="text-gray-500 mb-4">
+              {searchTerm ? 'No requests match your search criteria' : 
+               `No resignation requests found for ${currentDepartment} department`}
+            </p>
+            {requests.length > 0 && resignations.length === 0 && (
+              <div className="mt-4 p-4 bg-yellow-50 rounded-lg text-left max-w-md mx-auto">
+                <p className="text-sm text-yellow-800">
+                  <strong>Debug Info:</strong> Found {requests.length} total request(s) in system, 
+                  but none are resignation requests for your department.
+                </p>
+                <p className="text-xs text-yellow-700 mt-2">
+                  Check browser console (F12) for detailed filtering logs.
+                </p>
+              </div>
+            )}
+          </div>
+        ) : (
+          filteredResignations.map((resignation) => (
           <div key={resignation.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all">
             <div className="p-6 space-y-4">
               {/* Header */}
@@ -227,7 +405,8 @@ export const ResignationAcceptance = () => {
               </div>
             </div>
           </div>
-        ))}
+        ))
+        )}
       </div>
 
       {/* Details Modal */}
