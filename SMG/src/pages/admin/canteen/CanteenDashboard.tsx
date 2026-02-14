@@ -1,15 +1,31 @@
 import { Coffee, TrendingUp, Users, DollarSign, ShoppingCart, FileCheck, UserCheck } from 'lucide-react';
+import { useApp } from '../../../context/AppContextEnhanced';
 
 interface CanteenDashboardProps {
   onNavigate: (page: string) => void;
 }
 
 export const CanteenDashboard = ({ onNavigate }: CanteenDashboardProps) => {
+  const { requests } = useApp();
+
+  // Filter canteen requests from Firestore
+  const canteenRequests = requests.filter((r: any) => r.requestType === 'canteen');
+  const pendingCanteenRequests = canteenRequests.filter((r: any) => r.status === 'pending');
+  const approvedCanteenRequests = canteenRequests.filter((r: any) => r.status === 'approved');
+
+  // Guest-type requests (guesthouse or canteen guest)
+  const guestRequests = requests.filter((r: any) => r.requestType === 'guesthouse' || r.requestType === 'guest_house');
+  const pendingGuestRequests = guestRequests.filter((r: any) => r.status === 'pending');
+
+  // Compute stats from real data
+  const totalRevenue = approvedCanteenRequests.reduce((sum: number, r: any) => sum + (r.requestData?.amount || 0), 0);
+  const totalCouponsSold = approvedCanteenRequests.reduce((sum: number, r: any) => sum + (r.requestData?.coupons || 0), 0);
+
   const stats = [
-    { label: 'Coupons Sold Today', value: '245', icon: ShoppingCart, color: 'bg-blue-500', change: '+12%' },
-    { label: 'Coupons Issued', value: '180', icon: FileCheck, color: 'bg-green-500', change: '+8%' },
-    { label: 'Pending Guest Requests', value: '5', icon: UserCheck, color: 'bg-orange-500', change: '2 new' },
-    { label: 'Total Revenue', value: '₹24,500', icon: DollarSign, color: 'bg-purple-500', change: '+15%' }
+    { label: 'Total Coupons Sold', value: String(totalCouponsSold), icon: ShoppingCart, color: 'bg-blue-500', change: `${approvedCanteenRequests.length} orders` },
+    { label: 'Pending Requests', value: String(pendingCanteenRequests.length), icon: FileCheck, color: 'bg-green-500', change: 'awaiting review' },
+    { label: 'Guest Requests', value: String(pendingGuestRequests.length), icon: UserCheck, color: 'bg-orange-500', change: 'pending' },
+    { label: 'Total Revenue', value: `₹${totalRevenue.toLocaleString('en-IN')}`, icon: DollarSign, color: 'bg-purple-500', change: `${canteenRequests.length} total` }
   ];
 
   const quickActions = [
@@ -19,18 +35,26 @@ export const CanteenDashboard = ({ onNavigate }: CanteenDashboardProps) => {
     { id: 'issue-coupons', label: 'Issue Coupons', icon: FileCheck, color: 'from-purple-500 to-purple-600', desc: 'Issue coupons to employees' }
   ];
 
-  const recentSales = [
-    { id: 1, empName: 'Amit Kumar', empId: 'SMG-2024-042', quantity: 10, amount: '₹1,000', time: '10:30 AM', status: 'Completed' },
-    { id: 2, empName: 'Priya Sharma', empId: 'SMG-2024-089', quantity: 5, amount: '₹500', time: '11:15 AM', status: 'Completed' },
-    { id: 3, empName: 'Rajesh Patel', empId: 'SMG-2024-123', quantity: 20, amount: '₹2,000', time: '12:00 PM', status: 'Completed' },
-    { id: 4, empName: 'Sneha Reddy', empId: 'SMG-2024-156', quantity: 15, amount: '₹1,500', time: '01:45 PM', status: 'Completed' }
-  ];
+  // Recent approved canteen requests as "recent sales"
+  const recentSales = approvedCanteenRequests.slice(0, 4).map((r: any) => ({
+    id: r.id,
+    empName: r.employeeName || r.userName || 'Employee',
+    empId: r.employeeId || r.id?.substring(0, 12),
+    quantity: r.requestData?.coupons || 0,
+    amount: `₹${(r.requestData?.amount || 0).toLocaleString('en-IN')}`,
+    time: r.createdAt?.toDate?.()?.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }) || '',
+    status: 'Completed'
+  }));
 
-  const pendingGuests = [
-    { id: 1, empName: 'Vikram Singh', guestName: 'John Anderson', quantity: 3, date: '2024-12-28', status: 'Pending' },
-    { id: 2, empName: 'Anita Desai', guestName: 'Sarah Williams', quantity: 2, date: '2024-12-28', status: 'Pending' },
-    { id: 3, empName: 'Rahul Mehta', guestName: 'Mike Johnson', quantity: 1, date: '2024-12-29', status: 'Pending' }
-  ];
+  // Pending guest requests for the dashboard
+  const pendingGuests = pendingGuestRequests.slice(0, 3).map((r: any) => ({
+    id: r.id,
+    empName: r.employeeName || r.userName || 'Employee',
+    guestName: r.requestData?.guestName || 'Guest',
+    quantity: r.requestData?.coupons || r.requestData?.quantity || 0,
+    date: r.createdAt?.toDate?.()?.toISOString().split('T')[0] || '',
+    status: 'Pending'
+  }));
 
   return (
     <div className="space-y-6">
@@ -84,22 +108,28 @@ export const CanteenDashboard = ({ onNavigate }: CanteenDashboardProps) => {
         {/* Recent Sales */}
         <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-200">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-[#1B254B]">Recent Sales</h2>
-            <button onClick={() => onNavigate('sale-coupons')} className="text-sm text-[#0B4DA2] hover:underline font-semibold">View All</button>
+            <h2 className="text-xl font-bold text-[#1B254B]">Recent Approved Requests</h2>
+            <button onClick={() => onNavigate('approve-requests')} className="text-sm text-[#0B4DA2] hover:underline font-semibold">View All</button>
           </div>
           <div className="space-y-3">
-            {recentSales.map((sale) => (
-              <div key={sale.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                <div className="flex-1">
-                  <p className="font-semibold text-[#1B254B]">{sale.empName}</p>
-                  <p className="text-sm text-gray-500">{sale.empId} • {sale.time}</p>
+            {recentSales.length > 0 ? (
+              recentSales.map((sale: any) => (
+                <div key={sale.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                  <div className="flex-1">
+                    <p className="font-semibold text-[#1B254B]">{sale.empName}</p>
+                    <p className="text-sm text-gray-500">{sale.empId} • {sale.time}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-[#1B254B]">{sale.amount}</p>
+                    <p className="text-sm text-gray-500">{sale.quantity} coupons</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-[#1B254B]">{sale.amount}</p>
-                  <p className="text-sm text-gray-500">{sale.quantity} coupons</p>
-                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-400">
+                <p className="text-sm">No approved requests yet</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
 
@@ -110,19 +140,25 @@ export const CanteenDashboard = ({ onNavigate }: CanteenDashboardProps) => {
             <button onClick={() => onNavigate('approve-guest')} className="text-sm text-[#0B4DA2] hover:underline font-semibold">View All</button>
           </div>
           <div className="space-y-3">
-            {pendingGuests.map((request) => (
-              <div key={request.id} className="p-4 bg-orange-50 rounded-xl border border-orange-200">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="font-semibold text-[#1B254B]">{request.guestName}</p>
-                  <span className="px-3 py-1 bg-orange-500 text-white text-xs font-bold rounded-full">Pending</span>
+            {pendingGuests.length > 0 ? (
+              pendingGuests.map((request: any) => (
+                <div key={request.id} className="p-4 bg-orange-50 rounded-xl border border-orange-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="font-semibold text-[#1B254B]">{request.guestName}</p>
+                    <span className="px-3 py-1 bg-orange-500 text-white text-xs font-bold rounded-full">Pending</span>
+                  </div>
+                  <p className="text-sm text-gray-600">Requested by: {request.empName}</p>
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="text-sm text-gray-500">{request.quantity} coupons • {request.date}</p>
+                    <button onClick={() => onNavigate('approve-guest')} className="text-sm text-[#0B4DA2] hover:underline font-semibold">Review</button>
+                  </div>
                 </div>
-                <p className="text-sm text-gray-600">Requested by: {request.empName}</p>
-                <div className="flex items-center justify-between mt-2">
-                  <p className="text-sm text-gray-500">{request.quantity} coupons • {request.date}</p>
-                  <button onClick={() => onNavigate('approve-guest')} className="text-sm text-[#0B4DA2] hover:underline font-semibold">Review</button>
-                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-400">
+                <p className="text-sm">No pending guest requests</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>

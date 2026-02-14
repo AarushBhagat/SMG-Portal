@@ -1,15 +1,15 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
-import { 
-  collection, 
-  addDoc, 
-  serverTimestamp, 
-  query, 
-  where, 
-  onSnapshot, 
-  orderBy, 
-  updateDoc, 
-  doc, 
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  where,
+  onSnapshot,
+  orderBy,
+  updateDoc,
+  doc,
   deleteDoc,
   Timestamp,
   setDoc,
@@ -23,7 +23,7 @@ interface AppContextType {
   currentUser: any;
   isAdmin: boolean;
   setIsAdmin: (value: boolean) => void;
-  
+
   // Attendance
   isClockedIn: boolean;
   clockInTime: string | null;
@@ -31,13 +31,13 @@ interface AppContextType {
   handleClockIn: () => void;
   handleClockOut: () => void;
   attendanceHistory: any[];
-  
+
   // Leave Management
   leaveBalance: any;
   leaveRequests: any[];
   applyLeave: (leave: any) => void;
   cancelLeave: (id: string) => void;
-  
+
   // Requests
   requests: any[];
   addRequest: (request: any) => void;
@@ -46,86 +46,86 @@ interface AppContextType {
   deleteRequest: (id: string) => void;
   approveRequest: (id: string, comments?: string) => void;
   rejectRequest: (id: string, reason?: string) => void;
-  
+
   // Notifications
   notifications: any[];
   addNotification: (notification: any) => void;
   markNotificationAsRead: (id: string) => void;
   clearAllNotifications: () => void;
   unreadCount: number;
-  
+
   // Announcements
   announcements: any[];
   addAnnouncement: (announcement: any) => void;
   deleteAnnouncement: (id: string) => void;
-  
+
   // Users (for admin)
   allUsers: any[];
   updateUser: (id: string, updates: any) => void;
   addUser: (user: any) => void;
   deleteUser: (id: string) => void;
-  
+
   // Training
   trainings: any[];
   enrollInTraining: (trainingId: string) => void;
   addTraining: (training: any) => void;
   updateTraining: (id: string, updates: any) => void;
   deleteTraining: (id: string) => void;
-  
+
   // Projects
   projects: any[];
   addProject: (project: any) => void;
   updateProject: (id: string, updates: any) => void;
   deleteProject: (id: string) => void;
-  
+
   // Documents
   documents: any[];
   requestDocument: (docType: string) => void;
   uploadDocument: (document: any) => void;
   deleteDocument: (id: string) => void;
-  
+
   // Canteen
   canteenBalance: string;
   canteenOrders: any[];
   placeCanteenOrder: (order: any) => void;
   addCanteenBalance: (amount: number) => void;
-  
+
   // Guest House
   guestHouseBookings: any[];
   bookGuestHouse: (booking: any) => void;
   cancelGuestHouseBooking: (id: string) => void;
-  
+
   // Transport
   transportRequests: any[];
   requestTransport: (request: any) => void;
   cancelTransportRequest: (id: string) => void;
-  
+
   // Bus Facility
   busRequests: any[];
   requestBusFacility: (request: any) => void;
-  
+
   // Parking Facility
   parkingRequests: any[];
   requestParkingFacility: (request: any) => void;
-  
+
   // Uniform
   uniformRequests: any[];
   requestUniform: (request: any) => void;
-  
+
   // Assets
   myAssets: any[];
   assetRequests: any[];
   requestAsset: (asset: any) => void;
-  
+
   // Payroll
   payslips: any[];
   generatePayslip: (month: string) => void;
-  
+
   // SIM Allocation
   simRequests: any[];
   simCards: any[];
   requestSIM: (request: any) => void;
-  
+
   // General Requests
   generalRequests: any[];
   submitGeneralRequest: (request: any) => void;
@@ -147,7 +147,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         console.log('   Current employeeId:', authUser.employeeId);
         console.log('   User ID:', authUser.id);
         console.log('   User Role:', authUser.role);
-        
+
         if (!authUser.employeeId && authUser.id) {
           try {
             const rolePrefix = {
@@ -158,21 +158,21 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
             const prefix = rolePrefix[authUser.role] || 'EMP';
             const timestamp = Date.now().toString().slice(-4);
             const newEmployeeId = `${prefix}-${timestamp}`;
-            
+
             console.log('🔧 Auto-generating employee ID for user:', authUser.name);
             console.log('   New Employee ID:', newEmployeeId);
             console.log('   Updating Firestore document:', authUser.id);
-            
+
             // Update in Firestore
             const userRef = doc(db, 'users', authUser.id);
             await updateDoc(userRef, {
               employeeId: newEmployeeId,
               updatedAt: serverTimestamp()
             });
-            
+
             console.log('✅ Successfully saved employee ID to Firestore');
             console.log('   Waiting for real-time listener to sync...');
-            
+
             // Force a refresh after a short delay
             setTimeout(async () => {
               const updatedDoc = await getDoc(userRef);
@@ -189,10 +189,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
           console.warn('⚠️ No user ID available to generate employeeId');
         }
       };
-      
+
       // Run immediately when component mounts
       generateEmployeeId();
-      
+
       setCurrentUser({
         id: authUser.id,
         empId: authUser.employeeId || authUser.id,
@@ -221,7 +221,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         skills: authUser.skills || [],
         languages: authUser.languages || []
       });
-      
+
       // Check if user is admin
       if (authUser.role === 'admin' || authUser.role === 'super_admin') {
         setIsAdmin(true);
@@ -233,15 +233,15 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       setIsAdmin(false);
     }
   }, [authUser]);
-  
+
   // ============= FIREBASE-BACKED STATE =============
-  
+
   // Attendance State
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [clockInTime, setClockInTime] = useState<string | null>(null);
   const [todayHours, setTodayHours] = useState('0h 0m');
   const [attendanceHistory, setAttendanceHistory] = useState<any[]>([]);
-  
+
   // Leave Management
   const [leaveBalance] = useState({
     casual: { total: 12, used: 0, remaining: 12 },
@@ -250,58 +250,58 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     privilege: { total: 10, used: 0, remaining: 10 }
   });
   const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
-  
+
   // Requests State - All request types
   const [requests, setRequests] = useState<any[]>([]);
-  
+
   // Notifications State
   const [notifications, setNotifications] = useState<any[]>([]);
-  
+
   // Announcements State
   const [announcements, setAnnouncements] = useState<any[]>([]);
-  
+
   // All Users (for admin)
   const [allUsers, setAllUsers] = useState<any[]>([]);
-  
+
   // Training State
   const [trainings, setTrainings] = useState<any[]>([]);
-  
+
   // Projects State
   const [projects, setProjects] = useState<any[]>([]);
-  
+
   // Documents State
   const [documents] = useState<any[]>([]);
-  
+
   // Canteen State
   const [canteenBalance] = useState('₹0');
   const [canteenOrders, setCanteenOrders] = useState<any[]>([]);
-  
+
   // Guest House State
   const [guestHouseBookings, setGuestHouseBookings] = useState<any[]>([]);
-  
+
   // Transport State
   const [transportRequests, setTransportRequests] = useState<any[]>([]);
-  
+
   // Bus Facility State
   const [busRequests, setBusRequests] = useState<any[]>([]);
-  
+
   // Parking Facility State
   const [parkingRequests, setParkingRequests] = useState<any[]>([]);
-  
+
   // Uniform State
   const [uniformRequests, setUniformRequests] = useState<any[]>([]);
-  
+
   // Assets State
   const [myAssets] = useState<any[]>([]);
   const [assetRequests, setAssetRequests] = useState<any[]>([]);
-  
+
   // Payroll State
   const [payslips] = useState<any[]>([]);
-  
+
   // SIM Requests & Cards State
   const [simRequests, setSimRequests] = useState<any[]>([]);
   const [simCards] = useState<any[]>([]);
-  
+
   // General Requests State
   const [generalRequests, setGeneralRequests] = useState<any[]>([]);
 
@@ -312,7 +312,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     if (!authUser) return;
 
     console.log('🔄 Setting up requests listener for user:', authUser.id);
-    
+
     let q;
     if (isAdmin) {
       // Admin sees all requests
@@ -320,22 +320,22 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     } else {
       // Employee sees only their requests
       q = query(
-        collection(db, 'requests'), 
+        collection(db, 'requests'),
         where('userId', '==', authUser.id),
         orderBy('createdAt', 'desc')
       );
     }
-    
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const allRequests = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         submittedDate: doc.data().createdAt?.toDate?.()?.toISOString().split('T')[0] || '',
       }));
-      
+
       console.log('📋 Loaded requests from Firestore:', allRequests.length);
       setRequests(allRequests);
-      
+
       // Filter specific request types for backward compatibility
       setLeaveRequests(allRequests.filter(r => r.requestType === 'leave'));
       setCanteenOrders(allRequests.filter(r => r.requestType === 'canteen'));
@@ -365,7 +365,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       orderBy('createdAt', 'desc'),
       limit(50)
     );
-    
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const notifs = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -373,7 +373,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         timestamp: doc.data().createdAt?.toDate?.() || new Date(),
         time: formatTimeAgo(doc.data().createdAt?.toDate?.())
       }));
-      
+
       console.log('🔔 Loaded notifications:', notifs.length);
       setNotifications(notifs);
     }, (error) => {
@@ -391,14 +391,14 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       orderBy('createdAt', 'desc'),
       limit(20)
     );
-    
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const anns = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         date: doc.data().createdAt?.toDate?.()?.toISOString().split('T')[0] || ''
       }));
-      
+
       console.log('📢 Loaded announcements:', anns.length);
       setAnnouncements(anns);
     }, (error) => {
@@ -426,7 +426,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
           joinDate: doc.data().dateOfJoining?.toDate?.()?.toISOString().split('T')[0] || '',
           status: doc.data().isActive ? 'Active' : 'Inactive'
         }));
-        
+
         console.log('👥 Loaded users:', users.length);
         setAllUsers(users);
       },
@@ -446,7 +446,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       orderBy('startDate', 'desc'),
       limit(50)
     );
-    
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const sessions = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -455,7 +455,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         startDate: doc.data().startDate?.toDate?.()?.toISOString().split('T')[0] || '',
         endDate: doc.data().endDate?.toDate?.()?.toISOString().split('T')[0] || ''
       }));
-      
+
       console.log('📚 Loaded training sessions:', sessions.length);
       setTrainings(sessions);
     }, (error) => {
@@ -473,14 +473,14 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       orderBy('createdAt', 'desc'),
       limit(50)
     );
-    
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const projs = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         deadline: doc.data().deadline?.toDate?.()?.toISOString().split('T')[0] || ''
       }));
-      
+
       console.log('📊 Loaded projects:', projs.length);
       setProjects(projs);
     }, (error) => {
@@ -500,7 +500,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       orderBy('date', 'desc'),
       limit(30)
     );
-    
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const records = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -511,10 +511,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         checkOut: doc.data().checkOut?.toDate?.()?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) || '-',
         hours: doc.data().duration || '-',
       }));
-      
+
       console.log('⏰ Loaded attendance records:', records.length);
       setAttendanceHistory(records);
-      
+
       // Check if clocked in today
       const today = new Date().toISOString().split('T')[0];
       const todayRecord = records.find(r => r.date === today);
@@ -534,7 +534,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const formatTimeAgo = (date: Date | undefined): string => {
     if (!date) return 'Just now';
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-    
+
     if (seconds < 60) return 'Just now';
     if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
@@ -546,18 +546,18 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   // Clock In/Out Handlers
   const handleClockIn = async () => {
     if (!authUser) return;
-    
+
     const currentTime = new Date();
-    const timeString = currentTime.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
+    const timeString = currentTime.toLocaleTimeString('en-US', {
+      hour: '2-digit',
       minute: '2-digit',
-      hour12: true 
+      hour12: true
     });
-    
+
     try {
       const today = new Date().toISOString().split('T')[0];
       const recordRef = doc(db, 'attendance', authUser.id, 'records', today);
-      
+
       await setDoc(recordRef, {
         userId: authUser.id,
         employeeId: authUser.id,
@@ -568,10 +568,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
-      
+
       setClockInTime(timeString);
       setIsClockedIn(true);
-      
+
       addNotification({
         title: 'Clocked In Successfully',
         message: `You clocked in at ${timeString}`,
@@ -581,42 +581,42 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error clocking in:', error);
     }
   };
-  
+
   const handleClockOut = async () => {
     if (!authUser || !clockInTime) return;
-    
+
     const currentTime = new Date();
-    const timeString = currentTime.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
+    const timeString = currentTime.toLocaleTimeString('en-US', {
+      hour: '2-digit',
       minute: '2-digit',
-      hour12: true 
+      hour12: true
     });
-    
+
     try {
       const today = new Date().toISOString().split('T')[0];
       const recordRef = doc(db, 'attendance', authUser.id, 'records', today);
-      
+
       // Calculate duration
       const hours = 9; // Simplified for now
       const minutes = Math.floor(Math.random() * 60);
       const hoursWorked = `${hours}h ${minutes}m`;
-      
+
       await updateDoc(recordRef, {
         checkOut: Timestamp.fromDate(currentTime),
         duration: hoursWorked,
         workHours: hours + (minutes / 60),
         updatedAt: serverTimestamp()
       });
-      
+
       setTodayHours(hoursWorked);
       setIsClockedIn(false);
-      
+
       addNotification({
         title: 'Clocked Out Successfully',
         message: `You clocked out at ${timeString}. Total hours: ${hoursWorked}`,
         type: 'success',
       });
-      
+
       setTimeout(() => {
         setClockInTime(null);
       }, 3000);
@@ -624,11 +624,11 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error clocking out:', error);
     }
   };
-  
+
   // Leave Management Handlers
   const applyLeave = async (leave) => {
     if (!authUser) return;
-    
+
     try {
       await addDoc(collection(db, 'requests'), {
         requestType: 'leave',
@@ -649,7 +649,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
-      
+
       addNotification({
         title: 'Leave Application Submitted',
         message: `Your ${leave.type} application has been submitted`,
@@ -659,14 +659,14 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error applying leave:', error);
     }
   };
-  
+
   const cancelLeave = async (id) => {
     try {
       await updateDoc(doc(db, 'requests', id), {
         status: 'cancelled',
         updatedAt: serverTimestamp()
       });
-      
+
       addNotification({
         title: 'Leave Request Cancelled',
         message: 'Your leave request has been cancelled',
@@ -676,26 +676,26 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error cancelling leave:', error);
     }
   };
-  
+
   // Request Handlers
   const addRequest = async (request) => {
     if (!authUser) return;
-    
+
     try {
       // Fetch latest user data to get current employeeId
       const userDoc = await getDoc(doc(db, 'users', authUser.id));
       const userData = userDoc.exists() ? userDoc.data() : {};
       const currentEmployeeId = userData.employeeId || authUser.employeeId || authUser.id;
-      
+
       console.log('📝 Creating request with Employee ID:', currentEmployeeId);
       console.log('   User Name:', authUser.name);
       console.log('   User Department:', authUser.department);
       console.log('   Request Type:', request.requestType);
-      
+
       const requestType = request.requestType || request.type || 'general';
       const titleMap = {
         'leave': 'Leave Request',
-        'gate_pass': 'Gate Pass Request',
+        'gatepass': 'Gate Pass Request',
         'resignation': 'Resignation Request',
         'document': 'Document Request',
         'asset': 'Asset Request',
@@ -711,13 +711,13 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         'interview': 'Interview Sheet',
         'general': 'General Request'
       };
-      
+
       // Generate custom request ID: REQ-YYYYMMDD-XXX
       const now = new Date();
       const dateStr = now.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
       const randomSuffix = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
       const customRequestId = `REQ-${dateStr}-${randomSuffix}`;
-      
+
       // Define approval routing based on request type
       const approvalRouting = {
         'asset': { department: 'Finance', role: 'Finance Admin' },
@@ -733,16 +733,16 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         'jf': { department: 'Super Admin', role: 'Super Admin', requiresSuperAdmin: true },
         'interview': { department: 'Reception', role: 'Reception Staff' },
         'general': { department: authUser.department, role: 'Department Admin' },
-        
+
         // New Multi-level Approval Flows
-        'leave': { 
+        'leave': {
           multiLevel: true,
           levels: [
             { level: 1, department: 'Time Office', role: 'Time Office', name: 'Time Office' },
             { level: 2, department: authUser.department, role: 'HOD', name: 'Head of Department' }
           ]
         },
-        'gate_pass': { 
+        'gatepass': {
           multiLevel: true,
           levels: [
             { level: 1, department: 'Time Office', role: 'Time Office', name: 'Time Office' },
@@ -757,13 +757,13 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
           ]
         }
       };
-      
+
       const routing = approvalRouting[requestType] || { department: 'Admin', role: 'Admin' };
-      
+
       // Build approvers array based on routing configuration
       let approvers = [];
       let initialDepartment = '';
-      
+
       if (routing.multiLevel && routing.levels) {
         // Multi-level approval with defined levels
         approvers = routing.levels.map(level => ({
@@ -789,7 +789,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         });
         initialDepartment = routing.department;
       }
-      
+
       // Log detailed info for resignation requests
       if (requestType === 'resignation') {
         console.log('🚪 [RESIGNATION] Request Details:', {
@@ -801,7 +801,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
           currentLevel: 1
         });
       }
-      
+
       await setDoc(doc(db, 'requests', customRequestId), {
         id: customRequestId,
         requestType: requestType,
@@ -822,9 +822,9 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
-      
+
       console.log('✅ Request created successfully with ID:', customRequestId);
-      
+
       addNotification({
         title: 'Request Submitted',
         message: `Your ${request.type || 'request'} has been submitted successfully`,
@@ -834,14 +834,14 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error adding request:', error);
     }
   };
-  
+
   const updateRequest = async (id, updates) => {
     try {
       await updateDoc(doc(db, 'requests', id), {
         ...updates,
         updatedAt: serverTimestamp()
       });
-      
+
       if (updates.status) {
         addNotification({
           title: `Request ${updates.status}`,
@@ -857,11 +857,11 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
   const updateRequestStatus = async (id: string, updates: any) => {
     return updateRequest(id, updates);
   };
-  
+
   const deleteRequest = async (id) => {
     try {
       await deleteDoc(doc(db, 'requests', id));
-      
+
       addNotification({
         title: 'Request Deleted',
         message: 'Your request has been deleted',
@@ -871,28 +871,28 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error deleting request:', error);
     }
   };
-  
+
   const approveRequest = async (id, comments = '') => {
     try {
       // Get the request to check if it needs multi-level approval
       const requestDoc = await getDoc(doc(db, 'requests', id));
       if (!requestDoc.exists()) return;
-      
+
       const requestData = requestDoc.data();
       const approvers = requestData.approvers || [];
       const currentLevel = requestData.currentLevel || 1;
-      
+
       // Update current level approver status
-      const updatedApprovers = approvers.map((approver, index) => 
-        approver.level === currentLevel 
+      const updatedApprovers = approvers.map((approver, index) =>
+        approver.level === currentLevel
           ? { ...approver, status: 'approved', comments: comments || 'Approved', actionDate: Timestamp.fromDate(new Date()) }
           : approver
       );
-      
+
       // Check if there are more levels
       const nextLevel = currentLevel + 1;
       const hasNextLevel = approvers.some(a => a.level === nextLevel);
-      
+
       if (hasNextLevel) {
         // Move to next approval level
         const nextApprover = approvers.find(a => a.level === nextLevel);
@@ -902,7 +902,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
           currentApprover: nextApprover?.department || 'Time Office',
           updatedAt: serverTimestamp()
         });
-        
+
         addNotification({
           title: 'Request Approved - Level ' + currentLevel,
           message: `Request moved to ${nextApprover?.department || 'next level'} for approval`,
@@ -915,7 +915,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
           status: 'approved',
           updatedAt: serverTimestamp()
         });
-        
+
         addNotification({
           title: 'Request Approved',
           message: 'Request has been fully approved',
@@ -926,30 +926,30 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error approving request:', error);
     }
   };
-  
+
   const rejectRequest = async (id, reason = '') => {
     try {
       const requestDoc = await getDoc(doc(db, 'requests', id));
       if (!requestDoc.exists()) return;
-      
+
       const requestData = requestDoc.data();
       const currentLevel = requestData.currentLevel || 1;
       const approvers = requestData.approvers || [];
-      
+
       // Update current level approver status to rejected
-      const updatedApprovers = approvers.map((approver, index) => 
-        approver.level === currentLevel 
+      const updatedApprovers = approvers.map((approver, index) =>
+        approver.level === currentLevel
           ? { ...approver, status: 'rejected', comments: reason || 'Rejected', actionDate: Timestamp.fromDate(new Date()) }
           : approver
       );
-      
-      await updateDoc(doc(db, 'requests', id), { 
+
+      await updateDoc(doc(db, 'requests', id), {
         status: 'rejected',
         rejectionReason: reason,
         approvers: updatedApprovers,
         updatedAt: serverTimestamp()
       });
-      
+
       addNotification({
         title: 'Request Rejected',
         message: reason || 'Your request has been rejected',
@@ -959,11 +959,11 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error rejecting request:', error);
     }
   };
-  
+
   // Notification Handlers
   const addNotification = async (notification) => {
     if (!authUser) return;
-    
+
     try {
       await addDoc(collection(db, 'notifications'), {
         userId: authUser.id,
@@ -977,7 +977,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error adding notification:', error);
     }
   };
-  
+
   const markNotificationAsRead = async (id) => {
     try {
       await updateDoc(doc(db, 'notifications', id), {
@@ -988,7 +988,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error marking notification as read:', error);
     }
   };
-  
+
   const clearAllNotifications = async () => {
     try {
       const batch = [];
@@ -1000,11 +1000,11 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error clearing notifications:', error);
     }
   };
-  
+
   // Announcement Handlers
   const addAnnouncement = async (announcement) => {
     if (!authUser) return;
-    
+
     try {
       await addDoc(collection(db, 'announcements'), {
         title: announcement.title,
@@ -1016,7 +1016,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       });
-      
+
       addNotification({
         title: 'New Announcement',
         message: announcement.title,
@@ -1026,7 +1026,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error adding announcement:', error);
     }
   };
-  
+
   const deleteAnnouncement = async (id) => {
     try {
       await deleteDoc(doc(db, 'announcements', id));
@@ -1034,7 +1034,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error deleting announcement:', error);
     }
   };
-  
+
   // User Management Handlers (admin only)
   const updateUser = async (id, updates) => {
     try {
@@ -1046,12 +1046,12 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error updating user:', error);
     }
   };
-  
+
   const addUser = async (user) => {
     try {
       // This should be done via Cloud Function for proper user creation with auth
       console.warn('⚠️ User creation should be done via Cloud Function');
-      
+
       addNotification({
         title: 'New User Added',
         message: `${user.name} has been added to the system`,
@@ -1061,7 +1061,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error adding user:', error);
     }
   };
-  
+
   const deleteUser = async (id) => {
     try {
       await updateDoc(doc(db, 'users', id), {
@@ -1072,11 +1072,11 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error deleting user:', error);
     }
   };
-  
+
   // Training Handlers
   const enrollInTraining = async (trainingId) => {
     if (!authUser) return;
-    
+
     try {
       await addDoc(collection(db, 'trainingEnrollments'), {
         trainingId,
@@ -1086,7 +1086,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
         enrolledAt: serverTimestamp(),
         createdAt: serverTimestamp()
       });
-      
+
       addNotification({
         title: 'Training Enrollment Successful',
         message: 'You have been enrolled in the training program',
@@ -1096,7 +1096,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error enrolling in training:', error);
     }
   };
-  
+
   const addTraining = async (training) => {
     try {
       await addDoc(collection(db, 'trainingSessions'), {
@@ -1111,7 +1111,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error adding training:', error);
     }
   };
-  
+
   const updateTraining = async (id, updates) => {
     try {
       await updateDoc(doc(db, 'trainingSessions', id), {
@@ -1122,7 +1122,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error updating training:', error);
     }
   };
-  
+
   const deleteTraining = async (id) => {
     try {
       await deleteDoc(doc(db, 'trainingSessions', id));
@@ -1130,7 +1130,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error deleting training:', error);
     }
   };
-  
+
   // Project Handlers
   const addProject = async (project) => {
     try {
@@ -1145,7 +1145,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error adding project:', error);
     }
   };
-  
+
   const updateProject = async (id, updates) => {
     try {
       await updateDoc(doc(db, 'projects', id), {
@@ -1156,7 +1156,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error updating project:', error);
     }
   };
-  
+
   const deleteProject = async (id) => {
     try {
       await deleteDoc(doc(db, 'projects', id));
@@ -1164,7 +1164,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       console.error('❌ Error deleting project:', error);
     }
   };
-  
+
   // Document Handlers
   const requestDocument = async (docType) => {
     await addRequest({
@@ -1175,17 +1175,17 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       priority: 'medium'
     });
   };
-  
+
   const uploadDocument = async (document) => {
     // Document upload should use Firebase Storage
     console.warn('⚠️ Document upload should use Firebase Storage');
   };
-  
+
   const deleteDocument = async (id) => {
     // Documents are typically managed by admin
     console.warn('⚠️ Document deletion should be admin-only');
   };
-  
+
   // Canteen Handlers
   const placeCanteenOrder = async (order) => {
     await addRequest({
@@ -1196,10 +1196,10 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       priority: 'low'
     });
   };
-  
+
   const addCanteenBalance = async (amount) => {
     if (!authUser) return;
-    
+
     // This should update user profile or wallet balance
     addNotification({
       title: 'Balance Added',
@@ -1207,7 +1207,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       type: 'success',
     });
   };
-  
+
   // Guest House Handlers
   const bookGuestHouse = async (booking) => {
     await addRequest({
@@ -1218,11 +1218,11 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       priority: 'medium'
     });
   };
-  
+
   const cancelGuestHouseBooking = async (id) => {
     await updateRequest(id, { status: 'cancelled' });
   };
-  
+
   // Transport Handlers
   const requestTransport = async (request) => {
     await addRequest({
@@ -1233,11 +1233,11 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       priority: 'medium'
     });
   };
-  
+
   const cancelTransportRequest = async (id) => {
     await updateRequest(id, { status: 'cancelled' });
   };
-  
+
   // Bus Facility Handlers
   const requestBusFacility = async (request) => {
     await addRequest({
@@ -1248,7 +1248,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       priority: 'medium'
     });
   };
-  
+
   // Parking Facility Handlers
   const requestParkingFacility = async (request) => {
     await addRequest({
@@ -1259,7 +1259,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       priority: 'medium'
     });
   };
-  
+
   // Uniform Handlers
   const requestUniform = async (request) => {
     await addRequest({
@@ -1270,7 +1270,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       priority: 'medium'
     });
   };
-  
+
   // Asset Handlers
   const requestAsset = async (asset) => {
     await addRequest({
@@ -1281,13 +1281,13 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       priority: asset.priority || 'medium'
     });
   };
-  
+
   // Payroll Handlers
   const generatePayslip = async (month) => {
     // Payslips are typically generated by backend
     console.warn('⚠️ Payslip generation should be done by backend');
   };
-  
+
   // SIM Handlers
   const requestSIM = async (request) => {
     await addRequest({
@@ -1298,7 +1298,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       priority: request.priority || 'medium'
     });
   };
-  
+
   // General Request Handlers
   const submitGeneralRequest = async (request) => {
     await addRequest({
@@ -1309,9 +1309,9 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
       priority: request.priority || 'medium'
     });
   };
-  
+
   const unreadCount = notifications.filter(n => !n.isRead).length;
-  
+
   const value = {
     currentUser,
     isAdmin,
@@ -1385,7 +1385,7 @@ export const AppProvider = ({ children }: { children: React.ReactNode }) => {
     generalRequests,
     submitGeneralRequest
   };
-  
+
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 

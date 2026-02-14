@@ -1,20 +1,22 @@
 import { useState } from 'react';
 import { FileCheck, Search, Send, CheckCircle } from 'lucide-react';
+import { useApp } from '../../../context/AppContextEnhanced';
 
 export const IssueCoupons = () => {
+  const { allUsers } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState<any>(null);
   const [quantity, setQuantity] = useState(1);
   const [remarks, setRemarks] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
 
-  const employees = [
-    { id: 1, name: 'Amit Kumar', empId: 'SMG-2024-042', dept: 'Assembly', currentBalance: 5 },
-    { id: 2, name: 'Priya Sharma', empId: 'SMG-2024-089', dept: 'HR', currentBalance: 10 },
-    { id: 3, name: 'Rajesh Patel', empId: 'SMG-2024-123', dept: 'Finance', currentBalance: 2 },
-    { id: 4, name: 'Sneha Reddy', empId: 'SMG-2024-156', dept: 'Marketing', currentBalance: 8 },
-    { id: 5, name: 'Vikram Singh', empId: 'SMG-2024-189', dept: 'Production', currentBalance: 15 }
-  ];
+  const employees = allUsers.map((u: any) => ({
+    id: u.id,
+    name: u.name || u.fullName || '',
+    empId: u.empId || u.employeeId || u.id,
+    dept: u.dept || u.department || '',
+    currentBalance: u.couponBalance || 0
+  }));
 
   const handleIssue = () => {
     if (selectedEmployee && quantity > 0) {
@@ -49,7 +51,7 @@ export const IssueCoupons = () => {
         {/* Employee Search */}
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <h2 className="text-xl font-bold text-[#1B254B] mb-4">Select Employee</h2>
-          
+
           {/* Search Box */}
           <div className="relative mb-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
@@ -68,11 +70,10 @@ export const IssueCoupons = () => {
               <button
                 key={emp.id}
                 onClick={() => setSelectedEmployee(emp)}
-                className={`w-full p-4 rounded-xl border-2 transition-all text-left ${
-                  selectedEmployee?.id === emp.id
+                className={`w-full p-4 rounded-xl border-2 transition-all text-left ${selectedEmployee?.id === emp.id
                     ? 'border-[#0B4DA2] bg-blue-50'
                     : 'border-gray-200 hover:border-gray-300 bg-white'
-                }`}
+                  }`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">

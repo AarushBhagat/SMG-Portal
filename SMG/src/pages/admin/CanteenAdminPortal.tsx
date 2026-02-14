@@ -5,6 +5,7 @@ import { CanteenDashboard } from './canteen/CanteenDashboard';
 import { SaleCoupons } from './canteen/SaleCoupons';
 import { IssueCoupons } from './canteen/IssueCoupons';
 import { ApproveGuestCoupons } from './canteen/ApproveGuestCoupons';
+import { ApproveCouponRequests } from './canteen/ApproveCouponRequests';
 import {
   LayoutDashboard,
   LogOut,
@@ -23,7 +24,8 @@ import {
   MapPin,
   Calendar,
   Briefcase,
-  Award
+  Award,
+  Ticket
 } from 'lucide-react';
 
 interface CanteenAdminPortalProps {
@@ -64,6 +66,7 @@ export const CanteenAdminPortal = ({ onBack }: CanteenAdminPortalProps) => {
       case 'sale-coupons': return <SaleCoupons />;
       case 'issue-coupons': return <IssueCoupons />;
       case 'approve-guest': return <ApproveGuestCoupons />;
+      case 'approve-requests': return <ApproveCouponRequests />;
       default: return <CanteenDashboard onNavigate={setActivePage} />;
     }
   };
@@ -127,7 +130,7 @@ export const CanteenAdminPortal = ({ onBack }: CanteenAdminPortalProps) => {
             )}
           </div>
 
-          <div 
+          <div
             onClick={() => setShowProfileModal(true)}
             className="flex items-center gap-3 bg-gray-50 p-1.5 pr-4 rounded-full cursor-pointer hover:bg-gray-100 transition-all"
           >
@@ -150,6 +153,7 @@ export const CanteenAdminPortal = ({ onBack }: CanteenAdminPortalProps) => {
               <div className="space-y-1">
                 {[
                   { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+                  { id: 'approve-requests', icon: Ticket, label: 'Employee Requests' },
                   { id: 'sale-coupons', icon: ShoppingCart, label: 'Sale Coupons' },
                   { id: 'issue-coupons', icon: FileCheck, label: 'Issue Coupons' },
                   { id: 'approve-guest', icon: UserCheck, label: 'Guest Requests' }
@@ -202,6 +206,7 @@ export const CanteenAdminPortal = ({ onBack }: CanteenAdminPortalProps) => {
             <nav className="space-y-2 overflow-y-auto">
               {[
                 { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+                { id: 'approve-requests', label: 'Employee Requests', icon: Ticket },
                 { id: 'sale-coupons', label: 'Sale Coupons', icon: ShoppingCart },
                 { id: 'issue-coupons', label: 'Issue Coupons', icon: FileCheck },
                 { id: 'approve-guest', label: 'Guest Requests', icon: UserCheck }
@@ -239,7 +244,7 @@ export const CanteenAdminPortal = ({ onBack }: CanteenAdminPortalProps) => {
                     <p className="text-white/60 text-xs mt-1">Employee ID: {user?.id || CANTEEN_USER.empId}</p>
                   </div>
                 </div>
-                <button 
+                <button
                   onClick={() => setShowProfileModal(false)}
                   className="hover:bg-white/20 p-2 rounded-lg transition-colors"
                 >
@@ -380,7 +385,7 @@ export const CanteenAdminPortal = ({ onBack }: CanteenAdminPortalProps) => {
 
             {/* Modal Footer */}
             <div className="p-6 bg-gray-50 rounded-b-2xl flex gap-3 justify-end border-t border-gray-200">
-              <button 
+              <button
                 onClick={() => setShowProfileModal(false)}
                 className="px-6 py-3 bg-gradient-to-br from-[#042A5B] to-[#0B4DA2] text-white rounded-xl font-bold hover:shadow-lg transition-all"
               >

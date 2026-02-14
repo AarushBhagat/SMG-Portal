@@ -1,97 +1,60 @@
 import { useState } from 'react';
 import { UserCheck, Clock, CheckCircle, XCircle, Eye } from 'lucide-react';
-
-interface GuestRequest {
-  id: number;
-  empName: string;
-  empId: string;
-  guestName: string;
-  guestContact: string;
-  quantity: number;
-  visitDate: string;
-  purpose: string;
-  requestDate: string;
-  status: 'Pending' | 'Approved' | 'Rejected';
-}
+import { useApp } from '../../../context/AppContextEnhanced';
 
 export const ApproveGuestCoupons = () => {
-  const [requests, setRequests] = useState<GuestRequest[]>([
-    {
-      id: 1,
-      empName: 'Vikram Singh',
-      empId: 'SMG-2024-189',
-      guestName: 'John Anderson',
-      guestContact: '+91 98765 12345',
-      quantity: 3,
-      visitDate: '2024-12-28',
-      purpose: 'Business Meeting',
-      requestDate: '2024-12-26 10:30 AM',
-      status: 'Pending'
-    },
-    {
-      id: 2,
-      empName: 'Anita Desai',
-      empId: 'SMG-2024-145',
-      guestName: 'Sarah Williams',
-      guestContact: '+91 98765 67890',
-      quantity: 2,
-      visitDate: '2024-12-28',
-      purpose: 'Client Visit',
-      requestDate: '2024-12-26 11:15 AM',
-      status: 'Pending'
-    },
-    {
-      id: 3,
-      empName: 'Rahul Mehta',
-      empId: 'SMG-2024-098',
-      guestName: 'Mike Johnson',
-      guestContact: '+91 98765 11111',
-      quantity: 1,
-      visitDate: '2024-12-29',
-      purpose: 'Interview',
-      requestDate: '2024-12-26 02:45 PM',
-      status: 'Pending'
-    },
-    {
-      id: 4,
-      empName: 'Priya Sharma',
-      empId: 'SMG-2024-089',
-      guestName: 'David Lee',
-      guestContact: '+91 98765 22222',
-      quantity: 2,
-      visitDate: '2024-12-27',
-      purpose: 'Vendor Meeting',
-      requestDate: '2024-12-25 04:00 PM',
-      status: 'Approved'
-    }
-  ]);
-
-  const [selectedRequest, setSelectedRequest] = useState<GuestRequest | null>(null);
+  const { requests, approveRequest, rejectRequest } = useApp();
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
-  const [actionType, setActionType] = useState<'approve' | 'reject'>('approve');
   const [remarks, setRemarks] = useState('');
 
-  const handleViewDetails = (request: GuestRequest) => {
+  // Filter guest-type requests from Firestore
+  const guestRequests = requests.filter((r: any) =>
+    r.requestType === 'guesthouse' || r.requestType === 'guest_house' || r.requestType === 'guest_coupon'
+  );
+
+  const pendingRequests = guestRequests.filter((r: any) => r.status === 'pending');
+  const processedRequests = guestRequests.filter((r: any) => r.status !== 'pending');
+
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return 'N/A';
+    if (timestamp.toDate) return timestamp.toDate().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    if (timestamp instanceof Date) return timestamp.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+    return String(timestamp);
+  };
+
+  const formatDateTime = (timestamp: any) => {
+    if (!timestamp) return 'N/A';
+    if (timestamp.toDate) {
+      const d = timestamp.toDate();
+      return `${d.toLocaleDateString('en-IN')} ${d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}`;
+    }
+    return String(timestamp);
+  };
+
+  const handleViewDetails = (request: any) => {
     setSelectedRequest(request);
     setShowModal(true);
     setRemarks('');
   };
 
-  const handleAction = (type: 'approve' | 'reject') => {
+  const handleApprove = async () => {
     if (selectedRequest) {
-      const updatedRequests = requests.map(req =>
-        req.id === selectedRequest.id
-          ? { ...req, status: type === 'approve' ? 'Approved' : 'Rejected' as 'Approved' | 'Rejected' }
-          : req
-      );
-      setRequests(updatedRequests);
+      await approveRequest(selectedRequest.id, remarks || 'Approved by Canteen Admin');
       setShowModal(false);
       setSelectedRequest(null);
+      setRemarks('');
     }
   };
 
-  const pendingRequests = requests.filter(r => r.status === 'Pending');
-  const processedRequests = requests.filter(r => r.status !== 'Pending');
+  const handleReject = async () => {
+    if (selectedRequest) {
+      await rejectRequest(selectedRequest.id, remarks || 'Rejected by Canteen Admin');
+      setShowModal(false);
+      setSelectedRequest(null);
+      setRemarks('');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -123,7 +86,7 @@ export const ApproveGuestCoupons = () => {
               <CheckCircle className="text-green-500" size={24} />
             </div>
             <div>
-              <p className="text-2xl font-bold text-[#1B254B]">{requests.filter(r => r.status === 'Approved').length}</p>
+              <p className="text-2xl font-bold text-[#1B254B]">{guestRequests.filter((r: any) => r.status === 'approved').length}</p>
               <p className="text-sm text-gray-500">Approved</p>
             </div>
           </div>
@@ -134,7 +97,7 @@ export const ApproveGuestCoupons = () => {
               <XCircle className="text-red-500" size={24} />
             </div>
             <div>
-              <p className="text-2xl font-bold text-[#1B254B]">{requests.filter(r => r.status === 'Rejected').length}</p>
+              <p className="text-2xl font-bold text-[#1B254B]">{guestRequests.filter((r: any) => r.status === 'rejected').length}</p>
               <p className="text-sm text-gray-500">Rejected</p>
             </div>
           </div>
@@ -149,31 +112,31 @@ export const ApproveGuestCoupons = () => {
         </h2>
         <div className="space-y-3">
           {pendingRequests.length > 0 ? (
-            pendingRequests.map((request) => (
+            pendingRequests.map((request: any) => (
               <div key={request.id} className="p-5 bg-orange-50 rounded-xl border border-orange-200 hover:shadow-md transition-all">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-start gap-3 mb-3">
-                      <h3 className="font-bold text-[#1B254B] text-lg">{request.guestName}</h3>
+                      <h3 className="font-bold text-[#1B254B] text-lg">{request.requestData?.guestName || 'Guest'}</h3>
                       <span className="px-3 py-1 bg-orange-500 text-white text-xs font-bold rounded-full whitespace-nowrap">Pending</span>
                     </div>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                       <div>
                         <p className="text-xs font-semibold text-gray-500 mb-1">Requested By</p>
-                        <p className="font-semibold text-[#1B254B] text-sm">{request.empName}</p>
-                        <p className="text-xs text-gray-500">{request.empId}</p>
+                        <p className="font-semibold text-[#1B254B] text-sm">{request.employeeName || request.userName}</p>
+                        <p className="text-xs text-gray-500">{request.employeeId}</p>
                       </div>
                       <div>
                         <p className="text-xs font-semibold text-gray-500 mb-1">Visit Date</p>
-                        <p className="font-semibold text-[#1B254B] text-sm">{new Date(request.visitDate).toLocaleDateString()}</p>
+                        <p className="font-semibold text-[#1B254B] text-sm">{request.requestData?.visitDate || formatDate(request.createdAt)}</p>
                       </div>
                       <div>
                         <p className="text-xs font-semibold text-gray-500 mb-1">Quantity</p>
-                        <p className="font-semibold text-[#1B254B] text-sm">{request.quantity} coupons</p>
+                        <p className="font-semibold text-[#1B254B] text-sm">{request.requestData?.quantity || request.requestData?.coupons || 0} coupons</p>
                       </div>
                       <div>
                         <p className="text-xs font-semibold text-gray-500 mb-1">Purpose</p>
-                        <p className="font-semibold text-[#1B254B] text-sm">{request.purpose}</p>
+                        <p className="font-semibold text-[#1B254B] text-sm">{request.requestData?.purpose || request.description || 'N/A'}</p>
                       </div>
                     </div>
                   </div>
@@ -200,19 +163,27 @@ export const ApproveGuestCoupons = () => {
       <div className="bg-white rounded-2xl p-6 shadow-sm">
         <h2 className="text-xl font-bold text-[#1B254B] mb-4">Recent Activity</h2>
         <div className="space-y-2">
-          {processedRequests.slice(0, 5).map((request) => (
-            <div key={request.id} className={`p-4 rounded-xl border-2 ${request.status === 'Approved' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-semibold text-[#1B254B]">{request.guestName}</p>
-                  <p className="text-sm text-gray-500">Requested by {request.empName} • {request.quantity} coupons</p>
+          {processedRequests.length > 0 ? (
+            processedRequests.slice(0, 5).map((request: any) => (
+              <div key={request.id} className={`p-4 rounded-xl border-2 ${request.status === 'approved' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-semibold text-[#1B254B]">{request.requestData?.guestName || 'Guest'}</p>
+                    <p className="text-sm text-gray-500">
+                      Requested by {request.employeeName || request.userName} • {request.requestData?.quantity || request.requestData?.coupons || 0} coupons
+                    </p>
+                  </div>
+                  <span className={`px-3 py-1 ${request.status === 'approved' ? 'bg-green-500' : 'bg-red-500'} text-white text-xs font-bold rounded-full`}>
+                    {request.status === 'approved' ? 'Approved' : 'Rejected'}
+                  </span>
                 </div>
-                <span className={`px-3 py-1 ${request.status === 'Approved' ? 'bg-green-500' : 'bg-red-500'} text-white text-xs font-bold rounded-full`}>
-                  {request.status}
-                </span>
               </div>
+            ))
+          ) : (
+            <div className="text-center py-8 text-gray-400">
+              <p className="text-sm">No processed requests yet</p>
             </div>
-          ))}
+          )}
         </div>
       </div>
 
@@ -223,40 +194,40 @@ export const ApproveGuestCoupons = () => {
             <div className="p-6 border-b border-gray-200">
               <h2 className="text-2xl font-bold text-[#1B254B]">Review Guest Coupon Request</h2>
             </div>
-            
+
             <div className="p-6 space-y-6">
               {/* Guest Details */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-gray-50 rounded-xl">
                   <p className="text-sm text-gray-500 mb-1">Guest Name</p>
-                  <p className="font-bold text-[#1B254B]">{selectedRequest.guestName}</p>
+                  <p className="font-bold text-[#1B254B]">{selectedRequest.requestData?.guestName || 'Guest'}</p>
                 </div>
                 <div className="p-4 bg-gray-50 rounded-xl">
                   <p className="text-sm text-gray-500 mb-1">Contact</p>
-                  <p className="font-bold text-[#1B254B]">{selectedRequest.guestContact}</p>
+                  <p className="font-bold text-[#1B254B]">{selectedRequest.requestData?.guestContact || 'N/A'}</p>
                 </div>
                 <div className="p-4 bg-gray-50 rounded-xl">
                   <p className="text-sm text-gray-500 mb-1">Requested By</p>
-                  <p className="font-bold text-[#1B254B]">{selectedRequest.empName}</p>
-                  <p className="text-sm text-gray-500">{selectedRequest.empId}</p>
+                  <p className="font-bold text-[#1B254B]">{selectedRequest.employeeName || selectedRequest.userName}</p>
+                  <p className="text-sm text-gray-500">{selectedRequest.employeeId}</p>
                 </div>
                 <div className="p-4 bg-gray-50 rounded-xl">
                   <p className="text-sm text-gray-500 mb-1">Visit Date</p>
-                  <p className="font-bold text-[#1B254B]">{new Date(selectedRequest.visitDate).toLocaleDateString()}</p>
+                  <p className="font-bold text-[#1B254B]">{selectedRequest.requestData?.visitDate || formatDate(selectedRequest.createdAt)}</p>
                 </div>
                 <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
                   <p className="text-sm text-gray-500 mb-1">Coupons Requested</p>
-                  <p className="text-2xl font-bold text-[#0B4DA2]">{selectedRequest.quantity}</p>
+                  <p className="text-2xl font-bold text-[#0B4DA2]">{selectedRequest.requestData?.quantity || selectedRequest.requestData?.coupons || 0}</p>
                 </div>
                 <div className="p-4 bg-gray-50 rounded-xl">
                   <p className="text-sm text-gray-500 mb-1">Purpose</p>
-                  <p className="font-bold text-[#1B254B]">{selectedRequest.purpose}</p>
+                  <p className="font-bold text-[#1B254B]">{selectedRequest.requestData?.purpose || selectedRequest.description || 'N/A'}</p>
                 </div>
               </div>
 
               {/* Request Date */}
               <div className="p-4 bg-yellow-50 rounded-xl border border-yellow-200">
-                <p className="text-sm text-gray-600">Request submitted on: <span className="font-semibold text-[#1B254B]">{selectedRequest.requestDate}</span></p>
+                <p className="text-sm text-gray-600">Request submitted on: <span className="font-semibold text-[#1B254B]">{formatDateTime(selectedRequest.createdAt)}</span></p>
               </div>
 
               {/* Remarks */}
@@ -276,14 +247,14 @@ export const ApproveGuestCoupons = () => {
               {/* Action Buttons */}
               <div className="flex gap-4">
                 <button
-                  onClick={() => handleAction('approve')}
+                  onClick={handleApprove}
                   className="flex-1 bg-gradient-to-br from-[#042A5B] to-[#0B4DA2] text-white py-4 rounded-xl font-bold hover:shadow-xl transition-all flex items-center justify-center gap-2"
                 >
                   <CheckCircle size={20} />
                   Approve Request
                 </button>
                 <button
-                  onClick={() => handleAction('reject')}
+                  onClick={handleReject}
                   className="flex-1 bg-red-500 text-white py-4 rounded-xl font-bold hover:bg-red-600 hover:shadow-2xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
                 >
                   <XCircle size={20} />

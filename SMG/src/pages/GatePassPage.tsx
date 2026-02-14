@@ -1,17 +1,9 @@
 import { useState } from 'react';
-import { LogOut, Calendar, Clock, FileText, CheckCircle, XCircle, Upload, AlertCircle } from 'lucide-react';
-
-interface GatePassHistory {
-    id: number;
-    date: string;
-    exitTime: string;
-    returnTime: string;
-    duration: string;
-    reason: string;
-    status: 'Approved' | 'Pending' | 'Rejected';
-}
+import { LogOut, Clock, FileText, CheckCircle, XCircle, Upload, AlertCircle } from 'lucide-react';
+import { useApp } from '../context/AppContextEnhanced';
 
 export const GatePassPage = () => {
+    const { addRequest, requests } = useApp();
     const [gatePassType, setGatePassType] = useState('Official Work Outside');
     const [exitDate, setExitDate] = useState('');
     const [exitTime, setExitTime] = useState('');
@@ -19,36 +11,29 @@ export const GatePassPage = () => {
     const [reason, setReason] = useState('');
     const [confirmRules, setConfirmRules] = useState(false);
     const [supportingDocument, setSupportingDocument] = useState<File | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const gatePassHistory: GatePassHistory[] = [
-        {
-            id: 1,
-            date: '05 Jan 2026',
-            exitTime: '3:00 PM',
-            returnTime: '3:45 PM',
-            duration: '45 mins',
-            reason: 'Personal work',
-            status: 'Approved'
-        },
-        {
-            id: 2,
-            date: '10 Jan 2026',
-            exitTime: '2:30 PM',
-            returnTime: '4:00 PM',
-            duration: '1 hr 30 mins',
-            reason: 'Official visit',
-            status: 'Pending'
-        },
-        {
-            id: 3,
-            date: '12 Jan 2026',
-            exitTime: '4:00 PM',
-            returnTime: '--',
-            duration: 'Early Exit',
-            reason: 'Medical',
-            status: 'Approved'
-        }
-    ];
+    // Today's date in YYYY-MM-DD for min attribute
+    const today = new Date().toISOString().split('T')[0];
+
+    // Get real gate pass history from Firestore
+    const gatePassHistory = requests
+        .filter((r: any) => r.requestType === 'gatepass')
+        .sort((a: any, b: any) => {
+            const dateA = a.createdAt?.toDate?.() || new Date(0);
+            const dateB = b.createdAt?.toDate?.() || new Date(0);
+            return dateB.getTime() - dateA.getTime();
+        })
+        .slice(0, 10)
+        .map((r: any) => ({
+            id: r.id,
+            date: r.createdAt?.toDate?.()?.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) || 'N/A',
+            exitTime: r.requestData?.exitTime || 'N/A',
+            returnTime: r.requestData?.expectedReturnTime || '--',
+            duration: r.requestData?.duration || 'N/A',
+            reason: r.requestData?.reason || r.description || 'N/A',
+            status: r.status === 'approved' ? 'Approved' : r.status === 'rejected' ? 'Rejected' : 'Pending'
+        }));
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -62,21 +47,66 @@ export const GatePassPage = () => {
         }
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!exitDate || !exitTime || !expectedReturnTime || !reason || !confirmRules) {
             alert('Please fill all required fields and confirm the rules');
             return;
         }
 
-        alert('Gate Pass request submitted successfully!');
+        setIsSubmitting(true);
 
-        // Reset form
-        setExitDate('');
-        setExitTime('');
-        setExpectedReturnTime('');
-        setReason('');
-        setConfirmRules(false);
-        setSupportingDocument(null);
+        try {
+            // Calculate duration using simple integer math
+            const exitParts = exitTime.split(':');
+            const retParts = expectedReturnTime.split(':');
+            const exitHours = parseInt(exitParts[0] || '0', 10);
+            const exitMins = parseInt(exitParts[1] || '0', 10);
+            const retHours = parseInt(retParts[0] || '0', 10);
+            const retMins = parseInt(retParts[1] || '0', 10);
+            const exitTotalMins = exitHours * 60 + exitMins;
+            const retTotalMins = retHours * 60 + retMins;
+            const diffMins = Math.abs(retTotalMins - exitTotalMins);
+            const hours = Math.floor(diffMins / 60);
+            const mins = diffMins % 60;
+            const duration = hours > 0 ? `${hours} hr ${mins} mins` : `${diffMins} mins`;
+
+            // Format display strings for the time office
+            const formattedExitDate = new Date(exitDate + 'T00:00:00').toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+            await addRequest({
+                requestType: 'gatepass',
+                title: 'Gate Pass Request',
+                description: reason,
+                reason: reason,
+                requestData: {
+                    type: gatePassType,
+                    exitDate: exitDate,
+                    exitTime: exitTime,
+                    expectedReturnTime: expectedReturnTime,
+                    duration: duration,
+                    reason: reason,
+                    from: `${formattedExitDate} ${exitTime}`,
+                    to: `${formattedExitDate} ${expectedReturnTime}`,
+                    hasDocument: !!supportingDocument,
+                    documentName: supportingDocument?.name || null
+                }
+            });
+
+            alert('Gate Pass request submitted successfully!');
+
+            // Reset form
+            setExitDate('');
+            setExitTime('');
+            setExpectedReturnTime('');
+            setReason('');
+            setConfirmRules(false);
+            setSupportingDocument(null);
+        } catch (error) {
+            console.error('Error submitting gate pass:', error);
+            alert('Failed to submit gate pass request. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleCancel = () => {
@@ -165,6 +195,7 @@ export const GatePassPage = () => {
                                 <input
                                     type="date"
                                     value={exitDate}
+                                    min={today}
                                     onChange={(e) => setExitDate(e.target.value)}
                                     className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:border-[#0B4DA2] focus:ring-2 focus:ring-[#0B4DA2]/20 outline-none transition-all"
                                 />
@@ -264,10 +295,10 @@ export const GatePassPage = () => {
                             </button>
                             <button
                                 onClick={handleSubmit}
-                                disabled={!exitDate || !exitTime || !expectedReturnTime || !reason || !confirmRules}
+                                disabled={!exitDate || !exitTime || !expectedReturnTime || !reason || !confirmRules || isSubmitting}
                                 className="px-8 py-3 bg-gradient-to-br from-[#042A5B] to-[#0B4DA2] text-white rounded-xl hover:shadow-lg transition-all font-semibold shadow-md disabled:bg-gray-300 disabled:cursor-not-allowed disabled:shadow-none active:scale-95"
                             >
-                                Submit
+                                {isSubmitting ? 'Submitting...' : 'Submit'}
                             </button>
                         </div>
                     </div>
@@ -309,34 +340,44 @@ export const GatePassPage = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                    {gatePassHistory.map((pass, index) => (
-                                        <tr
-                                            key={pass.id}
-                                            className={`hover:bg-blue-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                                                }`}
-                                        >
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className="text-gray-900 font-medium">{pass.date}</span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className="text-gray-700">{pass.exitTime}</span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className="text-gray-700">{pass.returnTime}</span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className="text-gray-700">{pass.duration}</span>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className="text-gray-700">{pass.reason}</span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="flex items-center justify-start">
-                                                    {getStatusBadge(pass.status)}
-                                                </div>
+                                    {gatePassHistory.length > 0 ? (
+                                        gatePassHistory.map((pass: any, index: number) => (
+                                            <tr
+                                                key={pass.id}
+                                                className={`hover:bg-blue-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                                                    }`}
+                                            >
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className="text-gray-900 font-medium">{pass.date}</span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className="text-gray-700">{pass.exitTime}</span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className="text-gray-700">{pass.returnTime}</span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className="text-gray-700">{pass.duration}</span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className="text-gray-700">{pass.reason}</span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="flex items-center justify-start">
+                                                        {getStatusBadge(pass.status)}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={6} className="px-6 py-12 text-center">
+                                                <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                                                <p className="text-gray-500 font-semibold">No gate pass requests yet</p>
+                                                <p className="text-gray-400 text-sm mt-1">Your gate pass history will appear here</p>
                                             </td>
                                         </tr>
-                                    ))}
+                                    )}
                                 </tbody>
                             </table>
                         </div>
