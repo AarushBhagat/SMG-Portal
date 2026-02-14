@@ -171,17 +171,17 @@ export const FinanceAdminPortal = ({ onBack }: FinanceAdminPortalProps) => {
                 ))}
               </div>
             </div>
-          </nav>
 
-          <div className="p-3 border-t border-white/10">
-            <button
-              onClick={onBack}
-              className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-[#EE5D50] hover:bg-[#EE5D50]/10 transition-all"
-            >
-              <LogOut size={20} className="shrink-0" />
-              <span className="text-sm font-medium">Back to Home</span>
-            </button>
-          </div>
+            <div className="mt-6 pt-4 border-t border-white/10">
+              <button
+                onClick={onBack}
+                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-[#EE5D50] hover:bg-[#EE5D50]/10 transition-all"
+              >
+                <LogOut size={20} className="shrink-0" />
+                <span className="text-sm font-medium">Back to Home</span>
+              </button>
+            </div>
+          </nav>
         </aside>
 
         {/* Main Content */}

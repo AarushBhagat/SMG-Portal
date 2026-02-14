@@ -6,47 +6,32 @@ import {
 } from 'lucide-react';
 
 export const PayrollPageOld = ({ user }) => {
-  // Check if this is employee@smg.com to show actual salary data
-  const isEmployeeSMG = user?.email === 'employee@smg.com';
+  // Mock data removed, replaced with null/empty for integration
 
-  // Actual salary data for Mr Praphull Chandra (employee@smg.com) - IT DEPARTMENT, SMG ELECTRIC SCOOTERS LTD
-  const salaryData = isEmployeeSMG ? {
-    salaryHead: [
-      { name: 'Basic', monthly: 17894, annual: 214728 },
-      { name: 'HRA', monthly: 5368, annual: 64416 },
-      { name: 'Special Allowance', monthly: 9525, annual: 114300 },
-      { name: 'Conveyance', monthly: 1600, annual: 19200 },
-      { name: 'Bonus', monthly: 1400, annual: 16800 },
-    ],
-    otherPerks: [
-      { name: 'EPF (Employer Contribution)', monthly: 1800, annual: 21600 },
-      { name: 'Gratuity', monthly: 860, annual: 10320 },
-      { name: 'ESI (Employer Contribution)', monthly: 450, annual: 5400 },
-    ]
-  } : {
-    // Default empty structure for other employees (to be integrated with Firebase)
+  // Salary categories with all values set to 0, keeping original table structure and spacing
+  const salaryData = {
     salaryHead: [
       { name: 'Basic', monthly: 0, annual: 0 },
       { name: 'HRA', monthly: 0, annual: 0 },
       { name: 'Special Allowance', monthly: 0, annual: 0 },
       { name: 'Conveyance', monthly: 0, annual: 0 },
-      { name: 'Bonus', monthly: 0, annual: 0 },
+      { name: 'Medical', monthly: 0, annual: 0 },
     ],
     otherPerks: [
-      { name: 'EPF (Employer Contribution)', monthly: 0, annual: 0 },
+      { name: 'Bonus', monthly: 0, annual: 0 },
+      { name: 'Provident Fund', monthly: 0, annual: 0 },
       { name: 'Gratuity', monthly: 0, annual: 0 },
-      { name: 'ESI (Employer Contribution)', monthly: 0, annual: 0 },
+      { name: 'ESI', monthly: 0, annual: 0 },
     ]
   };
 
-  // Calculate totals
-  const salaryHeadSubtotal = salaryData.salaryHead.reduce((sum, item) => sum + item.monthly, 0);
-  const otherPerksSubtotal = salaryData.otherPerks.reduce((sum, item) => sum + item.monthly, 0);
-  const totalCTC = salaryHeadSubtotal + otherPerksSubtotal;
+  const salaryHeadSubtotal = 0;
+  const otherPerksSubtotal = 0;
+  const totalCTC = 0;
 
-  const salaryHeadAnnual = salaryData.salaryHead.reduce((sum, item) => sum + item.annual, 0);
-  const otherPerksAnnual = salaryData.otherPerks.reduce((sum, item) => sum + item.annual, 0);
-  const totalCTCAnnual = salaryHeadAnnual + otherPerksAnnual;
+  const salaryHeadAnnual = 0;
+  const otherPerksAnnual = 0;
+  const totalCTCAnnual = 0;
 
   return (
     <div className="space-y-6">
@@ -58,7 +43,7 @@ export const PayrollPageOld = ({ user }) => {
           </div>
           <div>
             <h1 className="text-3xl font-bold">Payroll & Salary</h1>
-            <p className="text-blue-100 text-sm">{user.name} • {user.empId}</p>
+            <p className="text-blue-100 text-sm">{user.name}</p>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
@@ -104,17 +89,17 @@ export const PayrollPageOld = ({ user }) => {
             <tbody>
               {salaryData.salaryHead.map((item, idx) => (
                 <tr key={item.name} className={idx % 2 === 0 ? '' : 'bg-gray-50'}>
-                  <td className="text-center font-bold text-gray-700">A{idx + 1}</td>
-                  <td className="font-semibold pl-6 py-3 text-gray-800">{item.name}</td>
-                  <td className="text-right pr-6 py-3 text-gray-800">{item.monthly.toLocaleString('en-IN')}</td>
-                  <td className="text-right pr-6 py-3 text-gray-800">{item.annual.toLocaleString('en-IN')}</td>
+                  <td className="text-center font-bold">A{idx + 1}</td>
+                  <td className="font-semibold pl-6 py-3">{item.name}</td>
+                  <td className="text-right pr-6 py-3">₹{item.monthly}</td>
+                  <td className="text-right pr-6 py-3">₹{item.annual}</td>
                 </tr>
               ))}
               <tr className="bg-blue-50">
                 <td></td>
-                <td className="font-bold pl-6 py-3 text-[#0B4DA2]">Subtotal (A)</td>
-                <td className="text-right font-bold pr-6 py-3 text-[#0B4DA2]">{salaryHeadSubtotal.toLocaleString('en-IN')}</td>
-                <td className="text-right font-bold pr-6 py-3 text-[#0B4DA2]">{salaryHeadAnnual.toLocaleString('en-IN')}</td>
+                <td className="font-bold pl-6 py-3">Subtotal (A)</td>
+                <td className="text-right font-bold pr-6 py-3">₹{salaryHeadSubtotal}</td>
+                <td className="text-right font-bold pr-6 py-3">₹{salaryHeadAnnual}</td>
               </tr>
             </tbody>
           </table>
@@ -131,17 +116,17 @@ export const PayrollPageOld = ({ user }) => {
             <tbody>
               {salaryData.otherPerks.map((item, idx) => (
                 <tr key={item.name} className={idx % 2 === 0 ? '' : 'bg-gray-50'}>
-                  <td className="text-center font-bold text-gray-700">B{idx + 1}</td>
-                  <td className="font-semibold pl-6 py-3 text-gray-800">{item.name}</td>
-                  <td className="text-right pr-6 py-3 text-gray-800">{item.monthly.toLocaleString('en-IN')}</td>
-                  <td className="text-right pr-6 py-3 text-gray-800">{item.annual.toLocaleString('en-IN')}</td>
+                  <td className="text-center font-bold">B{idx + 1}</td>
+                  <td className="font-semibold pl-6 py-3">{item.name}</td>
+                  <td className="text-right pr-6 py-3">₹{item.monthly}</td>
+                  <td className="text-right pr-6 py-3">₹{item.annual}</td>
                 </tr>
               ))}
               <tr className="bg-purple-50">
                 <td></td>
-                <td className="font-bold pl-6 py-3 text-purple-700">Subtotal (B)</td>
-                <td className="text-right font-bold pr-6 py-3 text-purple-700">{otherPerksSubtotal.toLocaleString('en-IN')}</td>
-                <td className="text-right font-bold pr-6 py-3 text-purple-700">{otherPerksAnnual.toLocaleString('en-IN')}</td>
+                <td className="font-bold pl-6 py-3">Subtotal (B)</td>
+                <td className="text-right font-bold pr-6 py-3">₹{otherPerksSubtotal}</td>
+                <td className="text-right font-bold pr-6 py-3">₹{otherPerksAnnual}</td>
               </tr>
             </tbody>
           </table>
@@ -157,10 +142,10 @@ export const PayrollPageOld = ({ user }) => {
                   </div>
                 </td>
                 <td className="px-6 py-6 text-right border-r border-yellow-400">
-                  <span className="font-bold text-yellow-900 text-xl">{totalCTC.toLocaleString('en-IN')}</span>
+                  <span className="font-bold text-yellow-900 text-xl">₹{totalCTC}</span>
                 </td>
                 <td className="px-6 py-6 text-right">
-                  <span className="font-bold text-yellow-900 text-xl">{totalCTCAnnual.toLocaleString('en-IN')}</span>
+                  <span className="font-bold text-yellow-900 text-xl">₹{totalCTCAnnual}</span>
                 </td>
               </tr>
             </tbody>

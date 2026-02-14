@@ -5,7 +5,6 @@ import { CanteenDashboard } from './canteen/CanteenDashboard';
 import { SaleCoupons } from './canteen/SaleCoupons';
 import { IssueCoupons } from './canteen/IssueCoupons';
 import { ApproveGuestCoupons } from './canteen/ApproveGuestCoupons';
-import { ApproveEmployeeRequests } from './canteen/ApproveEmployeeRequests';
 import {
   LayoutDashboard,
   LogOut,
@@ -65,7 +64,6 @@ export const CanteenAdminPortal = ({ onBack }: CanteenAdminPortalProps) => {
       case 'sale-coupons': return <SaleCoupons />;
       case 'issue-coupons': return <IssueCoupons />;
       case 'approve-guest': return <ApproveGuestCoupons />;
-      case 'approve-requests': return <ApproveEmployeeRequests />;
       default: return <CanteenDashboard onNavigate={setActivePage} />;
     }
   };
@@ -148,14 +146,13 @@ export const CanteenAdminPortal = ({ onBack }: CanteenAdminPortalProps) => {
         <aside className="hidden lg:flex w-[240px] bg-[#042A5B] flex-col shadow-2xl">
           <nav className="px-3 py-6 space-y-1 flex-1 overflow-y-auto">
             <div className="mb-4">
-              <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Canteen Admin</p>
+              <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 whitespace-nowrap">Canteen Admin</p>
               <div className="space-y-1">
                 {[
                   { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-                  { id: 'approve-requests', icon: FileCheck, label: 'Employee Requests' },
-                  { id: 'approve-guest', icon: UserCheck, label: 'Guest Requests' },
                   { id: 'sale-coupons', icon: ShoppingCart, label: 'Sale Coupons' },
-                  { id: 'issue-coupons', icon: FileCheck, label: 'Issue Coupons' }
+                  { id: 'issue-coupons', icon: FileCheck, label: 'Issue Coupons' },
+                  { id: 'approve-guest', icon: UserCheck, label: 'Guest Requests' }
                 ].map((item) => (
                   <button
                     key={item.id}
@@ -165,7 +162,7 @@ export const CanteenAdminPortal = ({ onBack }: CanteenAdminPortalProps) => {
                     <div className="shrink-0 flex justify-center w-6">
                       <item.icon size={20} />
                     </div>
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-sm font-bold flex-1 text-left">
+                    <span className="whitespace-nowrap text-sm font-bold flex-1 text-left">
                       {item.label}
                     </span>
                   </button>
@@ -180,7 +177,7 @@ export const CanteenAdminPortal = ({ onBack }: CanteenAdminPortalProps) => {
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#EE5D50] hover:bg-[#EE5D50]/10 transition-all duration-200 font-bold"
             >
               <div className="shrink-0 flex justify-center w-6"><LogOut size={20} /></div>
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">Sign Out</span>
+              <span>Sign Out</span>
             </button>
           </div>
         </aside>

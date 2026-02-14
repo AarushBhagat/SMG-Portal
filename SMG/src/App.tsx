@@ -32,10 +32,10 @@ import {
   ReceptionPortal,
   HRPortal,
   FinancePortal,
+  TimeOfficePortal,
   CanteenPortal,
   EventsPortal,
   HODPortal,
-  TimeOfficePortal,
   TechnicianPortal,
   AssemblyPortal,
   MarketingPortal
@@ -242,7 +242,7 @@ const Topbar = ({ onMobileMenu, onNavigate }: TopbarProps) => {
           alt="SMG Logo"
           className="h-10 w-auto cursor-pointer"
           onClick={() => onNavigate('dashboard')}
-        />
+        />  
         <button onClick={onMobileMenu} className="lg:hidden p-2 text-[#042A5B] bg-gray-50 rounded-lg hover:bg-gray-100">
           <Menu size={24} />
         </button>
@@ -348,12 +348,6 @@ export default function App() {
       // Set initial page based on role
       if (role === 'super_admin') {
         setActivePage('super-admin-portal');
-      } else if (role === 'canteen_admin') {
-        setActivePage('admin-canteen');
-      } else if (role === 'time_office') {
-        setActivePage('admin-time-office');
-      } else if (role === 'hod') {
-        setActivePage('admin-hod');
       } else if (role === 'admin') {
         // Check for specific UID to route directly to portal
         const portalMapping: Record<string, string> = {
@@ -387,7 +381,7 @@ export default function App() {
     }
   }, [user]);
 
-  const handleLogin = (role: 'employee' | 'admin' | 'super_admin' | 'canteen_admin' | 'time_office' | 'hod') => {
+  const handleLogin = (role: 'employee' | 'admin' | 'super_admin') => {
     console.log('🔑 Handle login called with role:', role);
     setUserRole(role);
     
@@ -454,12 +448,26 @@ interface AppContentProps {
 function AppContent({ userRole, activePage, setActivePage, mobileMenuOpen, setMobileMenuOpen, handleLogout }: AppContentProps) {
   const { user: firebaseUser } = useAuth();
   
-  // Create user object with Firebase data, fallback to INITIAL_DATA
-  const currentUser = {
-    ...INITIAL_DATA.user,
-    email: firebaseUser?.email || INITIAL_DATA.user.email,
+  // Create dynamic user object from Firebase data, fallback to INITIAL_DATA
+  const dynamicUser = {
     name: firebaseUser?.name || INITIAL_DATA.user.name,
+    role: firebaseUser?.designation || INITIAL_DATA.user.role,
+    avatar: firebaseUser?.avatar || INITIAL_DATA.user.avatar,
     empId: firebaseUser?.employeeId || INITIAL_DATA.user.empId,
+    dept: firebaseUser?.department || INITIAL_DATA.user.dept,
+    email: firebaseUser?.email || INITIAL_DATA.user.email,
+    shift: INITIAL_DATA.user.shift,
+    reportingTo: INITIAL_DATA.user.reportingTo,
+    phone: firebaseUser?.phone || INITIAL_DATA.user.phone,
+    emergencyContact: INITIAL_DATA.user.emergencyContact,
+    dateOfBirth: INITIAL_DATA.user.dateOfBirth,
+    dateOfJoining: INITIAL_DATA.user.dateOfJoining,
+    bloodGroup: INITIAL_DATA.user.bloodGroup,
+    address: INITIAL_DATA.user.address,
+    education: INITIAL_DATA.user.education,
+    certifications: INITIAL_DATA.user.certifications,
+    skills: INITIAL_DATA.user.skills,
+    languages: INITIAL_DATA.user.languages
   };
   
   const renderContent = () => {
@@ -467,7 +475,7 @@ function AppContent({ userRole, activePage, setActivePage, mobileMenuOpen, setMo
       // Main Pages
       case 'dashboard': return <DashboardPageOld data={INITIAL_DATA} onNavigate={setActivePage} />;
       case 'projects': return <ProjectsPage />;
-      case 'profile': return <ProfilePage userData={INITIAL_DATA.user} />;
+      case 'profile': return <ProfilePage userData={dynamicUser} />;
 
       // Service Catalog Sub-items
       case 'canteen': return <CanteenPage />;
@@ -488,11 +496,11 @@ function AppContent({ userRole, activePage, setActivePage, mobileMenuOpen, setMo
       case 'my-attendance': return <AttendancePage />;
 
       // Work & Pay Pages
-      case 'payroll': return <PayrollPageOld user={currentUser} />;
+      case 'payroll': return <PayrollPageOld user={dynamicUser} />;
       case 'insurance-policy': return <InsurancePolicyPage />;
       case 'loan-approval': return <LoanApprovalPage />;
       case 'training': return <TrainingPage />;
-      case 'documents': return <MyDocumentsPageOld documents={INITIAL_DATA.documents} user={INITIAL_DATA.user} />;
+      case 'documents': return <MyDocumentsPageOld documents={INITIAL_DATA.documents} user={dynamicUser} />;
 
       // Personal & Info Pages
       case 'welfare': return <WelfarePage />;

@@ -160,7 +160,7 @@ export const ReceptionAdminPortal = ({ onBack }: ReceptionAdminPortalProps) => {
         <aside className="hidden lg:flex w-[240px] bg-[#042A5B] flex-col shadow-2xl">
           <nav className="px-3 py-6 space-y-1 flex-1 overflow-y-auto">
             <div className="mb-4">
-              <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Reception Admin</p>
+              <p className="px-3 text-[10px] font-bold text-[#87CEEB]/60 uppercase tracking-wider mb-2 whitespace-nowrap">Reception Admin</p>
               <div className="space-y-1">
                 {[
                   { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -179,24 +179,24 @@ export const ReceptionAdminPortal = ({ onBack }: ReceptionAdminPortalProps) => {
                     <div className="shrink-0 flex justify-center w-6">
                       <item.icon size={20} />
                     </div>
-                    <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap text-sm font-bold flex-1 text-left">
+                    <span className="whitespace-nowrap text-sm font-bold flex-1 text-left">
                       {item.label}
                     </span>
                   </button>
                 ))}
               </div>
             </div>
-          </nav>
 
-          <div className="p-4 border-t border-[#0B4DA2]/30 shrink-0 mt-auto">
-            <button
-              onClick={onBack}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#EE5D50] hover:bg-[#EE5D50]/10 transition-all duration-200 font-bold"
-            >
-              <div className="shrink-0 flex justify-center w-6"><LogOut size={20} /></div>
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">Sign Out</span>
-            </button>
-          </div>
+            <div className="mt-6 pt-4 border-t border-white/10">
+              <button
+                onClick={onBack}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[#EE5D50] hover:bg-[#EE5D50]/10 transition-all duration-200 font-bold"
+              >
+                <div className="shrink-0 flex justify-center w-6"><LogOut size={20} /></div>
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </nav>
         </aside>
 
         {/* Main Content */}
